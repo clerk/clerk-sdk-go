@@ -31,7 +31,7 @@ func TestNewClientCreatesDifferenceClients(t *testing.T) {
 func TestNewRequest(t *testing.T) {
 	client, _ := NewClient("token")
 
-	inputUrl, outputUrl := "/test", clerkBaseUrl+"/test"
+	inputUrl, outputUrl := "test", clerkBaseUrl+"test"
 	method := "GET"
 	req, err := client.NewRequest(method, inputUrl)
 	if err != nil {

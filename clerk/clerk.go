@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	clerkBaseUrl = "https://api.clerk.dev"
+	clerkBaseUrl = "https://api.clerk.dev/v1/"
 )
 
 type Client interface {
@@ -20,10 +20,16 @@ type Client interface {
 	Do(req *http.Request, v interface{}) (*http.Response, error)
 }
 
+type service struct {
+	client Client
+}
+
 type client struct {
 	client *http.Client
 
 	BaseURL *url.URL
+
+	Users *UsersService
 }
 
 // NewClient creates a new Clerk client.
@@ -35,6 +41,10 @@ func NewClient(token string) (*client, error) {
 	httpClient := createTokenClient(ctx, token)
 
 	client := &client{client: httpClient, BaseURL: baseURL}
+
+	commonService := &service{client: client}
+	client.Users = (*UsersService)(commonService)
+
 	return client, nil
 }
 
