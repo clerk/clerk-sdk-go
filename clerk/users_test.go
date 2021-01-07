@@ -80,6 +80,40 @@ func TestUsersService_Read_invalidServer(t *testing.T) {
 	}
 }
 
+func TestUsersService_Delete_happyPath(t *testing.T) {
+	token := "token"
+	userId := "someUserId"
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/users/"+userId, func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "DELETE")
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		response := fmt.Sprintf(`{ "deleted": true, "id": "%v", "object": "user" }`, userId)
+		fmt.Fprint(w, response)
+	})
+
+	want := DeleteResponse{ID: userId, Object: "user", Deleted: true}
+
+	got, _ := client.Users.Delete(userId)
+	if !reflect.DeepEqual(*got, want) {
+		t.Errorf("Response = %v, want %v", *got, want)
+	}
+}
+
+func TestUsersService_Delete_invalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+
+	delResponse, err := client.Users.Delete("someUserId")
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+	if delResponse != nil {
+		t.Errorf("Was not expecting any reponse to be returned, instead got %v", delResponse)
+	}
+}
+
 const dummyUserJson = `{
         "birthday": "",
         "created_at": "2021-01-05T14:29:48.385449Z",

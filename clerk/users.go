@@ -74,3 +74,21 @@ func (s *UsersService) Read(userId string) (*User, error) {
 	}
 	return &user, nil
 }
+
+type DeleteResponse struct {
+	ID      string `json:"id"`
+	Object  string `json:"object"`
+	Deleted bool   `json:"deleted"`
+}
+
+func (s *UsersService) Delete(userId string) (*DeleteResponse, error) {
+	userUrl := fmt.Sprintf("users/%v", userId)
+	req, _ := s.client.NewRequest("DELETE", userUrl)
+
+	var delResponse DeleteResponse
+	_, err := s.client.Do(req, &delResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &delResponse, nil
+}
