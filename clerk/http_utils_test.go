@@ -19,9 +19,8 @@ func setup(token string) (client *client, mux *http.ServeMux, serverURL string, 
 	// server is a test HTTP server used to provide mock API responses.
 	server := httptest.NewServer(apiHandler)
 
-	client, _ = NewClient(token)
 	url, _ := url.Parse(server.URL + versionPath + "/")
-	client.BaseURL = url
+	client, _ = NewClientWithBaseUrl(token, url.String())
 
 	return client, mux, server.URL, server.Close
 }

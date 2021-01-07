@@ -14,7 +14,7 @@ func TestNewClientBaseUrl(t *testing.T) {
 		t.Errorf("NewClient failed")
 	}
 
-	if got, want := c.BaseURL.String(), clerkBaseUrl; got != want {
+	if got, want := c.baseURL.String(), clerkBaseUrl; got != want {
 		t.Errorf("NewClient BaseURL is %v, want %v", got, want)
 	}
 }
@@ -108,10 +108,7 @@ func TestDo_sendsTokenInRequest(t *testing.T) {
 }
 
 func TestDo_invalidServer(t *testing.T) {
-	url, _ := url.Parse("http://dummy_url:1337")
-
-	client, _ := NewClient("token")
-	client.BaseURL = url
+	client, _ := NewClientWithBaseUrl("token", "http://dummy_url:1337")
 
 	req, _ := client.NewRequest("GET", "test")
 

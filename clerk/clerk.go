@@ -1,11 +1,9 @@
 package clerk
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -25,9 +23,9 @@ type service struct {
 }
 
 type client struct {
-	client *http.Client
-
-	BaseURL *url.URL
+	client  *http.Client
+	baseURL *url.URL
+	token   string
 
 	Users *UsersService
 }
@@ -36,11 +34,14 @@ type client struct {
 // Because the token supplied will be used for all authenticated requests,
 // the created client should not be used across different users
 func NewClient(token string) (*client, error) {
-	baseURL, _ := url.Parse(clerkBaseUrl)
-	ctx := context.Background()
-	httpClient := createTokenClient(ctx, token)
+	return NewClientWithBaseUrl(token, clerkBaseUrl)
+}
 
-	client := &client{client: httpClient, BaseURL: baseURL}
+func NewClientWithBaseUrl(token string, baseUrl string) (*client, error) {
+	baseURL, _ := url.Parse(baseUrl)
+	httpClient := http.Client{}
+
+	client := &client{client: &httpClient, baseURL: baseURL, token: token}
 
 	commonService := &service{client: client}
 	client.Users = (*UsersService)(commonService)
@@ -48,18 +49,11 @@ func NewClient(token string) (*client, error) {
 	return client, nil
 }
 
-func createTokenClient(ctx context.Context, token string) *http.Client {
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	)
-	return oauth2.NewClient(ctx, ts)
-}
-
 // NewRequest creates an API request.
 // A relative URL can be specified which is resolved relative to the BaseURL of the client.
 // Relative URLs should be specified without a preceding slash.
 func (c *client) NewRequest(method string, url string) (*http.Request, error) {
-	fullUrl, err := c.BaseURL.Parse(url)
+	fullUrl, err := c.baseURL.Parse(url)
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +69,8 @@ func (c *client) NewRequest(method string, url string) (*http.Request, error) {
 // Do will send the given request using the client `c` on which it is called.
 // If the response contains a body, it will be unmarshalled in `v`.
 func (c *client) Do(req *http.Request, v interface{}) (*http.Response, error) {
+	req.Header.Set("Authorization", "Bearer "+c.token)
+
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err

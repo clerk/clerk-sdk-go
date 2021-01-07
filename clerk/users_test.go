@@ -50,11 +50,11 @@ const dummyUserJson = `{
         "created_at": "2021-01-05T14:29:48.385449Z",
         "email_addresses": [
             {
-                "email_address": "antousias@gmail.com",
-                "id": "idn_1mebQ9KkZWrhb9rL6iEiXQGF8Yj",
+                "email_address": "iron_man@avengers.com",
+                "id": "idn_1mebQ9KkZWrhbQGF8Yj",
                 "linked_to": [
                     {
-                        "id": "idn_1mebQ8sPZO47XKIYJYtb7UQgptk",
+                        "id": "idn_1mebQ8sPZOtb7UQgptk",
                         "type": "oauth_google"
                     }
                 ],
@@ -68,27 +68,27 @@ const dummyUserJson = `{
         "external_accounts": [
             {
                 "approved_scopes": "email https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid profile",
-                "email_address": "antousias@gmail.com",
-                "family_name": "Ntousias",
-                "given_name": "Alexandros",
-                "google_id": "110318944293040442607",
-                "id": "idn_1mebQ8sPZO47XKIYJYtb7UQgptk",
+                "email_address": "iron_man@avengers.com",
+                "family_name": "Stark",
+                "given_name": "Tony",
+                "google_id": "11031040442607",
+                "id": "idn_1mebQ8sPZOtb7UQgptk",
                 "object": "google_account",
-                "picture": "https://lh3.googleusercontent.com/a-/AOh14GixJ9BmJ6GcOQ0n0Q6OBhG-xKyRuJQzsltH-3r-VQ=s96-c"
+                "picture": "https://lh3.googleusercontent.com/a-/AOh14uJQzsltH-3r-VQ=s96-c"
             }
         ],
-        "first_name": "Alexandros",
+        "first_name": "Anthony",
         "gender": "",
         "id": "user_1mebQggrD3xO5JfuHk7clQ94ysA",
-        "last_name": "Ntousias",
+        "last_name": "Stark",
         "metadata": {},
         "object": "user",
         "password_enabled": false,
         "phone_numbers": [],
-        "primary_email_address_id": "idn_1mebQ9KkZWrhb9rL6iEiXQGF8Yj",
+        "primary_email_address_id": "idn_1mebQ9KkZWrhbQGF8Yj",
         "primary_phone_number_id": null,
         "private_metadata": {},
-        "profile_image_url": "https://lh3.googleusercontent.com/a-/AOh14GixJ9BmJ6GcOQ0n0Q6OBhG-xKyRuJQzsltH-3r-VQ=s96-c",
+        "profile_image_url": "https://lh3.googleusercontent.com/a-/AOh14uJQzsltH-3r-VQ=s96-c",
         "two_factor_enabled": false,
         "updated_at": "2021-01-05T14:29:48.385449Z",
         "username": null
