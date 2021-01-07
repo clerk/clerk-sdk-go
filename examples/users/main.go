@@ -10,13 +10,6 @@ func main() {
 	var apiKey string
 	fmt.Scanf("%s", &apiKey)
 
-	users := retrieveUsers(apiKey)
-	for i, user := range users {
-		fmt.Printf("%v. %v\n", i+1, user.ID)
-	}
-}
-
-func retrieveUsers(apiKey string) []clerk.User {
 	client, err := clerk.NewClient(apiKey)
 	if err != nil {
 		panic(err)
@@ -27,5 +20,12 @@ func retrieveUsers(apiKey string) []clerk.User {
 		panic(err)
 	}
 
-	return users
+	for i, user := range users {
+		userDetails, err := client.Users.Read(user.ID)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("%v. %v %v\n", i+1, *userDetails.FirstName, *userDetails.LastName)
+	}
 }
