@@ -45,6 +45,41 @@ func TestUsersService_ListAll_invalidServer(t *testing.T) {
 	}
 }
 
+func TestUsersService_Read_happyPath(t *testing.T) {
+	token := "token"
+	userId := "someUserId"
+	expectedResponse := dummyUserJson
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/users/"+userId, func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	var want User
+	_ = json.Unmarshal([]byte(expectedResponse), &want)
+
+	got, _ := client.Users.Read(userId)
+	if !reflect.DeepEqual(*got, want) {
+		t.Errorf("Response = %v, want %v", *got, want)
+	}
+}
+
+func TestUsersService_Read_invalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+
+	user, err := client.Users.Read("someUserId")
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+	if user != nil {
+		t.Errorf("Was not expecting any user to be returned, instead got %v", user)
+	}
+}
+
 const dummyUserJson = `{
         "birthday": "",
         "created_at": "2021-01-05T14:29:48.385449Z",

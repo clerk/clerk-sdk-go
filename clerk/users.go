@@ -1,6 +1,7 @@
 package clerk
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -60,4 +61,16 @@ func (s *UsersService) ListAll() ([]User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+func (s *UsersService) Read(userId string) (*User, error) {
+	userUrl := fmt.Sprintf("users/%v", userId)
+	req, _ := s.client.NewRequest("GET", userUrl)
+
+	var user User
+	_, err := s.client.Do(req, &user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
