@@ -42,3 +42,8 @@ jobs:
           echo "Total coverage was: $TOTAL_COVER %"
           echo "Expected coverage: $EXPECTED_COVER %"
           (( $(echo "$TOTAL_COVER >= $EXPECTED_COVER" | bc -l) )) && exit 0 || exit 1
+
+      - name: Run integration tests
+        env:
+          CLERK_API_KEY: ${{ secrets.CLERK_API_KEY }}
+        run: go test -tags=integration ./tests/integration
