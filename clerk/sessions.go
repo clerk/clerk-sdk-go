@@ -1,5 +1,7 @@
 package clerk
 
+import "fmt"
+
 type SessionsService service
 
 type Session struct {
@@ -23,4 +25,16 @@ func (s *SessionsService) ListAll() ([]Session, error) {
 		return nil, err
 	}
 	return sessions, nil
+}
+
+func (s *SessionsService) Read(sessionId string) (*Session, error) {
+	sessionUrl := fmt.Sprintf("sessions/%v", sessionId)
+	req, _ := s.client.NewRequest("GET", sessionUrl)
+
+	var session Session
+	_, err := s.client.Do(req, &session)
+	if err != nil {
+		return nil, err
+	}
+	return &session, nil
 }
