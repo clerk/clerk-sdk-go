@@ -2,13 +2,14 @@ package clerk
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
 	"testing"
 )
 
-func TestNewClientBaseUrl(t *testing.T) {
+func TestNewClient_baseUrl(t *testing.T) {
 	c, err := NewClient("token")
 	if err != nil {
 		t.Errorf("NewClient failed")
@@ -19,7 +20,7 @@ func TestNewClientBaseUrl(t *testing.T) {
 	}
 }
 
-func TestNewClientCreatesDifferenceClients(t *testing.T) {
+func TestNewClient_createsDifferentClients(t *testing.T) {
 	token := "token"
 	c, _ := NewClient(token)
 	c2, _ := NewClient(token)
@@ -33,7 +34,7 @@ func TestNewRequest(t *testing.T) {
 
 	inputUrl, outputUrl := "test", clerkBaseUrl+"test"
 	method := "GET"
-	req, err := client.NewRequest(method, inputUrl)
+	req, err := client.NewRequest(method, inputUrl, nil)
 	if err != nil {
 		t.Errorf("NewRequest(%q, %s) method is generated error %v", inputUrl, method, err)
 	}
@@ -49,7 +50,7 @@ func TestNewRequest(t *testing.T) {
 
 func TestNewRequest_invalidUrl(t *testing.T) {
 	client, _ := NewClient("token")
-	_, err := client.NewRequest("GET", ":")
+	_, err := client.NewRequest("GET", ":", nil)
 	if err == nil {
 		t.Errorf("Expected error to be returned")
 	}
@@ -61,7 +62,40 @@ func TestNewRequest_invalidUrl(t *testing.T) {
 func TestNewRequest_invalidMethod(t *testing.T) {
 	client, _ := NewClient("token")
 	invalidMethod := "ΠΟΣΤ"
-	_, err := client.NewRequest(invalidMethod, "/test")
+	_, err := client.NewRequest(invalidMethod, "/test", nil)
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+}
+
+func TestNewRequest_noBody(t *testing.T) {
+	client, _ := NewClient("token")
+	req, _ := client.NewRequest("GET", ".", nil)
+	if req.Body != nil {
+		t.Fatalf("Expected nil Body but request contains a non-nil Body")
+	}
+}
+
+func TestNewRequest_withBody(t *testing.T) {
+	client, _ := NewClient("token")
+
+	type Foo struct {
+		Key string `json:"key"`
+	}
+
+	inBody, outBody := Foo{Key: "value"}, `{"key":"value"}`+"\n"
+	req, _ := client.NewRequest("GET", ".", inBody)
+
+	body, _ := ioutil.ReadAll(req.Body)
+	if got, want := string(body), outBody; got != want {
+		t.Errorf("NewRequest(%q) Body is %v, want %v", inBody, got, want)
+	}
+}
+
+func TestNewRequest_invalidBody(t *testing.T) {
+	client, _ := NewClient("token")
+
+	_, err := client.NewRequest("GET", ".", make(chan int))
 	if err == nil {
 		t.Errorf("Expected error to be returned")
 	}
@@ -80,7 +114,7 @@ func TestDo_happyPath(t *testing.T) {
 		fmt.Fprint(w, `{"A":"a"}`)
 	})
 
-	req, _ := client.NewRequest("GET", "test")
+	req, _ := client.NewRequest("GET", "test", nil)
 	body := new(foo)
 	client.Do(req, body)
 
@@ -100,7 +134,7 @@ func TestDo_sendsTokenInRequest(t *testing.T) {
 		w.WriteHeader(204)
 	})
 
-	req, _ := client.NewRequest("GET", "test")
+	req, _ := client.NewRequest("GET", "test", nil)
 	_, err := client.Do(req, nil)
 	if err != nil {
 		t.Errorf("Was not expecting any errors")
@@ -110,7 +144,7 @@ func TestDo_sendsTokenInRequest(t *testing.T) {
 func TestDo_invalidServer(t *testing.T) {
 	client, _ := NewClientWithBaseUrl("token", "http://dummy_url:1337")
 
-	req, _ := client.NewRequest("GET", "test")
+	req, _ := client.NewRequest("GET", "test", nil)
 
 	// No server setup, should result in an error
 	_, err := client.Do(req, nil)
@@ -127,7 +161,7 @@ func TestDo_httpError(t *testing.T) {
 		http.Error(w, "Bad Request", 400)
 	})
 
-	req, _ := client.NewRequest("GET", "test")
+	req, _ := client.NewRequest("GET", "test", nil)
 	resp, err := client.Do(req, nil)
 
 	if err == nil {
@@ -146,7 +180,7 @@ func TestDo_unexpectedHttpError(t *testing.T) {
 		w.WriteHeader(500)
 	})
 
-	req, _ := client.NewRequest("GET", "test")
+	req, _ := client.NewRequest("GET", "test", nil)
 	resp, err := client.Do(req, nil)
 
 	if err == nil {
@@ -170,7 +204,7 @@ func TestDo_failToReadBody(t *testing.T) {
 		w.Header().Set("Content-Length", "1")
 	})
 
-	req, _ := client.NewRequest("GET", "test")
+	req, _ := client.NewRequest("GET", "test", nil)
 	body := new(foo)
 	_, err := client.Do(req, body)
 	if err == nil {
@@ -191,7 +225,7 @@ func TestDo_failToUnmarshalBody(t *testing.T) {
 		fmt.Fprint(w, `{invalid}`)
 	})
 
-	req, _ := client.NewRequest("GET", "test")
+	req, _ := client.NewRequest("GET", "test", nil)
 	body := new(foo)
 	_, err := client.Do(req, body)
 	if err == nil {
