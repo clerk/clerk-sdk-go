@@ -3,6 +3,7 @@
 package integration
 
 import (
+	"github.com/clerkinc/clerk_server_sdk_go/v1/clerk"
 	"testing"
 )
 
@@ -25,6 +26,18 @@ func TestUsers(t *testing.T) {
 		}
 		if user == nil {
 			t.Fatalf("Users.Read returned nil")
+		}
+
+		updateRequest := clerk.UpdateUser{
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+		}
+		updatedUser, err := client.Users().Update(userId, &updateRequest)
+		if err != nil {
+			t.Fatalf("Users.Update returned error: %v", err)
+		}
+		if updatedUser == nil {
+			t.Errorf("Users.Update returned nil")
 		}
 	}
 }
