@@ -38,3 +38,15 @@ func (s *SessionsService) Read(sessionId string) (*Session, error) {
 	}
 	return &session, nil
 }
+
+func (s *SessionsService) Revoke(sessionId string) (*Session, error) {
+	sessionUrl := fmt.Sprintf("sessions/%v/revoke", sessionId)
+	req, _ := s.client.NewRequest("POST", sessionUrl)
+
+	var session Session
+	_, err := s.client.Do(req, &session)
+	if err != nil {
+		return nil, err
+	}
+	return &session, nil
+}
