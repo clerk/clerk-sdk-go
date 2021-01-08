@@ -80,6 +80,41 @@ func TestSessionsService_Read_invalidServer(t *testing.T) {
 	}
 }
 
+func TestSessionsService_Revoke_happyPath(t *testing.T) {
+	token := "token"
+	sessionId := "someSessionId"
+	expectedResponse := dummySessionJson
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/sessions/"+sessionId+"/revoke", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "POST")
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	var want Session
+	_ = json.Unmarshal([]byte(expectedResponse), &want)
+
+	got, _ := client.Sessions().Revoke(sessionId)
+	if !reflect.DeepEqual(*got, want) {
+		t.Errorf("Response = %v, want %v", *got, want)
+	}
+}
+
+func TestSessionsService_Revoke_invalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+
+	session, err := client.Sessions().Revoke("someSessionId")
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+	if session != nil {
+		t.Errorf("Was not expecting any session to be returned, instead got %v", session)
+	}
+}
+
 const dummySessionJson = `{
         "abandon_at": 1612448988,
         "client_id": "client_1mebPYz8NFNA17fi7NemNXIwp1p",
