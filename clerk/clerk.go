@@ -20,6 +20,7 @@ type Client interface {
 	Do(req *http.Request, v interface{}) (*http.Response, error)
 
 	Users() *UsersService
+	Sessions() *SessionsService
 }
 
 type service struct {
@@ -31,7 +32,8 @@ type client struct {
 	baseURL *url.URL
 	token   string
 
-	users *UsersService
+	users    *UsersService
+	sessions *SessionsService
 }
 
 // NewClient creates a new Clerk client.
@@ -49,6 +51,7 @@ func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
 
 	commonService := &service{client: client}
 	client.users = (*UsersService)(commonService)
+	client.sessions = (*SessionsService)(commonService)
 
 	return client, nil
 }
@@ -127,4 +130,8 @@ func checkForErrors(resp *http.Response) error {
 
 func (c *client) Users() *UsersService {
 	return c.users
+}
+
+func (c *client) Sessions() *SessionsService {
+	return c.sessions
 }
