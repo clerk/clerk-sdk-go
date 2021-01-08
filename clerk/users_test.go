@@ -114,6 +114,40 @@ func TestUsersService_Delete_invalidServer(t *testing.T) {
 	}
 }
 
+func TestUsersService_Update_happyPath(t *testing.T) {
+	token := "token"
+	userId := "someUserId"
+	var payload UpdateUser
+	_ = json.Unmarshal([]byte(dummyUpdateRequestJson), &payload)
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/users/"+userId, func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "PATCH")
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, dummyUserJson)
+	})
+
+	got, _ := client.Users().Update(userId, &payload)
+
+	var want User
+	_ = json.Unmarshal([]byte(dummyUserJson), &want)
+
+	if !reflect.DeepEqual(*got, want) {
+		t.Errorf("Response = %v, want %v", *got, payload)
+	}
+}
+
+func TestUsersService_Update_invalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+
+	_, err := client.Users().Update("someUserId", nil)
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+}
+
 const dummyUserJson = `{
         "birthday": "",
         "created_at": "2021-01-05T14:29:48.385449Z",
@@ -162,3 +196,12 @@ const dummyUserJson = `{
         "updated_at": "2021-01-05T14:29:48.385449Z",
         "username": null
     }`
+
+const dummyUpdateRequestJson = `{
+		"first_name": "Tony",
+		"last_name": "Stark",
+		"primary_email_address_id": "some_image_id",
+		"primary_phone_number_id": "some_phone_id",
+		"profile_image": "some_profile_image",
+		"password": "new_password"
+	}`
