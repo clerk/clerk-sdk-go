@@ -7,45 +7,45 @@ import (
 type UsersService service
 
 type User struct {
-	ID                    string                `json:"id"`
-	Object                string                `json:"object"`
-	Username              *string               `json:"username"`
-	FirstName             *string               `json:"first_name"`
-	LastName              *string               `json:"last_name"`
-	Gender                *string               `json:"gender"`
-	Birthday              *string               `json:"birthday"`
-	ProfileImageURL       string                `json:"profile_image_url"`
-	PrimaryEmailAddressID *string               `json:"primary_email_address_id"`
-	PrimaryPhoneNumberID  *string               `json:"primary_phone_number_id"`
-	PasswordEnabled       bool                  `json:"password_enabled"`
-	TwoFactorEnabled      bool                  `json:"two_factor_enabled"`
-	EmailAddresses        []EmailAddressJstruct `json:"email_addresses"`
-	PhoneNumbers          []PhoneNumberJstruct  `json:"phone_numbers"`
-	ExternalAccounts      []interface{}         `json:"external_accounts"`
-	Metadata              interface{}           `json:"metadata"`
-	PrivateMetadata       interface{}           `json:"private_metadata,omitempty"`
-	CreatedAt             *time.Time            `json:"created_at,omitempty"`
-	UpdatedAt             *time.Time            `json:"updated_at,omitempty"`
+	ID                    string         `json:"id"`
+	Object                string         `json:"object"`
+	Username              *string        `json:"username"`
+	FirstName             *string        `json:"first_name"`
+	LastName              *string        `json:"last_name"`
+	Gender                *string        `json:"gender"`
+	Birthday              *string        `json:"birthday"`
+	ProfileImageURL       string         `json:"profile_image_url"`
+	PrimaryEmailAddressID *string        `json:"primary_email_address_id"`
+	PrimaryPhoneNumberID  *string        `json:"primary_phone_number_id"`
+	PasswordEnabled       bool           `json:"password_enabled"`
+	TwoFactorEnabled      bool           `json:"two_factor_enabled"`
+	EmailAddresses        []EmailAddress `json:"email_addresses"`
+	PhoneNumbers          []PhoneNumber  `json:"phone_numbers"`
+	ExternalAccounts      []interface{}  `json:"external_accounts"`
+	Metadata              interface{}    `json:"metadata"`
+	PrivateMetadata       interface{}    `json:"private_metadata,omitempty"`
+	CreatedAt             *time.Time     `json:"created_at,omitempty"`
+	UpdatedAt             *time.Time     `json:"updated_at,omitempty"`
 }
 
-type EmailAddressJstruct struct {
-	ID           string                       `json:"id"`
-	Object       string                       `json:"object"`
-	EmailAddress string                       `json:"email_address"`
-	Verification interface{}                  `json:"verification"`
-	LinkedTo     []IdentificationLinkResponse `json:"linked_to"`
+type EmailAddress struct {
+	ID           string               `json:"id"`
+	Object       string               `json:"object"`
+	EmailAddress string               `json:"email_address"`
+	Verification interface{}          `json:"verification"`
+	LinkedTo     []IdentificationLink `json:"linked_to"`
 }
 
-type PhoneNumberJstruct struct {
-	ID                      string                       `json:"id"`
-	Object                  string                       `json:"object"`
-	PhoneNumber             string                       `json:"phone_number"`
-	ReservedForSecondFactor bool                         `json:"reserved_for_second_factor"`
-	Verification            interface{}                  `json:"verification"`
-	LinkedTo                []IdentificationLinkResponse `json:"linked_to"`
+type PhoneNumber struct {
+	ID                      string               `json:"id"`
+	Object                  string               `json:"object"`
+	PhoneNumber             string               `json:"phone_number"`
+	ReservedForSecondFactor bool                 `json:"reserved_for_second_factor"`
+	Verification            interface{}          `json:"verification"`
+	LinkedTo                []IdentificationLink `json:"linked_to"`
 }
 
-type IdentificationLinkResponse struct {
+type IdentificationLink struct {
 	IdentType string `json:"type"`
 	IdentID   string `json:"id"`
 }
