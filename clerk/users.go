@@ -92,3 +92,24 @@ func (s *UsersService) Delete(userId string) (*DeleteResponse, error) {
 	}
 	return &delResponse, nil
 }
+
+type UpdateUser struct {
+	FirstName             *string `json:"first_name,omitempty"`
+	LastName              *string `json:"last_name,omitempty"`
+	PrimaryEmailAddressID *string `json:"primary_email_address_id,omitempty"`
+	PrimaryPhoneNumberID  *string `json:"primary_phone_number_id,omitempty"`
+	ProfileImage          *string `json:"profile_image,omitempty"`
+	Password              *string `json:"password,omitempty"`
+}
+
+func (s *UsersService) Update(userId string, updateRequest *UpdateUser) (*User, error) {
+	userUrl := fmt.Sprintf("users/%v", userId)
+	req, _ := s.client.NewRequest("PATCH", userUrl, updateRequest)
+
+	var updatedUser User
+	_, err := s.client.Do(req, &updatedUser)
+	if err != nil {
+		return nil, err
+	}
+	return &updatedUser, nil
+}
