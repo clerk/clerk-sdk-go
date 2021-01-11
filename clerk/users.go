@@ -86,8 +86,7 @@ func (s *UsersService) Delete(userId string) (*DeleteResponse, error) {
 	req, _ := s.client.NewRequest("DELETE", userUrl)
 
 	var delResponse DeleteResponse
-	_, err := s.client.Do(req, &delResponse)
-	if err != nil {
+	if _, err := s.client.Do(req, &delResponse); err != nil {
 		return nil, err
 	}
 	return &delResponse, nil
