@@ -53,7 +53,7 @@ type IdentificationLink struct {
 
 func (s *UsersService) ListAll() ([]User, error) {
 	usersUrl := "users"
-	req, _ := s.client.NewRequest("GET", usersUrl, nil)
+	req, _ := s.client.NewRequest("GET", usersUrl)
 
 	var users []User
 	_, err := s.client.Do(req, &users)
@@ -65,7 +65,7 @@ func (s *UsersService) ListAll() ([]User, error) {
 
 func (s *UsersService) Read(userId string) (*User, error) {
 	userUrl := fmt.Sprintf("users/%v", userId)
-	req, _ := s.client.NewRequest("GET", userUrl, nil)
+	req, _ := s.client.NewRequest("GET", userUrl)
 
 	var user User
 	_, err := s.client.Do(req, &user)
@@ -83,7 +83,7 @@ type DeleteResponse struct {
 
 func (s *UsersService) Delete(userId string) (*DeleteResponse, error) {
 	userUrl := fmt.Sprintf("users/%v", userId)
-	req, _ := s.client.NewRequest("DELETE", userUrl, nil)
+	req, _ := s.client.NewRequest("DELETE", userUrl)
 
 	var delResponse DeleteResponse
 	_, err := s.client.Do(req, &delResponse)

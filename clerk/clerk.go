@@ -16,7 +16,7 @@ const (
 )
 
 type Client interface {
-	NewRequest(method string, url string, body interface{}) (*http.Request, error)
+	NewRequest(method string, url string, body ...interface{}) (*http.Request, error)
 	Do(req *http.Request, v interface{}) (*http.Response, error)
 
 	Users() *UsersService
@@ -56,19 +56,19 @@ func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
 // NewRequestWithBody creates an API request.
 // A relative URL `url` can be specified which is resolved relative to the baseURL of the client.
 // Relative URLs should be specified without a preceding slash.
-// The `body` parameter can be used to pass a body to the request. If no body is required, `nil` can be used.
-func (c *client) NewRequest(method string, url string, body interface{}) (*http.Request, error) {
+// The `body` parameter can be used to pass a body to the request. If no body is required, the parameter can be omitted.
+func (c *client) NewRequest(method string, url string, body ...interface{}) (*http.Request, error) {
 	fullUrl, err := c.baseURL.Parse(url)
 	if err != nil {
 		return nil, err
 	}
 
 	var buf io.ReadWriter
-	if body != nil {
+	if len(body) > 0 && body[0] != nil {
 		buf = &bytes.Buffer{}
 		enc := json.NewEncoder(buf)
 		enc.SetEscapeHTML(false)
-		err := enc.Encode(body)
+		err := enc.Encode(body[0])
 		if err != nil {
 			return nil, err
 		}
