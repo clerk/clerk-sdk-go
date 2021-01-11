@@ -15,13 +15,13 @@ func main() {
 		panic(err)
 	}
 
-	users, err := client.Users.ListAll()
+	users, err := client.Users().ListAll()
 	if err != nil {
 		panic(err)
 	}
 
 	for i, user := range users {
-		userDetails, err := client.Users.Read(user.ID)
+		userDetails, err := client.Users().Read(user.ID)
 		if err != nil {
 			panic(err)
 		}

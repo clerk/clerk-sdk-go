@@ -23,7 +23,7 @@ func TestUsersService_ListAll_happyPath(t *testing.T) {
 	var want []User
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
-	got, _ := client.Users.ListAll()
+	got, _ := client.Users().ListAll()
 	if len(got) != len(want) {
 		t.Errorf("Was expecting %d user to be returned, instead got %d", len(want), len(got))
 	}
@@ -36,7 +36,7 @@ func TestUsersService_ListAll_happyPath(t *testing.T) {
 func TestUsersService_ListAll_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
 
-	users, err := client.Users.ListAll()
+	users, err := client.Users().ListAll()
 	if err == nil {
 		t.Errorf("Expected error to be returned")
 	}
@@ -62,7 +62,7 @@ func TestUsersService_Read_happyPath(t *testing.T) {
 	var want User
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
-	got, _ := client.Users.Read(userId)
+	got, _ := client.Users().Read(userId)
 	if !reflect.DeepEqual(*got, want) {
 		t.Errorf("Response = %v, want %v", *got, want)
 	}
@@ -71,7 +71,7 @@ func TestUsersService_Read_happyPath(t *testing.T) {
 func TestUsersService_Read_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
 
-	user, err := client.Users.Read("someUserId")
+	user, err := client.Users().Read("someUserId")
 	if err == nil {
 		t.Errorf("Expected error to be returned")
 	}
@@ -96,7 +96,7 @@ func TestUsersService_Delete_happyPath(t *testing.T) {
 
 	want := DeleteResponse{ID: userId, Object: "user", Deleted: true}
 
-	got, _ := client.Users.Delete(userId)
+	got, _ := client.Users().Delete(userId)
 	if !reflect.DeepEqual(*got, want) {
 		t.Errorf("Response = %v, want %v", *got, want)
 	}
@@ -105,7 +105,7 @@ func TestUsersService_Delete_happyPath(t *testing.T) {
 func TestUsersService_Delete_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
 
-	delResponse, err := client.Users.Delete("someUserId")
+	delResponse, err := client.Users().Delete("someUserId")
 	if err == nil {
 		t.Errorf("Expected error to be returned")
 	}
