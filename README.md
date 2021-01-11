@@ -32,3 +32,7 @@ The services exposed in the `clerk.Client` divide the API into logical chunks an
 follow the same structure that can be found in the [server-side API documentation](https://docs.clerk.dev/server-api/).
 
 For more examples on how to use the client, refer to the [example](https://github.com/clerkinc/clerk_server_sdk_go/tree/main/example)
+
+## License ##
+
+This SDK is licensed under the MIT license found in the [LICENSE](./LICENSE) file.
