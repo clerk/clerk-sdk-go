@@ -16,6 +16,8 @@ const (
 type Client interface {
 	NewRequest(method string, url string) (*http.Request, error)
 	Do(req *http.Request, v interface{}) (*http.Response, error)
+
+	Users() *UsersService
 }
 
 type service struct {
@@ -27,24 +29,24 @@ type client struct {
 	baseURL *url.URL
 	token   string
 
-	Users *UsersService
+	users *UsersService
 }
 
 // NewClient creates a new Clerk client.
 // Because the token supplied will be used for all authenticated requests,
 // the created client should not be used across different users
-func NewClient(token string) (*client, error) {
+func NewClient(token string) (Client, error) {
 	return NewClientWithBaseUrl(token, clerkBaseUrl)
 }
 
-func NewClientWithBaseUrl(token string, baseUrl string) (*client, error) {
+func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
 	baseURL, _ := url.Parse(baseUrl)
 	httpClient := http.Client{}
 
 	client := &client{client: &httpClient, baseURL: baseURL, token: token}
 
 	commonService := &service{client: client}
-	client.Users = (*UsersService)(commonService)
+	client.users = (*UsersService)(commonService)
 
 	return client, nil
 }
@@ -107,4 +109,8 @@ func checkForErrors(resp *http.Response) error {
 		return errors.New(string(data))
 	}
 	return errors.New(fmt.Sprintf("Server returned unexpected error with status code %d", resp.StatusCode))
+}
+
+func (c *client) Users() *UsersService {
+	return c.users
 }

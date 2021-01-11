@@ -14,7 +14,7 @@ func TestNewClientBaseUrl(t *testing.T) {
 		t.Errorf("NewClient failed")
 	}
 
-	if got, want := c.baseURL.String(), clerkBaseUrl; got != want {
+	if got, want := c.(*client).baseURL.String(), clerkBaseUrl; got != want {
 		t.Errorf("NewClient BaseURL is %v, want %v", got, want)
 	}
 }
@@ -23,7 +23,7 @@ func TestNewClientCreatesDifferenceClients(t *testing.T) {
 	token := "token"
 	c, _ := NewClient(token)
 	c2, _ := NewClient(token)
-	if c.client == c2.client {
+	if c.(*client).client == c2.(*client).client {
 		t.Error("NewClient returned same http.Clients, but they should differ")
 	}
 }
