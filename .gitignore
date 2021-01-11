@@ -4,3 +4,6 @@
 # IDEs
 .vscode
 .idea
+
+# Go
+coverage.out

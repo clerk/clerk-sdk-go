@@ -1,0 +1,44 @@
+on: [push, pull_request]
+name: tests
+env:
+  GO111MODULE: on
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.x, 1.14.x]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go-version }}
+      - uses: actions/checkout@v2
+
+      - name: Cache go modules
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+
+      - name: Run go fmt
+        if: runner.os != 'Windows'
+        run: diff -u <(echo -n) <(gofmt -d -s .)
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run go test
+        run: go test -v -race -coverprofile coverage.out -covermode atomic ./...
+
+      - name: Run coverage
+        if: runner.os != 'Windows'
+        run: |
+          EXPECTED_COVER=100
+          TOTAL_COVER=`go tool cover -func=coverage.out | grep total | grep -Eo '[0-9]+\.[0-9]+'`
+          echo "Total coverage was: $TOTAL_COVER %"
+          echo "Expected coverage: $EXPECTED_COVER %"
+          (( $(echo "$TOTAL_COVER >= $EXPECTED_COVER" | bc -l) )) && exit 0 || exit 1
