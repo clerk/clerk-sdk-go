@@ -21,6 +21,7 @@ type Client interface {
 
 	Users() *UsersService
 	Sessions() *SessionsService
+	Emails() *EmailService
 }
 
 type service struct {
@@ -34,6 +35,7 @@ type client struct {
 
 	users    *UsersService
 	sessions *SessionsService
+	emails   *EmailService
 }
 
 // NewClient creates a new Clerk client.
@@ -52,6 +54,7 @@ func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
 	commonService := &service{client: client}
 	client.users = (*UsersService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
+	client.emails = (*EmailService)(commonService)
 
 	return client, nil
 }
@@ -134,4 +137,8 @@ func (c *client) Users() *UsersService {
 
 func (c *client) Sessions() *SessionsService {
 	return c.sessions
+}
+
+func (c *client) Emails() *EmailService {
+	return c.emails
 }
