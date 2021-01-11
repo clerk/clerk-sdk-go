@@ -1,4 +1,4 @@
-on: [push, pull_request]
+on: [push]
 name: tests
 env:
   GO111MODULE: on
