@@ -22,6 +22,7 @@ type Client interface {
 	Users() *UsersService
 	Sessions() *SessionsService
 	Emails() *EmailService
+	SMS() *SMSService
 }
 
 type service struct {
@@ -36,6 +37,7 @@ type client struct {
 	users    *UsersService
 	sessions *SessionsService
 	emails   *EmailService
+	sms      *SMSService
 }
 
 // NewClient creates a new Clerk client.
@@ -55,6 +57,7 @@ func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
 	client.users = (*UsersService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
 	client.emails = (*EmailService)(commonService)
+	client.sms = (*SMSService)(commonService)
 
 	return client, nil
 }
@@ -141,4 +144,8 @@ func (c *client) Sessions() *SessionsService {
 
 func (c *client) Emails() *EmailService {
 	return c.emails
+}
+
+func (c *client) SMS() *SMSService {
+	return c.sms
 }
