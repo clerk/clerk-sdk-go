@@ -21,6 +21,7 @@ type Client interface {
 
 	Users() *UsersService
 	Sessions() *SessionsService
+	Clients() *ClientsService
 	Emails() *EmailService
 	SMS() *SMSService
 }
@@ -36,6 +37,7 @@ type client struct {
 
 	users    *UsersService
 	sessions *SessionsService
+	clients  *ClientsService
 	emails   *EmailService
 	sms      *SMSService
 }
@@ -56,6 +58,7 @@ func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
 	commonService := &service{client: client}
 	client.users = (*UsersService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
+	client.clients = (*ClientsService)(commonService)
 	client.emails = (*EmailService)(commonService)
 	client.sms = (*SMSService)(commonService)
 
@@ -140,6 +143,10 @@ func (c *client) Users() *UsersService {
 
 func (c *client) Sessions() *SessionsService {
 	return c.sessions
+}
+
+func (c *client) Clients() *ClientsService {
+	return c.clients
 }
 
 func (c *client) Emails() *EmailService {
