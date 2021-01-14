@@ -1,3 +1,3 @@
-module github.com/clerkinc/clerk_server_sdk_go/v1
+module github.com/clerkinc/clerk_server_sdk_go
 
 go 1.15
