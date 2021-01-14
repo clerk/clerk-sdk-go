@@ -10,10 +10,20 @@ import (
 func TestSMS(t *testing.T) {
 	client := createClient()
 
-	dummyPhoneNumberId := "12345678"
+	users, _ := client.Users().ListAll()
+	if users == nil || len(users) == 0 {
+		return
+	}
+
+	user := users[0]
+
+	if user.PrimaryPhoneNumberID == nil {
+		return
+	}
+
 	message := clerk.SMSMessage{
 		Message:       "Go SDK test message",
-		PhoneNumberID: dummyPhoneNumberId,
+		PhoneNumberID: *user.PrimaryPhoneNumberID,
 	}
 
 	_, err := client.SMS().Create(message)

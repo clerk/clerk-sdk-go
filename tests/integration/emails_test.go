@@ -18,6 +18,10 @@ func TestEmails(t *testing.T) {
 
 	user := users[0]
 
+	if user.PrimaryEmailAddressID == nil {
+		return
+	}
+
 	email := clerk.Email{
 		FromEmailName:  "integration-test",
 		Subject:        "Testing Go SDK",
