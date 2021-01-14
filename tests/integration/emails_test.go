@@ -22,7 +22,7 @@ func TestEmails(t *testing.T) {
 		FromEmailName:  "integration-test",
 		Subject:        "Testing Go SDK",
 		Body:           "Testing email functionality for Go SDK",
-		EmailAddressID: user.PrimaryEmailAddressID,
+		EmailAddressID: *user.PrimaryEmailAddressID,
 	}
 
 	got, err := client.Emails().Create(email)
@@ -31,14 +31,14 @@ func TestEmails(t *testing.T) {
 	}
 
 	want := clerk.EmailResponse{
-		ID:     got.ID,
-		Object: "email",
-		Status: "queued",
+		ID:             got.ID,
+		Object:         "email",
+		Status:         "queued",
+		ToEmailAddress: got.ToEmailAddress,
 		Email: clerk.Email{
 			FromEmailName:  email.FromEmailName,
 			Subject:        email.Subject,
 			Body:           email.Body,
-			ToEmailAddress: got.ToEmailAddress,
 			EmailAddressID: email.EmailAddressID,
 		},
 	}

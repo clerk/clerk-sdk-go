@@ -32,25 +32,6 @@ func TestSMSService_Create_happyPath(t *testing.T) {
 	}
 }
 
-func TestSMSService_Create_oneOfTargetPhoneNumberFieldsShouldBeSupplied(t *testing.T) {
-	var message SMSMessage
-	_ = json.Unmarshal([]byte(dummySMSMessageResponseJson), &message)
-
-	message.PhoneNumberID = nil
-	message.ToPhoneNumber = nil
-
-	client, _ := NewClient("token")
-	_, err := client.SMS().Create(message)
-
-	if err == nil {
-		t.Errorf("Expected error to be returned")
-	}
-	expectedError := "one of ToPhoneNumber or PhoneNumberID must be supplied"
-	if err.Error() != expectedError {
-		t.Errorf(fmt.Sprintf(`Expected error to be: "%s"`, expectedError))
-	}
-}
-
 func TestSMSService_Create_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
 

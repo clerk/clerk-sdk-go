@@ -32,25 +32,6 @@ func TestEmailService_Create_happyPath(t *testing.T) {
 	}
 }
 
-func TestEmailService_Create_oneOfTargetEmailAddressesShouldBeSupplied(t *testing.T) {
-	var email Email
-	_ = json.Unmarshal([]byte(dummyEmailJson), &email)
-
-	email.EmailAddressID = nil
-	email.ToEmailAddress = nil
-
-	client, _ := NewClient("token")
-	_, err := client.Emails().Create(email)
-
-	if err == nil {
-		t.Errorf("Expected error to be returned")
-	}
-	expectedError := "one of ToEmailAddress or EmailAddressID must be supplied"
-	if err.Error() != expectedError {
-		t.Errorf(fmt.Sprintf(`Expected error to be: "%s"`, expectedError))
-	}
-}
-
 func TestEmailService_Create_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
 
@@ -70,6 +51,5 @@ const dummyEmailJson = `{
     "id": "ema_1mvFol71HiKCcypBd6xxg0IpMBN",
     "object": "email",
     "status": "queued",
-    "subject": "This is a test email",
-    "to_email_address": "name@email.com"
+    "subject": "This is a test email"
 }`
