@@ -9,8 +9,7 @@ Go client library for accessing the [Clerk Server API v1](https://docs.clerk.dev
 First, add one of the following imports, depending on whether you use modules or not.
 
 ```go
-import "github.com/clerkinc/clerk_server_sdk_go/v1/clerk" // with go modules enabled
-import "github.com/clerkinc/clerk_server_sdk_go/clerk"    // with go modules disabled
+import "github.com/clerkinc/clerk_server_sdk_go/clerk" // with go modules enabled
 ```
 
 Now, you can create a Clerk client by calling the `clerk.NewClient` function.
