@@ -3,7 +3,7 @@
 package integration
 
 import (
-	"github.com/clerkinc/clerk_server_sdk_go/clerk"
+	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"os"
 )
 

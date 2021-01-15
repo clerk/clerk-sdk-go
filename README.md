@@ -1,6 +1,6 @@
-# clerk-server-sdk-go #
+# clerk-sdk-go #
 
-[![Test Status](https://github.com/clerkinc/clerk_server_sdk_go/workflows/tests/badge.svg)](https://github.com/clerkinc/clerk_server_sdk_go/actions?query=workflow%3Atests)
+[![Test Status](https://github.com/clerkinc/clerk-sdk-go/workflows/tests/badge.svg)](https://github.com/clerkinc/clerk-sdk-go/actions?query=workflow%3Atests)
 
 Go client library for accessing the [Clerk Server API v1](https://docs.clerk.dev/server-api/).
 
@@ -9,7 +9,7 @@ Go client library for accessing the [Clerk Server API v1](https://docs.clerk.dev
 First, add one of the following imports, depending on whether you use modules or not.
 
 ```go
-import "github.com/clerkinc/clerk_server_sdk_go/clerk" // with go modules enabled
+import "github.com/clerkinc/clerk-sdk-go/clerk"
 ```
 
 Now, you can create a Clerk client by calling the `clerk.NewClient` function.
@@ -30,7 +30,7 @@ users, err := client.Users().ListAll()
 The services exposed in the `clerk.Client` divide the API into logical chunks and 
 follow the same structure that can be found in the [server-side API documentation](https://docs.clerk.dev/server-api/).
 
-For more examples on how to use the client, refer to the [example](https://github.com/clerkinc/clerk_server_sdk_go/tree/main/example)
+For more examples on how to use the client, refer to the [example](https://github.com/clerkinc/clerk-sdk-go/tree/main/example)
 
 ## License ##
 
