@@ -50,3 +50,14 @@ func (s *SessionsService) Revoke(sessionId string) (*Session, error) {
 	}
 	return &session, nil
 }
+
+func (s *SessionsService) Verify(sessionId string, token string) (*Session, error) {
+	verifyUrl := fmt.Sprintf("sessions/%v/verify", sessionId)
+	var sessionResponse Session
+
+	err := verify(s.client, verifyUrl, token, &sessionResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &sessionResponse, nil
+}
