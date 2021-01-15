@@ -1,12 +1,19 @@
 # clerk-sdk-go #
 
+[![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/clerkinc/clerk-sdk-go/clerk)
 [![Test Status](https://github.com/clerkinc/clerk-sdk-go/workflows/tests/badge.svg)](https://github.com/clerkinc/clerk-sdk-go/actions?query=workflow%3Atests)
 
 Go client library for accessing the [Clerk Server API v1](https://docs.clerk.dev/server-api/).
 
 ## Usage ##
 
-First, add one of the following imports, depending on whether you use modules or not.
+First, add the Clerk SDK as a dependency to your project.
+
+```go
+go get github.com/clerkinc/clerk-sdk-go
+```
+
+Add the following import to your Go files.
 
 ```go
 import "github.com/clerkinc/clerk-sdk-go/clerk"
