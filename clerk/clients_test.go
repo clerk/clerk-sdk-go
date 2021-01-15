@@ -80,6 +80,41 @@ func TestClientsService_Read_invalidServer(t *testing.T) {
 	}
 }
 
+func TestClientsService_Verify_happyPath(t *testing.T) {
+	token := "token"
+	sessionToken := "sessionToken"
+	expectedResponse := dummyClientResponseJson
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/clients/verify", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "POST")
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	var want ClientResponse
+	_ = json.Unmarshal([]byte(expectedResponse), &want)
+
+	got, _ := client.Clients().Verify(sessionToken)
+	if !reflect.DeepEqual(*got, want) {
+		t.Errorf("Response = %v, want %v", *got, want)
+	}
+}
+
+func TestClientsService_Verify_invalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+
+	response, err := client.Clients().Verify("someSessionToken")
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+	if response != nil {
+		t.Errorf("Was not expecting any client to be returned, instead got %v", response)
+	}
+}
+
 const dummyClientResponseJson = `{
         "ended": false,
         "id": "client_1mvnkzXhKhn9pDjp1f4x1id6pQZ",
