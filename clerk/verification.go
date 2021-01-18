@@ -2,12 +2,14 @@ package clerk
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 )
 
 const (
 	CookieSession       = "__session"
 	QueryParamSessionId = "_clerk_session_id"
+	OriginHeader        = "Origin"
 )
 
 type VerificationService service
@@ -28,12 +30,21 @@ func (s *VerificationService) Verify(req *http.Request) (*Session, error) {
 	sessionToken := cookie.Value
 	sessionId := req.URL.Query().Get(QueryParamSessionId)
 
-	if sessionId == "" {
-		// no session id explicitly defined, use client's last active session id
+	if !isXHR(req) && req.Method == "GET" && sessionId == "" {
 		return s.useClientActiveSession(sessionToken)
 	}
 
+	if sessionId == "" {
+		return nil, errors.New(fmt.Sprintf("no session id is specified via the %s query parameter", QueryParamSessionId))
+	}
+
 	return s.client.Sessions().Verify(sessionId, sessionToken)
+}
+
+func isXHR(req *http.Request) bool {
+	headers := req.Header
+	origin := headers.Get(OriginHeader)
+	return len(origin) > 0
 }
 
 func (s *VerificationService) useClientActiveSession(token string) (*Session, error) {
