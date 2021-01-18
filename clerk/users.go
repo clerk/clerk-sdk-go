@@ -2,7 +2,6 @@ package clerk
 
 import (
 	"fmt"
-	"time"
 )
 
 type UsersService service
@@ -25,8 +24,8 @@ type User struct {
 	ExternalAccounts      []interface{}  `json:"external_accounts"`
 	Metadata              interface{}    `json:"metadata"`
 	PrivateMetadata       interface{}    `json:"private_metadata,omitempty"`
-	CreatedAt             *time.Time     `json:"created_at,omitempty"`
-	UpdatedAt             *time.Time     `json:"updated_at,omitempty"`
+	CreatedAt             int64          `json:"created_at"`
+	UpdatedAt             int64          `json:"updated_at"`
 }
 
 type EmailAddress struct {

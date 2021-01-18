@@ -150,14 +150,14 @@ func TestUsersService_Update_invalidServer(t *testing.T) {
 
 const dummyUserJson = `{
         "birthday": "",
-        "created_at": "2021-01-05T14:29:48.385449Z",
+        "created_at": 1610783813,
         "email_addresses": [
             {
                 "email_address": "iron_man@avengers.com",
                 "id": "idn_1mebQ9KkZWrhbQGF8Yj",
                 "linked_to": [
                     {
-                        "id": "idn_1mebQ8sPZOtb7UQgptk",
+                        "id": "idn_1n8tzrjmoKzHtQkaFe1pvK1OqLr",
                         "type": "oauth_google"
                     }
                 ],
@@ -177,7 +177,7 @@ const dummyUserJson = `{
                 "google_id": "11031040442607",
                 "id": "idn_1mebQ8sPZOtb7UQgptk",
                 "object": "google_account",
-                "picture": "https://lh3.googleusercontent.com/a-/AOh14uJQzsltH-3r-VQ=s96-c"
+                "picture": "https://lh3.googleusercontent.com/a-/AOh14Gg-UlYe7Pzd8vngVKdFlNCuGTn7cqxx=s96-c"
             }
         ],
         "first_name": "Anthony",
@@ -188,12 +188,12 @@ const dummyUserJson = `{
         "object": "user",
         "password_enabled": false,
         "phone_numbers": [],
-        "primary_email_address_id": "idn_1mebQ9KkZWrhbQGF8Yj",
+        "primary_email_address_id": "idn_1n8tzqi8K5ydvb1K7RJEKjT7Wb8",
         "primary_phone_number_id": null,
         "private_metadata": {},
-        "profile_image_url": "https://lh3.googleusercontent.com/a-/AOh14uJQzsltH-3r-VQ=s96-c",
+        "profile_image_url": "https://lh3.googleusercontent.com/a-/AOh14Gg-UlYe7PzddYKJRu2r8vGTn7cqxx=s96-c",
         "two_factor_enabled": false,
-        "updated_at": "2021-01-05T14:29:48.385449Z",
+        "updated_at": 1610783813,
         "username": null
     }`
 
