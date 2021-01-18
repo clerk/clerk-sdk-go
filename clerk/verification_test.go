@@ -115,6 +115,20 @@ func TestVerificationService_Verify_handleServerErrorWhenUsingClientActiveSessio
 	}
 }
 
+func TestVerificationService_Verify_returnErrorWhenUsingClientActiveSessionForXHR(t *testing.T) {
+	sessionToken := "someSessionToken"
+	request := setupRequest(nil, &sessionToken)
+	request.Header.Add(OriginHeader, "someOrigin")
+
+	client, _, _, teardown := setup("apiToken")
+	defer teardown()
+
+	_, err := client.Verification().Verify(request)
+	if err == nil {
+		t.Errorf("Was expecting error to be returned")
+	}
+}
+
 func TestVerificationService_Verify_noActiveSessionWhenUsingClientActiveSession(t *testing.T) {
 	apiToken := "apiToken"
 	sessionToken := "someSessionToken"
@@ -192,10 +206,15 @@ func setupRequest(sessionId *string, sessionToken *string) *http.Request {
 
 	if sessionId != nil {
 		// add session id as query parameter
-		query := url.Query()
-		query.Add(QueryParamSessionId, *sessionId)
-		url.RawQuery = query.Encode()
+		addQueryParam(&request, QueryParamSessionId, *sessionId)
 	}
 
 	return &request
+}
+
+func addQueryParam(req *http.Request, key string, value string) {
+	url := req.URL
+	query := url.Query()
+	query.Add(key, value)
+	url.RawQuery = query.Encode()
 }
