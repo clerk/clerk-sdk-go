@@ -41,7 +41,7 @@ func (s *ClientsService) Verify(token string) (*ClientResponse, error) {
 	verifyUrl := "clients/verify"
 	var clientResponse ClientResponse
 
-	err := verify(s.client, verifyUrl, token, &clientResponse)
+	err := doVerify(s.client, verifyUrl, token, &clientResponse)
 	if err != nil {
 		return nil, err
 	}

@@ -55,7 +55,7 @@ func (s *SessionsService) Verify(sessionId string, token string) (*Session, erro
 	verifyUrl := fmt.Sprintf("sessions/%v/verify", sessionId)
 	var sessionResponse Session
 
-	err := verify(s.client, verifyUrl, token, &sessionResponse)
+	err := doVerify(s.client, verifyUrl, token, &sessionResponse)
 	if err != nil {
 		return nil, err
 	}
