@@ -13,17 +13,24 @@ import (
 
 const (
 	ProdUrl = "https://api.clerk.dev/v1/"
+
+	ClientsUrl       = "clients"
+	ClientsVerifyUrl = ClientsUrl + "/verify"
+	EmailsUrl        = "emails"
+	SessionsUrl      = "sessions"
+	SMSUrl           = "sms_messages"
+	UsersUrl         = "users"
 )
 
 type Client interface {
 	NewRequest(method string, url string, body ...interface{}) (*http.Request, error)
 	Do(req *http.Request, v interface{}) (*http.Response, error)
 
-	Users() *UsersService
-	Sessions() *SessionsService
 	Clients() *ClientsService
 	Emails() *EmailService
+	Sessions() *SessionsService
 	SMS() *SMSService
+	Users() *UsersService
 	Verification() *VerificationService
 }
 
@@ -36,11 +43,11 @@ type client struct {
 	baseURL *url.URL
 	token   string
 
-	users        *UsersService
-	sessions     *SessionsService
 	clients      *ClientsService
 	emails       *EmailService
+	sessions     *SessionsService
 	sms          *SMSService
+	users        *UsersService
 	verification *VerificationService
 }
 
@@ -58,11 +65,11 @@ func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
 	client := &client{client: &httpClient, baseURL: baseURL, token: token}
 
 	commonService := &service{client: client}
-	client.users = (*UsersService)(commonService)
-	client.sessions = (*SessionsService)(commonService)
 	client.clients = (*ClientsService)(commonService)
 	client.emails = (*EmailService)(commonService)
+	client.sessions = (*SessionsService)(commonService)
 	client.sms = (*SMSService)(commonService)
+	client.users = (*UsersService)(commonService)
 	client.verification = (*VerificationService)(commonService)
 
 	return client, nil
@@ -140,14 +147,6 @@ func checkForErrors(resp *http.Response) error {
 	return errors.New(fmt.Sprintf("Server returned unexpected error with status code %d", resp.StatusCode))
 }
 
-func (c *client) Users() *UsersService {
-	return c.users
-}
-
-func (c *client) Sessions() *SessionsService {
-	return c.sessions
-}
-
 func (c *client) Clients() *ClientsService {
 	return c.clients
 }
@@ -156,8 +155,16 @@ func (c *client) Emails() *EmailService {
 	return c.emails
 }
 
+func (c *client) Sessions() *SessionsService {
+	return c.sessions
+}
+
 func (c *client) SMS() *SMSService {
 	return c.sms
+}
+
+func (c *client) Users() *UsersService {
+	return c.users
 }
 
 func (c *client) Verification() *VerificationService {

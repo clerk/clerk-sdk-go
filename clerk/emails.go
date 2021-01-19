@@ -17,10 +17,8 @@ type EmailResponse struct {
 	Email
 }
 
-// Sends an email.
-// Please note that one of ToEmailAddress or EmailAddressID must be supplied.
 func (s *EmailService) Create(email Email) (*EmailResponse, error) {
-	req, _ := s.client.NewRequest("POST", "emails", &email)
+	req, _ := s.client.NewRequest("POST", EmailsUrl, &email)
 
 	var emailResponse EmailResponse
 	_, err := s.client.Do(req, &emailResponse)

@@ -65,8 +65,5 @@ func doVerify(client Client, url string, token string, response interface{}) err
 	req, _ := client.NewRequest("POST", url, &tokenPayload)
 
 	_, err := client.Do(req, response)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
