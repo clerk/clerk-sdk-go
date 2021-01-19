@@ -9,7 +9,7 @@ import (
 
 // setup sets up a test HTTP server along with a `clerk.Client` that is configured to talk to that test server.
 // Tests should register handlers on mux which provide mock responses for the API method being tested.
-func setup(token string) (client Client, mux *http.ServeMux, serverURL string, teardown func()) {
+func setup(token string) (client Client, mux *http.ServeMux, serverURL *url.URL, teardown func()) {
 	versionPath := "/v1"
 
 	mux = http.NewServeMux()
@@ -22,7 +22,7 @@ func setup(token string) (client Client, mux *http.ServeMux, serverURL string, t
 	url, _ := url.Parse(server.URL + versionPath + "/")
 	client, _ = NewClientWithBaseUrl(token, url.String())
 
-	return client, mux, server.URL, server.Close
+	return client, mux, url, server.Close
 }
 
 func testHttpMethod(t *testing.T, r *http.Request, want string) {

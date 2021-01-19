@@ -190,7 +190,7 @@ func setupRequest(sessionId *string, sessionToken *string) *http.Request {
 	url := url.URL{
 		Scheme: "http",
 		Host:   "host.com",
-		Path:   "path",
+		Path:   "/path",
 	}
 	request.URL = &url
 

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	clerkBaseUrl = "https://api.clerk.dev/v1/"
+	ProdUrl = "https://api.clerk.dev/v1/"
 )
 
 type Client interface {
@@ -48,7 +48,7 @@ type client struct {
 // Because the token supplied will be used for all authenticated requests,
 // the created client should not be used across different users
 func NewClient(token string) (Client, error) {
-	return NewClientWithBaseUrl(token, clerkBaseUrl)
+	return NewClientWithBaseUrl(token, ProdUrl)
 }
 
 func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
