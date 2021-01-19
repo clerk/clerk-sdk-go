@@ -15,7 +15,7 @@ func TestNewClient_baseUrl(t *testing.T) {
 		t.Errorf("NewClient failed")
 	}
 
-	if got, want := c.(*client).baseURL.String(), clerkBaseUrl; got != want {
+	if got, want := c.(*client).baseURL.String(), ProdUrl; got != want {
 		t.Errorf("NewClient BaseURL is %v, want %v", got, want)
 	}
 }
@@ -32,7 +32,7 @@ func TestNewClient_createsDifferentClients(t *testing.T) {
 func TestNewRequest(t *testing.T) {
 	client, _ := NewClient("token")
 
-	inputUrl, outputUrl := "test", clerkBaseUrl+"test"
+	inputUrl, outputUrl := "test", ProdUrl+"test"
 	method := "GET"
 	req, err := client.NewRequest(method, inputUrl)
 	if err != nil {
