@@ -51,8 +51,7 @@ type IdentificationLink struct {
 }
 
 func (s *UsersService) ListAll() ([]User, error) {
-	usersUrl := "users"
-	req, _ := s.client.NewRequest("GET", usersUrl)
+	req, _ := s.client.NewRequest("GET", UsersUrl)
 
 	var users []User
 	_, err := s.client.Do(req, &users)
@@ -63,7 +62,7 @@ func (s *UsersService) ListAll() ([]User, error) {
 }
 
 func (s *UsersService) Read(userId string) (*User, error) {
-	userUrl := fmt.Sprintf("users/%v", userId)
+	userUrl := fmt.Sprintf("%s/%s", UsersUrl, userId)
 	req, _ := s.client.NewRequest("GET", userUrl)
 
 	var user User
@@ -81,7 +80,7 @@ type DeleteResponse struct {
 }
 
 func (s *UsersService) Delete(userId string) (*DeleteResponse, error) {
-	userUrl := fmt.Sprintf("users/%v", userId)
+	userUrl := fmt.Sprintf("%s/%s", UsersUrl, userId)
 	req, _ := s.client.NewRequest("DELETE", userUrl)
 
 	var delResponse DeleteResponse
@@ -101,7 +100,7 @@ type UpdateUser struct {
 }
 
 func (s *UsersService) Update(userId string, updateRequest *UpdateUser) (*User, error) {
-	userUrl := fmt.Sprintf("users/%v", userId)
+	userUrl := fmt.Sprintf("%s/%s", UsersUrl, userId)
 	req, _ := s.client.NewRequest("PATCH", userUrl, updateRequest)
 
 	var updatedUser User

@@ -28,7 +28,7 @@ func (s *SessionsService) ListAll() ([]Session, error) {
 }
 
 func (s *SessionsService) Read(sessionId string) (*Session, error) {
-	sessionUrl := fmt.Sprintf("sessions/%v", sessionId)
+	sessionUrl := fmt.Sprintf("%s/%s", SessionsUrl, sessionId)
 	req, _ := s.client.NewRequest("GET", sessionUrl)
 
 	var session Session
@@ -40,7 +40,7 @@ func (s *SessionsService) Read(sessionId string) (*Session, error) {
 }
 
 func (s *SessionsService) Revoke(sessionId string) (*Session, error) {
-	sessionUrl := fmt.Sprintf("sessions/%v/revoke", sessionId)
+	sessionUrl := fmt.Sprintf("%s/%s/revoke", SessionsUrl, sessionId)
 	req, _ := s.client.NewRequest("POST", sessionUrl)
 
 	var session Session
@@ -52,7 +52,7 @@ func (s *SessionsService) Revoke(sessionId string) (*Session, error) {
 }
 
 func (s *SessionsService) Verify(sessionId string, token string) (*Session, error) {
-	verifyUrl := fmt.Sprintf("sessions/%v/verify", sessionId)
+	verifyUrl := fmt.Sprintf("%s/%s/verify", SessionsUrl, sessionId)
 	var sessionResponse Session
 
 	err := doVerify(s.client, verifyUrl, token, &sessionResponse)

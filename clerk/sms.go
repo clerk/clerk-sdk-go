@@ -17,7 +17,7 @@ type SMSMessageResponse struct {
 }
 
 func (s *SMSService) Create(message SMSMessage) (*SMSMessageResponse, error) {
-	req, _ := s.client.NewRequest("POST", "sms_messages", &message)
+	req, _ := s.client.NewRequest("POST", SMSUrl, &message)
 
 	var smsResponse SMSMessageResponse
 	_, err := s.client.Do(req, &smsResponse)

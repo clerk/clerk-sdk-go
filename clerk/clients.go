@@ -26,7 +26,7 @@ func (s *ClientsService) ListAll() ([]ClientResponse, error) {
 }
 
 func (s *ClientsService) Read(clientId string) (*ClientResponse, error) {
-	clientUrl := fmt.Sprintf("clients/%v", clientId)
+	clientUrl := fmt.Sprintf("%s/%s", ClientsUrl, clientId)
 	req, _ := s.client.NewRequest("GET", clientUrl)
 
 	var clientResponse ClientResponse
@@ -38,10 +38,9 @@ func (s *ClientsService) Read(clientId string) (*ClientResponse, error) {
 }
 
 func (s *ClientsService) Verify(token string) (*ClientResponse, error) {
-	verifyUrl := "clients/verify"
 	var clientResponse ClientResponse
 
-	err := doVerify(s.client, verifyUrl, token, &clientResponse)
+	err := doVerify(s.client, ClientsVerifyUrl, token, &clientResponse)
 	if err != nil {
 		return nil, err
 	}

@@ -9,8 +9,8 @@ Go client library for accessing the [Clerk Server API v1](https://docs.clerk.dev
 
 First, add the Clerk SDK as a dependency to your project.
 
-```go
-go get github.com/clerkinc/clerk-sdk-go
+```
+$ go get github.com/clerkinc/clerk-sdk-go
 ```
 
 Add the following import to your Go files.
