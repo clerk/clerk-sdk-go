@@ -28,7 +28,10 @@ Once you have a client, you can use the various services to access different par
 ```go
 apiKey := os.Getenv("CLERK_API_KEY")
 
-client := clerk.NewClient(apiKey)
+client, err := clerk.NewClient(apiKey)
+if err != nil {
+    // handle error
+}
 
 // List all users for current application
 users, err := client.Users().ListAll()
@@ -37,7 +40,22 @@ users, err := client.Users().ListAll()
 The services exposed in the `clerk.Client` divide the API into logical chunks and 
 follow the same structure that can be found in the [server-side API documentation](https://docs.clerk.dev/server-api/).
 
-For more examples on how to use the client, refer to the [example](https://github.com/clerkinc/clerk-sdk-go/tree/main/example)
+For more examples on how to use the client, refer to the [examples](https://github.com/clerkinc/clerk-sdk-go/tree/main/examples/operations)
+
+## Middleware
+
+In addition to the API operations, the SDK also provides a middleware that can be used to inject the active session into the request's context.
+The Clerk middleware expects a `clerk.Client` and resolves the active session using the incoming session cookie.
+
+The active session object will be added in the request's context using the key `clerk.ActiveSession`.
+
+```go
+mux := http.NewServeMux()
+injectActiveSession := clerk.WithSession(client)
+mux.Handle("/your-endpoint", injectActiveSession(yourEndpointHandler))
+```
+
+For a full example of how to use the middleware, refer to [this](https://github.com/clerkinc/clerk-sdk-go/tree/main/examples/middleware).
 
 ## License ##
 

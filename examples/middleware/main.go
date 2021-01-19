@@ -26,7 +26,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	injectActiveSession := clerk.Middleware(client)
+	injectActiveSession := clerk.WithSession(client)
 	mux.Handle("/session", injectActiveSession(http.HandlerFunc(returnActiveSession)))
 
 	err = http.ListenAndServe(":3000", mux)

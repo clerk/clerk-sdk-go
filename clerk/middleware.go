@@ -9,7 +9,7 @@ const (
 	ActiveSession = iota
 )
 
-func Middleware(client Client) func(handler http.Handler) http.Handler {
+func WithSession(client Client) func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			session, err := client.Verification().Verify(request)

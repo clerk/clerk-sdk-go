@@ -29,7 +29,7 @@ func TestMiddleware_addSessionToContext(t *testing.T) {
 		fmt.Fprint(w, string(resp))
 	})
 
-	mux.Handle("/session", Middleware(client)(dummyHandler))
+	mux.Handle("/session", WithSession(client)(dummyHandler))
 
 	request := setupRequest(&sessionId, &sessionToken)
 	request.URL.Host = serverUrl.Host
@@ -64,7 +64,7 @@ func TestMiddleware_returnsErrorIfVerificationFails(t *testing.T) {
 		t.Errorf("This should never be called!")
 	})
 
-	mux.Handle("/session", Middleware(client)(dummyHandler))
+	mux.Handle("/session", WithSession(client)(dummyHandler))
 
 	request := setupRequest(&sessionId, &sessionToken)
 	request.URL.Host = serverUrl.Host
