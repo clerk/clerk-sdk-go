@@ -60,10 +60,14 @@ func NewClient(token string) (Client, error) {
 }
 
 func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
-	baseURL := toURLWithEndingSlash(baseUrl)
 	httpClient := http.Client{}
 
-	client := &client{client: &httpClient, baseURL: baseURL, token: token}
+	return NewClientWithCustomHTTP(token, baseUrl, &httpClient)
+}
+
+func NewClientWithCustomHTTP(token string, urlStr string, httpClient *http.Client) (Client, error) {
+	baseURL := toURLWithEndingSlash(urlStr)
+	client := &client{client: httpClient, baseURL: baseURL, token: token}
 
 	commonService := &service{client: client}
 	client.clients = (*ClientsService)(commonService)
