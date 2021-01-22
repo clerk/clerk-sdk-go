@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 const (
@@ -59,7 +60,7 @@ func NewClient(token string) (Client, error) {
 }
 
 func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
-	baseURL, _ := url.Parse(baseUrl)
+	baseURL := toURLWithEndingSlash(baseUrl)
 	httpClient := http.Client{}
 
 	client := &client{client: &httpClient, baseURL: baseURL, token: token}
@@ -73,6 +74,14 @@ func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
 	client.verification = (*VerificationService)(commonService)
 
 	return client, nil
+}
+
+func toURLWithEndingSlash(u string) *url.URL {
+	baseURL, _ := url.Parse(u)
+	if !strings.HasSuffix(baseURL.Path, "/") {
+		baseURL.Path += "/"
+	}
+	return baseURL
 }
 
 // NewRequestWithBody creates an API request.

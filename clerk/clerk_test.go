@@ -20,6 +20,15 @@ func TestNewClient_baseUrl(t *testing.T) {
 	}
 }
 
+func TestNewClient_baseUrlWithoutSlash(t *testing.T) {
+	input, want := "http://host/v1", "http://host/v1/"
+	c, _ := NewClientWithBaseUrl("token", input)
+
+	if got := c.(*client).baseURL.String(); got != want {
+		t.Errorf("NewClient BaseURL is %v, want %v", got, want)
+	}
+}
+
 func TestNewClient_createsDifferentClients(t *testing.T) {
 	token := "token"
 	c, _ := NewClient(token)
