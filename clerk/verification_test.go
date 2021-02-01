@@ -115,20 +115,6 @@ func TestVerificationService_Verify_handleServerErrorWhenUsingClientActiveSessio
 	}
 }
 
-func TestVerificationService_Verify_returnErrorWhenUsingClientActiveSessionForXHR(t *testing.T) {
-	sessionToken := "someSessionToken"
-	request := setupRequest(nil, &sessionToken)
-	request.Header.Add(OriginHeader, "someOrigin")
-
-	client, _, _, teardown := setup("apiToken")
-	defer teardown()
-
-	_, err := client.Verification().Verify(request)
-	if err == nil {
-		t.Errorf("Was expecting error to be returned")
-	}
-}
-
 func TestVerificationService_Verify_noActiveSessionWhenUsingClientActiveSession(t *testing.T) {
 	apiToken := "apiToken"
 	sessionToken := "someSessionToken"
