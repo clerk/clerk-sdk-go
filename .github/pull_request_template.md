@@ -1,7 +1,3 @@
-# Title
-
-<!--- Provide a general summary of your changes in the Title above -->
-
 ## Type of change
 
 <!--- What types of changes does your code introduce? Put an `x` in the box that apply: -->
