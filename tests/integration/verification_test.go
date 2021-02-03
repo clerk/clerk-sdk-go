@@ -40,6 +40,25 @@ func TestVerification_verifySessionId(t *testing.T) {
 	}
 }
 
+func TestVerification_returnsClerkErrorForInvalidSessionID(t *testing.T) {
+	client := createClientWithKey("invalid_key")
+
+	request := buildRequest(nil)
+
+	session, err := client.Verification().Verify(request)
+	if err == nil {
+		t.Fatal("Was expecting error")
+	}
+
+	if session != nil {
+		t.Fatalf("Was not expecting session to be returned, found %v instead", session)
+	}
+
+	if _, isClerkErr := err.(*clerk.ErrorResponse); !isClerkErr {
+		t.Fatalf("Was expecting a Clerk error response, got %v instead", err)
+	}
+}
+
 func buildRequest(sessionId *string) *http.Request {
 	var request http.Request
 	request.Method = "GET"
