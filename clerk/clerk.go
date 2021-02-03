@@ -3,8 +3,6 @@ package clerk
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -153,11 +151,15 @@ func checkForErrors(resp *http.Response) error {
 		return nil
 	}
 
-	data, _ := ioutil.ReadAll(resp.Body)
-	if data != nil && len(data) > 0 {
-		return errors.New(string(data))
+	errorResponse := &ErrorResponse{Response: resp}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err == nil && data != nil {
+		// it's ok if we cannot unmarshal to Clerk's error response
+		_ = json.Unmarshal(data, errorResponse)
 	}
-	return errors.New(fmt.Sprintf("Server returned unexpected error with status code %d", resp.StatusCode))
+
+	return errorResponse
 }
 
 func (c *client) Clients() *ClientsService {

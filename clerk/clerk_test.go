@@ -1,6 +1,7 @@
 package clerk
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -170,12 +171,22 @@ func TestDo_invalidServer(t *testing.T) {
 	}
 }
 
-func TestDo_httpError(t *testing.T) {
+func TestDo_handlesClerkErrors(t *testing.T) {
 	client, mux, _, teardown := setup("token")
 	defer teardown()
 
+	expected := &ErrorResponse{
+		Errors: []Error{{
+			Message:     "Error message",
+			LongMessage: "Error long message",
+			Code:        "error_message",
+		}},
+	}
+
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Bad Request", 400)
+		w.WriteHeader(http.StatusBadRequest)
+		data, _ := json.Marshal(expected)
+		w.Write(data)
 	})
 
 	req, _ := client.NewRequest("GET", "test")
@@ -185,7 +196,18 @@ func TestDo_httpError(t *testing.T) {
 		t.Fatal("Expected HTTP 400 error, got no error.")
 	}
 	if resp.StatusCode != 400 {
-		t.Errorf("Expected HTTP 400 error, got %d status code.", resp.StatusCode)
+		t.Fatalf("Expected HTTP 400 error, got %d status code.", resp.StatusCode)
+	}
+
+	errorResponse, isClerkErr := err.(*ErrorResponse)
+	if !isClerkErr {
+		t.Fatal("Expected Clerk error response.")
+	}
+	if errorResponse.Response != nil {
+		t.Fatal("Expected error response to contain the HTTP response")
+	}
+	if !reflect.DeepEqual(errorResponse.Errors, expected.Errors) {
+		t.Fatalf("Actual = %v, want %v", errorResponse.Errors, expected.Errors)
 	}
 }
 

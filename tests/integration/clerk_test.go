@@ -17,6 +17,10 @@ const (
 
 func createClient() clerk.Client {
 	apiKey := getEnv(APIKey)
+	return createClientWithKey(apiKey)
+}
+
+func createClientWithKey(apiKey string) clerk.Client {
 	client, err := clerk.NewClient(apiKey)
 	if err != nil {
 		panic("Unable to create Clerk client")
