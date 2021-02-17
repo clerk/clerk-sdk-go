@@ -22,8 +22,8 @@ type User struct {
 	EmailAddresses        []EmailAddress `json:"email_addresses"`
 	PhoneNumbers          []PhoneNumber  `json:"phone_numbers"`
 	ExternalAccounts      []interface{}  `json:"external_accounts"`
-	Metadata              interface{}    `json:"metadata"`
-	PrivateMetadata       interface{}    `json:"private_metadata,omitempty"`
+	PublicMetadata        interface{}    `json:"public_metadata"`
+	PrivateMetadata       interface{}    `json:"private_metadata"`
 	CreatedAt             int64          `json:"created_at"`
 	UpdatedAt             int64          `json:"updated_at"`
 }
@@ -91,12 +91,14 @@ func (s *UsersService) Delete(userId string) (*DeleteResponse, error) {
 }
 
 type UpdateUser struct {
-	FirstName             *string `json:"first_name,omitempty"`
-	LastName              *string `json:"last_name,omitempty"`
-	PrimaryEmailAddressID *string `json:"primary_email_address_id,omitempty"`
-	PrimaryPhoneNumberID  *string `json:"primary_phone_number_id,omitempty"`
-	ProfileImage          *string `json:"profile_image,omitempty"`
-	Password              *string `json:"password,omitempty"`
+	FirstName             *string     `json:"first_name,omitempty"`
+	LastName              *string     `json:"last_name,omitempty"`
+	PrimaryEmailAddressID *string     `json:"primary_email_address_id,omitempty"`
+	PrimaryPhoneNumberID  *string     `json:"primary_phone_number_id,omitempty"`
+	ProfileImage          *string     `json:"profile_image,omitempty"`
+	Password              *string     `json:"password,omitempty"`
+	PublicMetadata        interface{} `json:"public_metadata,omitempty"`
+	PrivateMetadata       interface{} `json:"private_metadata,omitempty"`
 }
 
 func (s *UsersService) Update(userId string, updateRequest *UpdateUser) (*User, error) {
