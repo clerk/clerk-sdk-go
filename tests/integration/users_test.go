@@ -7,6 +7,19 @@ import (
 	"testing"
 )
 
+type addressDetails struct {
+	Street string `json:"street"`
+	Number string `json:"number"`
+}
+
+type userAddress struct {
+	Address addressDetails `json:"address"`
+}
+
+type userAppID struct {
+	AppID int `json:"app_id"`
+}
+
 func TestUsers(t *testing.T) {
 	client := createClient()
 
@@ -18,7 +31,7 @@ func TestUsers(t *testing.T) {
 		t.Fatalf("Users.ListAll returned nil")
 	}
 
-	for _, user := range users {
+	for i, user := range users {
 		userId := user.ID
 		user, err := client.Users().Read(userId)
 		if err != nil {
@@ -31,6 +44,11 @@ func TestUsers(t *testing.T) {
 		updateRequest := clerk.UpdateUser{
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
+			PublicMetadata: userAddress{Address: addressDetails{
+				Street: "Fifth Avenue",
+				Number: "890",
+			}},
+			PrivateMetadata: userAppID{AppID: i},
 		}
 		updatedUser, err := client.Users().Update(userId, &updateRequest)
 		if err != nil {

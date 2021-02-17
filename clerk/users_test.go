@@ -184,17 +184,24 @@ const dummyUserJson = `{
         "gender": "",
         "id": "user_1mebQggrD3xO5JfuHk7clQ94ysA",
         "last_name": "Stark",
-        "metadata": {},
         "object": "user",
         "password_enabled": false,
         "phone_numbers": [],
         "primary_email_address_id": "idn_1n8tzqi8K5ydvb1K7RJEKjT7Wb8",
         "primary_phone_number_id": null,
-        "private_metadata": {},
         "profile_image_url": "https://lh3.googleusercontent.com/a-/AOh14Gg-UlYe7PzddYKJRu2r8vGTn7cqxx=s96-c",
         "two_factor_enabled": false,
         "updated_at": 1610783813,
-        "username": null
+        "username": null,
+		"public_metadata": {
+			"address": {
+				"street": "Pennsylvania Avenue",
+				"number": "1600"
+			}
+		},
+		"private_metadata": {
+			"app_id": 5
+		}
     }`
 
 const dummyUpdateRequestJson = `{
@@ -203,5 +210,14 @@ const dummyUpdateRequestJson = `{
 		"primary_email_address_id": "some_image_id",
 		"primary_phone_number_id": "some_phone_id",
 		"profile_image": "some_profile_image",
-		"password": "new_password"
+		"password": "new_password",
+		"public_metadata": {
+			"address": {
+				"street": "Pennsylvania Avenue",
+				"number": "1600"
+			}
+		},
+		"private_metadata": {
+			app_id: 5
+		},
 	}`
