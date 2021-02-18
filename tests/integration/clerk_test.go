@@ -10,18 +10,20 @@ import (
 type key string
 
 const (
+	APIUrl       = "CLERK_API_URL"
 	APIKey       = "CLERK_API_KEY"
 	SessionToken = "CLERK_SESSION_TOKEN"
 	SessionID    = "CLERK_SESSION_ID"
 )
 
 func createClient() clerk.Client {
+	apiUrl := getEnv(APIUrl)
 	apiKey := getEnv(APIKey)
-	return createClientWithKey(apiKey)
+	return createClientWithKey(apiUrl, apiKey)
 }
 
-func createClientWithKey(apiKey string) clerk.Client {
-	client, err := clerk.NewClient(apiKey)
+func createClientWithKey(apiUrl string, apiKey string) clerk.Client {
+	client, err := clerk.NewClientWithBaseUrl(apiKey, apiUrl)
 	if err != nil {
 		panic("Unable to create Clerk client")
 	}

@@ -45,6 +45,7 @@ jobs:
 
       - name: Run integration tests
         env:
+          CLERK_API_URL: ${{ secrets.CLERK_API_URL }}
           CLERK_API_KEY: ${{ secrets.CLERK_API_KEY }}
           CLERK_SESSION_TOKEN: ${{ secrets.CLERK_SESSION_TOKEN }}
           CLERK_SESSION_ID: ${{ secrets.CLERK_SESSION_ID }}
