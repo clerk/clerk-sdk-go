@@ -41,7 +41,7 @@ func TestVerification_verifySessionId(t *testing.T) {
 }
 
 func TestVerification_returnsClerkErrorForInvalidSessionID(t *testing.T) {
-	client := createClientWithKey("invalid_key")
+	client := createClientWithKey(getEnv(APIUrl), "invalid_key")
 
 	request := buildRequest(nil)
 
