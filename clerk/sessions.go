@@ -51,7 +51,18 @@ func (s *SessionsService) Revoke(sessionId string) (*Session, error) {
 	return &session, nil
 }
 
-func (s *SessionsService) Verify(sessionId string, token string) (*Session, error) {
+func (s *SessionsService) Verify(token string) (*Session, error) {
+	verifyUrl := fmt.Sprintf("%s/verify", SessionsUrl)
+	var sessionResponse Session
+
+	err := doVerify(s.client, verifyUrl, token, &sessionResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &sessionResponse, nil
+}
+
+func (s *SessionsService) VerifySession(sessionId string, token string) (*Session, error) {
 	verifyUrl := fmt.Sprintf("%s/%s/verify", SessionsUrl, sessionId)
 	var sessionResponse Session
 

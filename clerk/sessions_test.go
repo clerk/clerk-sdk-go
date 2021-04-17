@@ -115,7 +115,7 @@ func TestSessionsService_Revoke_invalidServer(t *testing.T) {
 	}
 }
 
-func TestSessionsService_Verify_happyPath(t *testing.T) {
+func TestSessionsService_VerifySession_happyPath(t *testing.T) {
 	token := "token"
 	sessionId := "someSessionId"
 	sessionToken := "someSessionToken"
@@ -133,7 +133,42 @@ func TestSessionsService_Verify_happyPath(t *testing.T) {
 	var want Session
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
-	got, _ := client.Sessions().Verify(sessionId, sessionToken)
+	got, _ := client.Sessions().VerifySession(sessionId, sessionToken)
+	if !reflect.DeepEqual(*got, want) {
+		t.Errorf("Response = %v, want %v", *got, want)
+	}
+}
+
+func TestSessionsService_VerifySession_invalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+
+	session, err := client.Sessions().VerifySession("someSessionId", "someSessionToken")
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+	if session != nil {
+		t.Errorf("Was not expecting any session to be returned, instead got %v", session)
+	}
+}
+
+func TestSessionsService_Verify_happyPath(t *testing.T) {
+	token := "token"
+	sessionToken := "someSessionToken"
+	expectedResponse := dummySessionJson
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/sessions/verify", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "POST")
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	var want Session
+	_ = json.Unmarshal([]byte(expectedResponse), &want)
+
+	got, _ := client.Sessions().Verify(sessionToken)
 	if !reflect.DeepEqual(*got, want) {
 		t.Errorf("Response = %v, want %v", *got, want)
 	}
@@ -142,7 +177,7 @@ func TestSessionsService_Verify_happyPath(t *testing.T) {
 func TestSessionsService_Verify_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
 
-	session, err := client.Sessions().Verify("someSessionId", "someSessionToken")
+	session, err := client.Sessions().Verify("someSessionToken")
 	if err == nil {
 		t.Errorf("Expected error to be returned")
 	}

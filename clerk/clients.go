@@ -36,13 +36,3 @@ func (s *ClientsService) Read(clientId string) (*ClientResponse, error) {
 	}
 	return &clientResponse, nil
 }
-
-func (s *ClientsService) Verify(token string) (*ClientResponse, error) {
-	var clientResponse ClientResponse
-
-	err := doVerify(s.client, ClientsVerifyUrl, token, &clientResponse)
-	if err != nil {
-		return nil, err
-	}
-	return &clientResponse, nil
-}

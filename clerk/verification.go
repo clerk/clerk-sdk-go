@@ -29,23 +29,10 @@ func (s *VerificationService) Verify(req *http.Request) (*Session, error) {
 	sessionId := req.URL.Query().Get(QueryParamSessionId)
 
 	if sessionId == "" {
-		return s.useClientActiveSession(sessionToken)
+		return s.client.Sessions().Verify(sessionToken)
 	}
 
-	return s.client.Sessions().Verify(sessionId, sessionToken)
-}
-
-func (s *VerificationService) useClientActiveSession(token string) (*Session, error) {
-	clientResponse, err := s.client.Clients().Verify(token)
-	if err != nil {
-		return nil, err
-	}
-
-	if clientResponse.LastActiveSessionID == nil {
-		return nil, errors.New("no active sessions for given client")
-	}
-
-	return s.client.Sessions().Read(*clientResponse.LastActiveSessionID)
+	return s.client.Sessions().VerifySession(sessionId, sessionToken)
 }
 
 func doVerify(client Client, url string, token string, response interface{}) error {
