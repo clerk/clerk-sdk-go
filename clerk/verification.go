@@ -45,7 +45,13 @@ func (s *VerificationService) useClientActiveSession(token string) (*Session, er
 		return nil, errors.New("no active sessions for given client")
 	}
 
-	return s.client.Sessions().Read(*clientResponse.LastActiveSessionID)
+	for _, session := range clientResponse.Sessions {
+		if session.ID == *clientResponse.LastActiveSessionID {
+			return session, nil
+		}
+	}
+
+	return nil, errors.New("active session not included in client's sessions")
 }
 
 func doVerify(client Client, url string, token string, response interface{}) error {

@@ -5,12 +5,14 @@ import "fmt"
 type ClientsService service
 
 type ClientResponse struct {
-	Object              string  `json:"object"`
-	ID                  string  `json:"id"`
-	LastActiveSessionID *string `json:"last_active_session_id"`
-	SignInAttemptID     *string `json:"sign_in_attempt_id"`
-	SignUpAttemptID     *string `json:"sign_up_attempt_id"`
-	Ended               bool    `json:"ended"`
+	Object              string     `json:"object"`
+	ID                  string     `json:"id"`
+	LastActiveSessionID *string    `json:"last_active_session_id"`
+	SessionIDs          []string   `json:"session_ids"`
+	Sessions            []*Session `json:"sessions"`
+	SignInAttemptID     *string    `json:"sign_in_attempt_id"`
+	SignUpAttemptID     *string    `json:"sign_up_attempt_id"`
+	Ended               bool       `json:"ended"`
 }
 
 func (s *ClientsService) ListAll() ([]ClientResponse, error) {
