@@ -3,7 +3,7 @@
 [![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/clerkinc/clerk-sdk-go/clerk)
 [![Test Status](https://github.com/clerkinc/clerk-sdk-go/workflows/tests/badge.svg)](https://github.com/clerkinc/clerk-sdk-go/actions?query=workflow%3Atests)
 
-Go client library for accessing the [Clerk Server API v1](https://docs.clerk.dev/server-api/).
+Go client library for accessing the [Clerk Backend API v1](https://docs.clerk.dev/backend).
 
 ## Usage ##
 
@@ -38,7 +38,7 @@ users, err := client.Users().ListAll()
 ```
 
 The services exposed in the `clerk.Client` divide the API into logical chunks and 
-follow the same structure that can be found in the [server-side API documentation](https://docs.clerk.dev/server-api/).
+follow the same structure that can be found in the [Backend API documentation](https://docs.clerk.dev/backend/backend-api-reference).
 
 For more examples on how to use the client, refer to the [examples](https://github.com/clerkinc/clerk-sdk-go/tree/main/examples/operations)
 
