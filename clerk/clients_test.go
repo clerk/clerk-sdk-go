@@ -118,7 +118,18 @@ func TestClientsService_Verify_invalidServer(t *testing.T) {
 const dummyClientResponseJson = `{
         "ended": false,
         "id": "client_1mvnkzXhKhn9pDjp1f4x1id6pQZ",
-        "last_active_session_id": "sess_1mvnlhBAwUv8EktIKbooqqYwsUW",
+        "last_active_session_id": "sess_1mebQdHlQI14cjxln4e2eXNzwzi",
+		"session_ids": ["sess_1mebQdHlQI14cjxln4e2eXNzwzi"],
+        "sessions": [{
+			"id": "sess_1mebQdHlQI14cjxln4e2eXNzwzi",
+			"abandon_at": 1612448988,
+			"client_id": "client_1mebPYz8NFNA17fi7NemNXIwp1p",
+			"expire_at": 1610461788,
+			"last_active_at": 1609857251,
+			"object": "session",
+			"status": "ended",
+			"user_id": "user_1mebQggrD3xO5JfuHk7clQ94ysA"
+		}],
         "object": "client",
         "sign_in_attempt_id": null,
         "sign_up_attempt_id": null

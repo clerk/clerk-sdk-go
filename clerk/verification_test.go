@@ -78,12 +78,6 @@ func TestVerificationService_Verify_useClientActiveSession(t *testing.T) {
 		fmt.Fprint(w, clientResponseJson)
 	})
 
-	mux.HandleFunc("/sessions/"+*clientResponse.LastActiveSessionID, func(w http.ResponseWriter, req *http.Request) {
-		testHttpMethod(t, req, "GET")
-		testHeader(t, req, "Authorization", "Bearer "+apiToken)
-		fmt.Fprint(w, sessionJson)
-	})
-
 	got, err := client.Verification().Verify(request)
 	if err != nil {
 		t.Errorf("Was not expecting error to be returned, got %v instead", err)
@@ -126,6 +120,30 @@ func TestVerificationService_Verify_noActiveSessionWhenUsingClientActiveSession(
 	var clientResponse ClientResponse
 	_ = json.Unmarshal([]byte(dummyClientResponseJson), &clientResponse)
 	clientResponse.LastActiveSessionID = nil
+
+	mux.HandleFunc("/clients/verify", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "POST")
+		jsonResp, _ := json.Marshal(clientResponse)
+		fmt.Fprint(w, string(jsonResp))
+	})
+
+	_, err := client.Verification().Verify(request)
+	if err == nil {
+		t.Errorf("Was expecting error to be returned")
+	}
+}
+
+func TestVerificationService_Verify_activeSessionNotIncludedInSessions(t *testing.T) {
+	apiToken := "apiToken"
+	sessionToken := "someSessionToken"
+	request := setupRequest(nil, &sessionToken)
+
+	client, mux, _, teardown := setup(apiToken)
+	defer teardown()
+
+	var clientResponse ClientResponse
+	_ = json.Unmarshal([]byte(dummyClientResponseJson), &clientResponse)
+	clientResponse.Sessions = make([]*Session, 0)
 
 	mux.HandleFunc("/clients/verify", func(w http.ResponseWriter, req *http.Request) {
 		testHttpMethod(t, req, "POST")
