@@ -19,6 +19,7 @@ const (
 	SessionsUrl      = "sessions"
 	SMSUrl           = "sms_messages"
 	UsersUrl         = "users"
+	WebhooksUrl      = "webhooks"
 )
 
 type Client interface {
@@ -30,6 +31,7 @@ type Client interface {
 	Sessions() *SessionsService
 	SMS() *SMSService
 	Users() *UsersService
+	Webhooks() *WebhooksService
 	Verification() *VerificationService
 }
 
@@ -47,6 +49,7 @@ type client struct {
 	sessions     *SessionsService
 	sms          *SMSService
 	users        *UsersService
+	webhooks     *WebhooksService
 	verification *VerificationService
 }
 
@@ -73,6 +76,7 @@ func NewClientWithCustomHTTP(token string, urlStr string, httpClient *http.Clien
 	client.sessions = (*SessionsService)(commonService)
 	client.sms = (*SMSService)(commonService)
 	client.users = (*UsersService)(commonService)
+	client.webhooks = (*WebhooksService)(commonService)
 	client.verification = (*VerificationService)(commonService)
 
 	return client, nil
@@ -180,6 +184,10 @@ func (c *client) SMS() *SMSService {
 
 func (c *client) Users() *UsersService {
 	return c.users
+}
+
+func (c *client) Webhooks() *WebhooksService {
+	return c.webhooks
 }
 
 func (c *client) Verification() *VerificationService {
