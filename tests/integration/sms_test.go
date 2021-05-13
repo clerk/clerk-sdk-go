@@ -10,7 +10,7 @@ import (
 func TestSMS(t *testing.T) {
 	client := createClient()
 
-	users, _ := client.Users().ListAll()
+	users, _ := client.Users().ListAll(clerk.ListAllUsersParams{})
 	if users == nil || len(users) == 0 {
 		return
 	}

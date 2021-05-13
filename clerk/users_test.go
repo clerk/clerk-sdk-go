@@ -3,7 +3,9 @@ package clerk
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"net/http"
+	"net/url"
 	"reflect"
 	"testing"
 )
@@ -23,7 +25,48 @@ func TestUsersService_ListAll_happyPath(t *testing.T) {
 	var want []User
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
-	got, _ := client.Users().ListAll()
+	got, _ := client.Users().ListAll(ListAllUsersParams{})
+	if len(got) != len(want) {
+		t.Errorf("Was expecting %d user to be returned, instead got %d", len(want), len(got))
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Response = %v, want %v", got, want)
+	}
+}
+
+func TestUsersService_ListAll_happyPathWithParameters(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	expectedResponse := "[" + dummyUserJson + "]"
+
+	mux.HandleFunc("/users", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer token")
+
+		actualQuery := req.URL.Query()
+		expectedQuery := url.Values(map[string][]string{
+			"limit":         {"5"},
+			"offset":        {"6"},
+			"email_address": {"email1", "email2"},
+			"phone_number":  {"phone1", "phone2"},
+		})
+		assert.Equal(t, expectedQuery, actualQuery)
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	var want []User
+	_ = json.Unmarshal([]byte(expectedResponse), &want)
+
+	limit := 5
+	offset := 6
+	got, _ := client.Users().ListAll(ListAllUsersParams{
+		Limit:          &limit,
+		Offset:         &offset,
+		EmailAddresses: []string{"email1", "email2"},
+		PhoneNumbers:   []string{"phone1", "phone2"},
+	})
 	if len(got) != len(want) {
 		t.Errorf("Was expecting %d user to be returned, instead got %d", len(want), len(got))
 	}
@@ -36,7 +79,7 @@ func TestUsersService_ListAll_happyPath(t *testing.T) {
 func TestUsersService_ListAll_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
 
-	users, err := client.Users().ListAll()
+	users, err := client.Users().ListAll(ListAllUsersParams{})
 	if err == nil {
 		t.Errorf("Expected error to be returned")
 	}
