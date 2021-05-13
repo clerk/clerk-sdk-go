@@ -23,7 +23,7 @@ type userAppID struct {
 func TestUsers(t *testing.T) {
 	client := createClient()
 
-	users, err := client.Users().ListAll()
+	users, err := client.Users().ListAll(clerk.ListAllUsersParams{})
 	if err != nil {
 		t.Fatalf("Users.ListAll returned error: %v", err)
 	}

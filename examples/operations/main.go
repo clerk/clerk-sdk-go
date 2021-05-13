@@ -20,7 +20,7 @@ func main() {
 }
 
 func retrieveUsers(client clerk.Client) {
-	users, err := client.Users().ListAll()
+	users, err := client.Users().ListAll(clerk.ListAllUsersParams{})
 	if err != nil {
 		panic(err)
 	}

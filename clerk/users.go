@@ -2,6 +2,7 @@ package clerk
 
 import (
 	"fmt"
+	"strconv"
 )
 
 type UsersService service
@@ -50,8 +51,34 @@ type IdentificationLink struct {
 	IdentID   string `json:"id"`
 }
 
-func (s *UsersService) ListAll() ([]User, error) {
+type ListAllUsersParams struct {
+	Limit          *int
+	Offset         *int
+	EmailAddresses []string
+	PhoneNumbers   []string
+}
+
+func (s *UsersService) ListAll(params ListAllUsersParams) ([]User, error) {
 	req, _ := s.client.NewRequest("GET", UsersUrl)
+
+	query := req.URL.Query()
+	if params.Limit != nil {
+		query.Set("limit", strconv.Itoa(*params.Limit))
+	}
+	if params.Offset != nil {
+		query.Set("offset", strconv.Itoa(*params.Offset))
+	}
+	if params.EmailAddresses != nil {
+		for _, email := range params.EmailAddresses {
+			query.Add("email_address", email)
+		}
+	}
+	if params.PhoneNumbers != nil {
+		for _, phone := range params.PhoneNumbers {
+			query.Add("phone_number", phone)
+		}
+	}
+	req.URL.RawQuery = query.Encode()
 
 	var users []User
 	_, err := s.client.Do(req, &users)
