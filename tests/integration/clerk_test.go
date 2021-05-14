@@ -10,10 +10,8 @@ import (
 type key string
 
 const (
-	APIUrl       = "CLERK_API_URL"
-	APIKey       = "CLERK_API_KEY"
-	SessionToken = "CLERK_SESSION_TOKEN"
-	SessionID    = "CLERK_SESSION_ID"
+	APIUrl = "CLERK_API_URL"
+	APIKey = "CLERK_API_KEY"
 )
 
 func createClient() clerk.Client {
