@@ -132,5 +132,5 @@ const dummyClientResponseJson = `{
 		}],
         "object": "client",
         "sign_in_attempt_id": null,
-        "sign_up_attempt_id": null
+        "sign_up_id": "sua_123456789"
     }`

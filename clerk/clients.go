@@ -11,7 +11,7 @@ type ClientResponse struct {
 	SessionIDs          []string   `json:"session_ids"`
 	Sessions            []*Session `json:"sessions"`
 	SignInAttemptID     *string    `json:"sign_in_attempt_id"`
-	SignUpAttemptID     *string    `json:"sign_up_attempt_id"`
+	SignUpID            *string    `json:"sign_up_id"`
 	Ended               bool       `json:"ended"`
 }
 
