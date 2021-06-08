@@ -131,6 +131,6 @@ const dummyClientResponseJson = `{
 			"user_id": "user_1mebQggrD3xO5JfuHk7clQ94ysA"
 		}],
         "object": "client",
-        "sign_in_attempt_id": null,
+        "sign_in_id": "sia_987654321",
         "sign_up_id": "sua_123456789"
     }`
