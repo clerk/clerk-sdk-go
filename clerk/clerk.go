@@ -2,6 +2,7 @@ package clerk
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -56,23 +57,6 @@ type client struct {
 	tokens       *TokensService
 }
 
-type jwk struct {
-	// Sig (for signature) or Enc (for encryption)
-	publicKeyUse string `json:"use"`
-
-	// Algorithm family (RSA, ECDSA etc.)
-	keyType string `json:"kty"`
-
-	// RSA256
-	Algorithm string `json:"alg"`
-
-	// Clerk instance ID
-	KeyID string `json:"kid"`
-
-	n string `json:"n"`
-	e string `json:"e"`
-}
-
 // NewClient creates a new Clerk client.
 // Because the token supplied will be used for all authenticated requests,
 // the created client should not be used across different users
@@ -81,7 +65,11 @@ func NewClient(token string) (Client, error) {
 }
 
 func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
-	httpClient := http.Client{}
+	// TODO: Only needed for local development (lclclerk.com)
+	httpClient := http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		}}}
 
 	return NewClientWithCustomHTTP(token, baseUrl, &httpClient)
 }

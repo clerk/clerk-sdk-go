@@ -1,82 +1,164 @@
 package clerk
 
 import (
-	"encoding/json"
+	"crypto/rsa"
+	"encoding/base64"
 	"fmt"
+	"math/big"
 	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
+	"gopkg.in/square/go-jose.v2/jwt"
 )
 
 type TokensService service
 
-//type Session struct {
-//	Object       string `json:"object"`
-//	ID           string `json:"id"`
-//	ClientID     string `json:"client_id"`
-//	UserID       string `json:"user_id"`
-//	Status       string `json:"status"`
-//	LastActiveAt int64  `json:"last_active_at"`
-//	ExpireAt     int64  `json:"expire_at"`
-//	AbandonAt    int64  `json:"abandon_at"`
-//}
+type jwk struct {
+	// Sig (for signature) or Enc (for encryption)
+	PublicKeyUse string `json:"use"`
 
-// token is the short-lived JWT
+	// Algorithm family (RSA, ECDSA etc.)
+	KeyType string `json:"kty"`
+
+	// RSA256
+	Algorithm string `json:"alg"`
+
+	// Clerk instance ID
+	KeyID string `json:"kid"`
+
+	Modulus  string `json:"n"`
+	Exponent string `json:"e"`
+}
+
+// Verify the short-lived jwt token.
 func (s *TokensService) Verify(token string) error {
-	// TODO: refresh periodically in the background
-	jwks, err := s.fetchJWKs()
+	issuer, err := getIssuer(token)
 	if err != nil {
 		return err
 	}
 
-	token, err := jwt.Parse(token, getKey)
+	//TODO: refresh periodically in the background
+	jwks, err := s.fetchJWKs(issuer)
 	if err != nil {
 		panic(err)
+		return err
 	}
-	claims := token.Claims.(jwt.MapClaims)
-	for key, value := range claims {
-		fmt.Printf("%s\t%v\n", key, value)
+
+	pubKey, err := createRSAPublicKey(jwks[0])
+	if err != nil {
+		return err
 	}
-	// verify
 
-	//sessionsUrl := "sessions"
-	//req, _ := s.client.NewRequest("GET", sessionsUrl)
+	err = verifyToken(token, jwks[0].Algorithm, pubKey)
+	if err != nil {
+		return err
+	}
 
-	//var sessions []Session
-	//_, err := s.client.Do(req, &sessions)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//return sessions, nil
 	return nil
 }
 
-func (s *TokensService) fetchJWKs() ([]*jwks, error) {
-	// TODO: this is the dashboard's instance jwks
-	req, err := http.NewRequest("GET", "https://clerk.prod.lclclerk.com/v1/.well-known/jwks.json", nil)
+// Decode the short-lived jwt token.
+func (s *TokensService) Decode(token string) (map[string]interface{}, error) {
+	parsedToken, err := jwt.ParseSigned(token)
 	if err != nil {
-		panic(err)
+		return nil, err
+	}
+
+	claims := make(map[string]interface{})
+	if err = parsedToken.UnsafeClaimsWithoutVerification(&claims); err != nil {
+		return nil, err
+	}
+
+	return claims, nil
+}
+
+func getIssuer(token string) (string, error) {
+	parsedToken, err := jwt.ParseSigned(token)
+	if err != nil {
+		return "", err
+	}
+
+	claims := make(map[string]interface{})
+	if err = parsedToken.UnsafeClaimsWithoutVerification(&claims); err != nil {
+		return "", err
+	}
+
+	issuer, ok := claims["iss"]
+	if !ok {
+		return "", fmt.Errorf("issuer not present in claims")
+	}
+
+	return issuer.(string), nil
+}
+
+func verifyToken(token, signingAlg string, pubKey *rsa.PublicKey) error {
+	parsedToken, err := jwt.ParseSigned(token)
+	if err != nil {
 		return err
 	}
 
-	resp, err := s.client.client.Do(req)
-	if err != nil {
-		panic(err)
-		return err
-	}
-	defer resp.Body.Close()
-
-	jwks := make([]*jwk, 0)
-
-	err = json.NewDecoder(resp.Body).Decode(&jwks)
-	if err != nil {
-		panic(err)
-		return err
+	if len(parsedToken.Headers) == 0 {
+		return fmt.Errorf("no JWT headers found")
 	}
 
-	if len(jwks) == 0 {
+	if parsedToken.Headers[0].Algorithm != signingAlg {
+		return fmt.Errorf("unexpected signing algorithm")
+	}
+
+	claims := make(map[string]interface{})
+	if err = parsedToken.Claims(pubKey, &claims); err != nil {
+		return err
+	}
+
+	for key, value := range claims {
+		fmt.Println(key, " -> ", value)
+	}
+
+	return nil
+}
+
+func createRSAPublicKey(jwk *jwk) (*rsa.PublicKey, error) {
+	if jwk == nil {
+		return nil, fmt.Errorf("jwk cannot be nil")
+	}
+
+	if jwk.Exponent == "" || jwk.Modulus == "" {
+		return nil, fmt.Errorf("jwk exponent or modulus cannot be empty")
+	}
+
+	exponent, err := base64.RawURLEncoding.DecodeString(jwk.Exponent)
+	if err != nil {
+		return nil, err
+	}
+
+	modulus, err := base64.RawURLEncoding.DecodeString(jwk.Modulus)
+	if err != nil {
+		return nil, err
+	}
+
+	return &rsa.PublicKey{
+		N: big.NewInt(0).SetBytes(modulus),
+		E: int(big.NewInt(0).SetBytes(exponent).Uint64()),
+	}, nil
+}
+
+func (s *TokensService) fetchJWKs(issuer string) ([]*jwk, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/v1/.well-known/jwks.json", issuer), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	jwks := struct {
+		Keys []*jwk `json:"keys"`
+	}{}
+
+	_, err = s.client.Do(req, &jwks)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(jwks.Keys) == 0 {
 		panic("invalid length")
 	}
 
-	return jwks, nil
+	return jwks.Keys, nil
 }
