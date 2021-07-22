@@ -33,6 +33,7 @@ type Client interface {
 	Users() *UsersService
 	Webhooks() *WebhooksService
 	Verification() *VerificationService
+	Tokens() *TokensService
 }
 
 type service struct {
@@ -43,6 +44,7 @@ type client struct {
 	client  *http.Client
 	baseURL *url.URL
 	token   string
+	jwks    []*jwk
 
 	clients      *ClientsService
 	emails       *EmailService
@@ -51,6 +53,24 @@ type client struct {
 	users        *UsersService
 	webhooks     *WebhooksService
 	verification *VerificationService
+	tokens       *TokensService
+}
+
+type jwk struct {
+	// Sig (for signature) or Enc (for encryption)
+	publicKeyUse string `json:"use"`
+
+	// Algorithm family (RSA, ECDSA etc.)
+	keyType string `json:"kty"`
+
+	// RSA256
+	Algorithm string `json:"alg"`
+
+	// Clerk instance ID
+	KeyID string `json:"kid"`
+
+	n string `json:"n"`
+	e string `json:"e"`
 }
 
 // NewClient creates a new Clerk client.
@@ -78,6 +98,7 @@ func NewClientWithCustomHTTP(token string, urlStr string, httpClient *http.Clien
 	client.users = (*UsersService)(commonService)
 	client.webhooks = (*WebhooksService)(commonService)
 	client.verification = (*VerificationService)(commonService)
+	client.tokens = (*TokensService)(commonService)
 
 	return client, nil
 }
@@ -149,7 +170,6 @@ func (c *client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 
 	return resp, nil
 }
-
 func checkForErrors(resp *http.Response) error {
 	if c := resp.StatusCode; c >= 200 && c < 400 {
 		return nil
@@ -192,4 +212,8 @@ func (c *client) Webhooks() *WebhooksService {
 
 func (c *client) Verification() *VerificationService {
 	return c.verification
+}
+
+func (c *client) Tokens() *TokensService {
+	return c.tokens
 }
