@@ -28,6 +28,7 @@ type Client interface {
 
 	Clients() *ClientsService
 	Emails() *EmailService
+	JWKS() *JWKSService
 	Sessions() *SessionsService
 	SMS() *SMSService
 	Users() *UsersService
@@ -46,6 +47,7 @@ type client struct {
 
 	clients      *ClientsService
 	emails       *EmailService
+	jwks         *JWKSService
 	sessions     *SessionsService
 	sms          *SMSService
 	users        *UsersService
@@ -73,6 +75,7 @@ func NewClientWithCustomHTTP(token string, urlStr string, httpClient *http.Clien
 	commonService := &service{client: client}
 	client.clients = (*ClientsService)(commonService)
 	client.emails = (*EmailService)(commonService)
+	client.jwks = (*JWKSService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
 	client.sms = (*SMSService)(commonService)
 	client.users = (*UsersService)(commonService)
@@ -90,7 +93,7 @@ func toURLWithEndingSlash(u string) *url.URL {
 	return baseURL
 }
 
-// NewRequestWithBody creates an API request.
+// NewRequest creates an API request.
 // A relative URL `url` can be specified which is resolved relative to the baseURL of the client.
 // Relative URLs should be specified without a preceding slash.
 // The `body` parameter can be used to pass a body to the request. If no body is required, the parameter can be omitted.
@@ -172,6 +175,10 @@ func (c *client) Clients() *ClientsService {
 
 func (c *client) Emails() *EmailService {
 	return c.emails
+}
+
+func (c *client) JWKS() *JWKSService {
+	return c.jwks
 }
 
 func (c *client) Sessions() *SessionsService {
