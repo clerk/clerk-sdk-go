@@ -26,6 +26,9 @@ type Client interface {
 	NewRequest(method string, url string, body ...interface{}) (*http.Request, error)
 	Do(req *http.Request, v interface{}) (*http.Response, error)
 
+	DecodeToken(token string) (*Claims, error)
+	VerifyToken(token string) (*Claims, error)
+
 	Clients() *ClientsService
 	Emails() *EmailService
 	JWKS() *JWKSService
@@ -41,9 +44,10 @@ type service struct {
 }
 
 type client struct {
-	client  *http.Client
-	baseURL *url.URL
-	token   string
+	client    *http.Client
+	baseURL   *url.URL
+	jwksCache *jwksCache
+	token     string
 
 	clients      *ClientsService
 	emails       *EmailService
@@ -81,6 +85,8 @@ func NewClientWithCustomHTTP(token string, urlStr string, httpClient *http.Clien
 	client.users = (*UsersService)(commonService)
 	client.webhooks = (*WebhooksService)(commonService)
 	client.verification = (*VerificationService)(commonService)
+
+	client.jwksCache = &jwksCache{}
 
 	return client, nil
 }
