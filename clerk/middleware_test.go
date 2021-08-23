@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+
+	"gopkg.in/square/go-jose.v2"
 )
 
-func TestMiddleware_addSessionToContext(t *testing.T) {
+func TestWithSession_addSessionToContext(t *testing.T) {
 	apiToken := "apiToken"
 	sessionId := "someSessionId"
 	sessionToken := "someSessionToken"
@@ -46,7 +48,7 @@ func TestMiddleware_addSessionToContext(t *testing.T) {
 	}
 }
 
-func TestMiddleware_returnsErrorIfVerificationFails(t *testing.T) {
+func TestWithSession_returnsErrorIfVerificationFails(t *testing.T) {
 	apiToken := "apiToken"
 	sessionId := "someSessionId"
 	sessionToken := "someSessionToken"
@@ -74,5 +76,129 @@ func TestMiddleware_returnsErrorIfVerificationFails(t *testing.T) {
 
 	if resp.StatusCode != 400 {
 		t.Errorf("Was expecting 400 error code, found %v instead", resp.StatusCode)
+	}
+}
+
+func TestWithNetworkless_addSessionToContext_Header(t *testing.T) {
+	c, mux, serverUrl, teardown := setup("apiToken")
+	defer teardown()
+
+	expectedClaims := dummyClaims
+
+	token, pubKey := testGenerateTokenJWT(t, expectedClaims, "kid")
+
+	client := c.(*client)
+	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
+
+	dummyHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// this handler should be called after the middleware has added the `ActiveClaims`
+		activeClaims := r.Context().Value(ActiveClaims)
+		_ = json.NewEncoder(w).Encode(activeClaims)
+	})
+
+	mux.Handle("/claims", WithNetworkless(c)(dummyHandler))
+
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/claims", serverUrl), nil)
+	req.Header.Set("Authorization", token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+
+	var got Claims
+	_ = json.NewDecoder(resp.Body).Decode(&got)
+
+	if !reflect.DeepEqual(got, expectedClaims) {
+		t.Errorf("Response = %v, want %v", got, expectedClaims)
+	}
+}
+
+func TestWithNetworkless_addSessionToContext_Cookie(t *testing.T) {
+	c, mux, serverUrl, teardown := setup("apiToken")
+	defer teardown()
+
+	expectedClaims := dummyClaims
+
+	token, pubKey := testGenerateTokenJWT(t, expectedClaims, "kid")
+
+	client := c.(*client)
+	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
+
+	dummyHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// this handler should be called after the middleware has added the `ActiveClaims`
+		activeClaims := r.Context().Value(ActiveClaims)
+		_ = json.NewEncoder(w).Encode(activeClaims)
+	})
+
+	mux.Handle("/claims", WithNetworkless(c)(dummyHandler))
+
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/claims", serverUrl), nil)
+	req.AddCookie(&http.Cookie{
+		Name:     "__session",
+		Value:    token,
+		Secure:   true,
+		HttpOnly: true,
+	})
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+
+	var got Claims
+	_ = json.NewDecoder(resp.Body).Decode(&got)
+
+	if !reflect.DeepEqual(got, expectedClaims) {
+		t.Errorf("Response = %v, want %v", got, expectedClaims)
+	}
+}
+
+func TestWithNetworkless_returnsErrorIfVerificationFails(t *testing.T) {
+	apiToken := "apiToken"
+
+	c, mux, serverUrl, teardown := setup(apiToken)
+	defer teardown()
+
+	dummyHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// this handler should be called after the middleware has added the `ActiveSession`
+		t.Errorf("This should never be called!")
+	})
+
+	mux.Handle("/claims", WithNetworkless(c)(dummyHandler))
+
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/claims", serverUrl), nil)
+	req.Header.Set("Authorization", "invalid-token")
+
+	resp, _ := http.DefaultClient.Do(req)
+
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Errorf("Was expecting 401 error code, found %v instead", resp.StatusCode)
+	}
+}
+
+func TestWithNetworkless_returnsErrorIfTokenMissing(t *testing.T) {
+	apiToken := "apiToken"
+
+	c, mux, serverUrl, teardown := setup(apiToken)
+	defer teardown()
+
+	dummyHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// this handler should be called after the middleware has added the `ActiveSession`
+		t.Errorf("This should never be called!")
+	})
+
+	mux.Handle("/claims", WithNetworkless(c)(dummyHandler))
+
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/claims", serverUrl), nil)
+
+	resp, _ := http.DefaultClient.Do(req)
+
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Errorf("Was expecting 401 error code, found %v instead", resp.StatusCode)
 	}
 }
