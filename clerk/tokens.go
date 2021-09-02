@@ -2,6 +2,7 @@ package clerk
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"gopkg.in/square/go-jose.v2"
@@ -9,43 +10,44 @@ import (
 	"gopkg.in/square/go-jose.v2/jwt"
 )
 
-type Claims struct {
+var (
+	standardClaimsKeys = []string{"iss", "sub", "aud", "exp", "nbf", "iat", "jti"}
+)
+
+type TokenClaims struct {
 	jwt.Claims
-	UserClaims
+	Extra map[string]interface{}
 }
 
-type UserClaims struct {
-	Name                string `json:"name"`
-	Picture             string `json:"picture"`
-	UpdatedAt           int64  `json:"updated_at"`
-	GivenName           string `json:"given_name,omitempty"`
-	FamilyName          string `json:"family_name,omitempty"`
-	PreferredUsername   string `json:"preferred_username,omitempty"`
-	Gender              string `json:"gender,omitempty"`
-	Birthdate           string `json:"birthdate,omitempty"`
-	Email               string `json:"email,omitempty"`
-	EmailVerified       bool   `json:"email_verified,omitempty"`
-	PhoneNumber         string `json:"phone_number,omitempty"`
-	PhoneNumberVerified bool   `json:"phone_number_verified,omitempty"`
+type SessionClaims struct {
+	jwt.Claims
+	SessionID string `json:"sid"`
 }
 
-// DecodeToken decodes the session jwt token without verifying it.
-func (c *client) DecodeToken(token string) (*Claims, error) {
+// DecodeToken decodes a jwt token without verifying it.
+func (c *client) DecodeToken(token string) (*TokenClaims, error) {
 	parsedToken, err := jwt.ParseSigned(token)
 	if err != nil {
 		return nil, err
 	}
 
-	claims := Claims{}
-	if err = parsedToken.UnsafeClaimsWithoutVerification(&claims); err != nil {
+	standardClaims := jwt.Claims{}
+	extraClaims := make(map[string]interface{})
+
+	if err = parsedToken.UnsafeClaimsWithoutVerification(&standardClaims, &extraClaims); err != nil {
 		return nil, err
 	}
 
-	return &claims, nil
+	// Delete any standard claims included in the extra claims
+	for _, key := range standardClaimsKeys {
+		delete(extraClaims, key)
+	}
+
+	return &TokenClaims{Claims: standardClaims, Extra: extraClaims}, nil
 }
 
 // VerifyToken verifies the session jwt token.
-func (c *client) VerifyToken(token string) (*Claims, error) {
+func (c *client) VerifyToken(token string) (*SessionClaims, error) {
 	parsedToken, err := jwt.ParseSigned(token)
 	if err != nil {
 		return nil, err
@@ -69,18 +71,17 @@ func (c *client) VerifyToken(token string) (*Claims, error) {
 		return nil, fmt.Errorf("invalid signing algorithm %s", jwk.Algorithm)
 	}
 
-	claims := Claims{}
+	claims := SessionClaims{}
 	if err = parsedToken.Claims(jwk.Key, &claims); err != nil {
 		return nil, err
 	}
 
-	expectedClaims := jwt.Expected{
-		Audience: jwt.Audience{"clerk"},
-		Time:     time.Now(),
+	if err = claims.Claims.ValidateWithLeeway(jwt.Expected{Time: time.Now()}, 0); err != nil {
+		return nil, err
 	}
 
-	if err = claims.Claims.ValidateWithLeeway(expectedClaims, 0); err != nil {
-		return nil, err
+	if !strings.HasPrefix(claims.Issuer, "clerk.") {
+		return nil, fmt.Errorf("invalid issuer format %s", claims.Issuer)
 	}
 
 	return &claims, nil
