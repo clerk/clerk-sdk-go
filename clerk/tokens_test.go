@@ -40,7 +40,7 @@ var (
 
 	dummySessionClaims = SessionClaims{
 		Claims: jwt.Claims{
-			Issuer:   "clerk.issuer",
+			Issuer:   "https://clerk.issuer",
 			Subject:  "subject",
 			Audience: nil,
 			Expiry:   nil,
@@ -135,11 +135,10 @@ func TestClient_VerifyToken_InvalidIssuer(t *testing.T) {
 	claims := dummySessionClaims
 	claims.Issuer = "issuer"
 
-	token, _ := testGenerateTokenJWT(t, claims, "kid")
-	privKey, _ := rsa.GenerateKey(rand.Reader, 2048)
+	token, pubKey := testGenerateTokenJWT(t, claims, "kid")
 
 	client := c.(*client)
-	client.jwksCache.set(testBuildJWKS(t, privKey.Public(), jose.RS256, "kid"))
+	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
 
 	_, err := c.VerifyToken(token)
 	if err == nil {

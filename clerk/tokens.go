@@ -80,8 +80,8 @@ func (c *client) VerifyToken(token string) (*SessionClaims, error) {
 		return nil, err
 	}
 
-	if !strings.HasPrefix(claims.Issuer, "clerk.") {
-		return nil, fmt.Errorf("invalid issuer format %s", claims.Issuer)
+	if !strings.HasPrefix(claims.Issuer, "https://clerk.") {
+		return nil, fmt.Errorf("invalid issuer %s", claims.Issuer)
 	}
 
 	return &claims, nil
