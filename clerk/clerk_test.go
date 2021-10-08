@@ -149,7 +149,7 @@ func TestDo_sendsTokenInRequest(t *testing.T) {
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, req *http.Request) {
 		testHeader(t, req, "Authorization", "Bearer "+token)
-		w.WriteHeader(204)
+		w.WriteHeader(http.StatusNoContent)
 	})
 
 	req, _ := client.NewRequest("GET", "test")
