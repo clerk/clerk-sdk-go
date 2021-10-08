@@ -18,6 +18,7 @@ const (
 	EmailsUrl        = "emails"
 	SessionsUrl      = "sessions"
 	SMSUrl           = "sms_messages"
+	TemplatesUrl     = "templates"
 	UsersUrl         = "users"
 	WebhooksUrl      = "webhooks"
 )
@@ -34,6 +35,7 @@ type Client interface {
 	JWKS() *JWKSService
 	Sessions() *SessionsService
 	SMS() *SMSService
+	Templates() *TemplatesService
 	Users() *UsersService
 	Webhooks() *WebhooksService
 	Verification() *VerificationService
@@ -57,6 +59,7 @@ type client struct {
 	jwks         *JWKSService
 	sessions     *SessionsService
 	sms          *SMSService
+	templates    *TemplatesService
 	users        *UsersService
 	webhooks     *WebhooksService
 	verification *VerificationService
@@ -85,6 +88,7 @@ func NewClientWithCustomHTTP(token string, urlStr string, httpClient *http.Clien
 	client.jwks = (*JWKSService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
 	client.sms = (*SMSService)(commonService)
+	client.templates = (*TemplatesService)(commonService)
 	client.users = (*UsersService)(commonService)
 	client.webhooks = (*WebhooksService)(commonService)
 	client.verification = (*VerificationService)(commonService)
@@ -196,6 +200,10 @@ func (c *client) Sessions() *SessionsService {
 
 func (c *client) SMS() *SMSService {
 	return c.sms
+}
+
+func (c *client) Templates() *TemplatesService {
+	return c.templates
 }
 
 func (c *client) Users() *UsersService {
