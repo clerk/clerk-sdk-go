@@ -37,6 +37,9 @@ type Client interface {
 	Users() *UsersService
 	Webhooks() *WebhooksService
 	Verification() *VerificationService
+	Interstitial() ([]byte, error)
+
+	APIKey() string
 }
 
 type service struct {
@@ -205,4 +208,29 @@ func (c *client) Webhooks() *WebhooksService {
 
 func (c *client) Verification() *VerificationService {
 	return c.verification
+}
+
+func (c *client) APIKey() string {
+	return c.token
+}
+
+func (c *client) Interstitial() ([]byte, error) {
+	req, err := c.NewRequest("GET", "internal/interstitial")
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	interstitial, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return interstitial, err
+	}
+
+	return interstitial, nil
 }

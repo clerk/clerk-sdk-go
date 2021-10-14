@@ -55,7 +55,19 @@ injectActiveSession := clerk.WithSession(client)
 mux.Handle("/your-endpoint", injectActiveSession(yourEndpointHandler))
 ```
 
-For a full example of how to use the middleware, refer to [this](https://github.com/clerkinc/clerk-sdk-go/tree/main/examples/middleware).
+For a full example of how to use the middleware, refer to 
+[this](https://github.com/clerkinc/clerk-sdk-go/tree/main/examples/middleware).
+
+### Auth v2
+
+If you're using the newly-introduced Auth v2 scheme, you'll have to use the 
+`clerk.WithSessionV2()` middleware, instead of `clerk.WithSession()`.
+
+Additionally, there's also `clerk.RequireSessionV2()` that will halt the request 
+and respond with 403 if the user is not authenticated.
+
+Finally, to retrieve the authenticated session's claims you can use 
+`clerk.SessionFromContext()`.
 
 ## License ##
 

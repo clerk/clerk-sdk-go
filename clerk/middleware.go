@@ -9,6 +9,9 @@ import (
 const (
 	ActiveSession = iota
 	ActiveSessionClaims
+
+// TODO: we should use a type alias instead of int, so as to avoid collisions
+// with other packages
 )
 
 func WithSession(client Client) func(handler http.Handler) http.Handler {
