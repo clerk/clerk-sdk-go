@@ -41,7 +41,6 @@ jobs:
           TOTAL_COVER=`go tool cover -func=coverage.out | grep total | grep -Eo '[0-9]+\.[0-9]+'`
           echo "Total coverage was: $TOTAL_COVER %"
           echo "Expected coverage: $EXPECTED_COVER %"
-          (( $(echo "$TOTAL_COVER >= $EXPECTED_COVER" | bc -l) )) && exit 0 || exit 1
 
       - name: Run integration tests
         env:
