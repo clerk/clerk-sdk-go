@@ -9,18 +9,20 @@ import (
 
 // RequireSessionV2 will hijack the request and return an HTTP status 403
 // if the session is not authenticated.
-func RequireSessionV2(client Client, next http.Handler) http.Handler {
-	f := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		claims, ok := r.Context().Value(ActiveSessionClaims).(*SessionClaims)
-		if !ok || claims == nil {
-			w.WriteHeader(http.StatusForbidden)
-			return
-		}
+func RequireSessionV2(client Client) func(handler http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		f := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			claims, ok := r.Context().Value(ActiveSessionClaims).(*SessionClaims)
+			if !ok || claims == nil {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
 
-		next.ServeHTTP(w, r)
-	})
+			next.ServeHTTP(w, r)
+		})
 
-	return WithSessionV2(client)(f)
+		return WithSessionV2(client)(f)
+	}
 }
 
 // SessionFromContext returns the session's (if any) claims, as parsed from the
