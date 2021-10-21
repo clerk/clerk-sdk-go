@@ -60,7 +60,7 @@ For a full example of how to use the middleware, refer to
 
 ### Auth v2
 
-If you're using the newly-introduced Auth v2 scheme, you'll have to use the 
+If you're using the newly-introduced [Auth v2](https://docs.clerk.dev/main-concepts/auth-v2) scheme, you'll have to use the 
 `clerk.WithSessionV2()` middleware, instead of `clerk.WithSession()`.
 
 Additionally, there's also `clerk.RequireSessionV2()` that will halt the request 
