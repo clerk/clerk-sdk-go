@@ -60,14 +60,17 @@ For a full example of how to use the middleware, refer to
 
 ### Auth v2
 
-If you're using the newly-introduced Auth v2 scheme, you'll have to use the 
-`clerk.WithSessionV2()` middleware, instead of `clerk.WithSession()`.
+If you're using [Auth v2](https://docs.clerk.dev/main-concepts/auth-v2), you'll 
+have to use the `WithSessionV2()` middleware, instead of `WithSession()`.
 
-Additionally, there's also `clerk.RequireSessionV2()` that will halt the request 
-and respond with 403 if the user is not authenticated.
+Additionally, there's also `RequireSessionV2()` that will halt the request and 
+respond with 403 if the user is not authenticated.
 
 Finally, to retrieve the authenticated session's claims you can use 
-`clerk.SessionFromContext()`.
+`SessionFromContext()`.
+
+For more info on Auth v2 refer to the 
+[documentation](https://docs.clerk.dev/main-concepts/auth-v2).
 
 ## License ##
 
