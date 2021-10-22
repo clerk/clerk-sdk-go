@@ -2,10 +2,15 @@ package clerk
 
 import (
 	"context"
+	"net"
 	"net/http"
+	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 )
+
+var urlSchemeRe = regexp.MustCompile(`(^\w+:|^)\/\/`)
 
 // RequireSessionV2 will hijack the request and return an HTTP status 403
 // if the session is not authenticated.
@@ -124,12 +129,30 @@ func WithSessionV2(client Client) func(handler http.Handler) http.Handler {
 }
 
 func isCrossOrigin(r *http.Request) bool {
-	origin := r.Header.Get("origin")
+	// origin contains scheme+host and optionally port (ommitted if 80 or 443)
+	// ref. https://www.rfc-editor.org/rfc/rfc6454#section-6.1
+	origin := strings.TrimSpace(r.Header.Get("Origin"))
+	origin = urlSchemeRe.ReplaceAllString(origin, "") // strip scheme
+	if origin == "" {
+		return false
+	}
 
-	// r.Host may contain host:port, but we only want the host
-	host := strings.Split(r.Host, ":")[0]
+	// parse request's host and port, taking into account reverse proxies
+	u := &url.URL{Host: r.Host}
+	host := strings.TrimSpace(r.Header.Get("X-Forwarded-Host"))
+	if host == "" {
+		host = u.Hostname()
+	}
+	port := strings.TrimSpace(r.Header.Get("X-Forwarded-Port"))
+	if port == "" {
+		port = u.Port()
+	}
 
-	return origin != "" && origin != host
+	if port != "" && port != "80" && port != "443" {
+		host = net.JoinHostPort(host, port)
+	}
+
+	return origin == host
 }
 
 func isDevelopmentOrStaging(c Client) bool {
