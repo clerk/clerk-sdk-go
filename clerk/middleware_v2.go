@@ -152,7 +152,7 @@ func isCrossOrigin(r *http.Request) bool {
 		host = net.JoinHostPort(host, port)
 	}
 
-	return origin == host
+	return origin != host
 }
 
 func isDevelopmentOrStaging(c Client) bool {
