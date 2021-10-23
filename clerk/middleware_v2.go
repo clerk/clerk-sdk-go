@@ -44,6 +44,7 @@ func WithSessionV2(client Client) func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			headerToken := strings.TrimSpace(r.Header.Get("authorization"))
+			headerToken = strings.TrimPrefix(headerToken, "Bearer ")
 			cookieToken, _ := r.Cookie("__session")
 			clientUat, _ := r.Cookie("__client_uat")
 
