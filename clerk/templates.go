@@ -18,6 +18,7 @@ type Template struct {
 
 type TemplateExtended struct {
 	*Template
+	Subject            string   `json:"subject"`
 	Markup             string   `json:"markup"`
 	Body               string   `json:"body"`
 	MandatoryVariables []string `json:"mandatory_variables"`
@@ -54,6 +55,7 @@ func (s *TemplatesService) Read(templateType, slug string) (*TemplateExtended, e
 
 type UpsertTemplateRequest struct {
 	Name               string   `json:"name"`
+	Subject            string   `json:"subject,omitempty"`
 	Markup             string   `json:"markup,omitempty"`
 	Body               string   `json:"body"`
 	MandatoryVariables []string `json:"mandatory_variables,omitempty"`
