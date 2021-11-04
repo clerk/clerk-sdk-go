@@ -165,9 +165,12 @@ const dummyTemplateJSON = `{
 	"subject": "Choo choo train",
     "markup": "<p>Hee Hee</p>",
     "body": "<p>Ho Ho</p>",
-    "mandatory_variables": [
+	"available_variables": [
         "michael",
         "jackson"
+    ],
+    "mandatory_variables": [
+        "michael"
     ]
 }`
 
@@ -175,10 +178,6 @@ const dummyUpsertRequestJSON = `{
 	"template_type": "email",
 	"name": "Dominic Toretto",
 	"subject": "NOS bottles for sale",
-	"markup": "<p>Family</p>"          
-	"body": "<p>One quarter of a mile at a time<p>"          
-	"mandatoryVariables": [
-		"nitro",
-		"turbo"
-	]
+	"markup": "<p>Family</p>",
+	"body": "<p>One quarter of a mile at a time<p>"
 }`

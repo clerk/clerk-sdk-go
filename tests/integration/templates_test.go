@@ -32,11 +32,10 @@ func TestTemplates(t *testing.T) {
 		}
 
 		upsertTemplateRequest := clerk.UpsertTemplateRequest{
-			Name:               "Remarketing SMS",
-			Subject:            "Unmissable opportunity",
-			Markup:             "",
-			Body:               "Click {link} for free unicorns",
-			MandatoryVariables: []string{"lorem", "ipsum"},
+			Name:    "Remarketing SMS",
+			Subject: "Unmissable opportunity",
+			Markup:  "",
+			Body:    "Click {link} for free unicorns",
 		}
 
 		upsertedTemplate, err := client.Templates().Upsert(templateType, slug, &upsertTemplateRequest)
