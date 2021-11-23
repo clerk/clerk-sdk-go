@@ -25,6 +25,11 @@ type TemplateExtended struct {
 	MandatoryVariables []string `json:"mandatory_variables"`
 }
 
+type TemplatePreview struct {
+	Subject string `json:"subject,omitempty"`
+	Body    string `json:"body"`
+}
+
 func (s *TemplatesService) ListAll(templateType string) ([]Template, error) {
 	templateURL := fmt.Sprintf("%s/%s", TemplatesUrl, templateType)
 	req, _ := s.client.NewRequest("GET", templateURL)
@@ -58,6 +63,11 @@ type UpsertTemplateRequest struct {
 	Name    string `json:"name"`
 	Subject string `json:"subject,omitempty"`
 	Markup  string `json:"markup,omitempty"`
+	Body    string `json:"body"`
+}
+
+type PreviewTemplateRequest struct {
+	Subject string `json:"subject,omitempty"`
 	Body    string `json:"body"`
 }
 
@@ -101,4 +111,19 @@ func (s *TemplatesService) Delete(templateType, slug string) (*DeleteResponse, e
 	}
 
 	return &delResponse, nil
+}
+
+// Preview returns a rendering of a template with sample data for preview purposes
+func (s *TemplatesService) Preview(templateType, slug string, previewTemplateRequest *PreviewTemplateRequest) (*TemplatePreview, error) {
+	templateURL := fmt.Sprintf("%s/%s/%s/preview", TemplatesUrl, templateType, slug)
+	req, _ := s.client.NewRequest("POST", templateURL, previewTemplateRequest)
+
+	var templatePreview TemplatePreview
+
+	_, err := s.client.Do(req, &templatePreview)
+	if err != nil {
+		return nil, err
+	}
+
+	return &templatePreview, nil
 }
