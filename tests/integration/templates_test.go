@@ -35,7 +35,7 @@ func TestTemplates(t *testing.T) {
 			Name:    "Remarketing SMS",
 			Subject: "Unmissable opportunity",
 			Markup:  "",
-			Body:    "Click {link} for free unicorns",
+			Body:    "Click {{link}} for free unicorns",
 		}
 
 		upsertedTemplate, err := client.Templates().Upsert(templateType, slug, &upsertTemplateRequest)
@@ -44,6 +44,19 @@ func TestTemplates(t *testing.T) {
 		}
 		if upsertedTemplate == nil {
 			t.Errorf("Templates.Upsert returned nil")
+		}
+
+		previewTemplateRequest := clerk.PreviewTemplateRequest{
+			Subject: "{{AppName}} is da bomb",
+			Body:    "<p><a href=\"{{AppURL}}\">{{AppName}}</a> is the greatest app of all time!</p>",
+		}
+
+		templatePreview, err := client.Templates().Preview(templateType, slug, &previewTemplateRequest)
+		if err != nil {
+			t.Fatalf("Templates.Preview returned error: %v", err)
+		}
+		if templatePreview == nil {
+			t.Errorf("Templates.Preview returned nil")
 		}
 	}
 }
