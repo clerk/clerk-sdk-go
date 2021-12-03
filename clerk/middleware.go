@@ -46,7 +46,8 @@ func WithSession(client Client) func(handler http.Handler) http.Handler {
 
 func isAuthV2Request(r *http.Request, client Client) (string, bool) {
 	// Try with token from header
-	headerToken := r.Header.Get("Authorization")
+	headerToken := strings.TrimSpace(r.Header.Get("Authorization"))
+	headerToken = strings.TrimPrefix(headerToken, "Bearer ")
 
 	claims, err := client.DecodeToken(headerToken)
 	if err == nil {
