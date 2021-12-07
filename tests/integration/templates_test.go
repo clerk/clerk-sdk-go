@@ -3,8 +3,10 @@
 package integration
 
 import (
-	"github.com/clerkinc/clerk-sdk-go/clerk"
+	"fmt"
 	"testing"
+
+	"github.com/clerkinc/clerk-sdk-go/clerk"
 )
 
 func TestTemplates(t *testing.T) {
@@ -31,11 +33,23 @@ func TestTemplates(t *testing.T) {
 			t.Fatalf("Templates.Read returned nil")
 		}
 
+		var requiredVariable string
+		switch slug {
+		case "invitation":
+			requiredVariable = "{{ActionURL}}"
+		case "magic_link":
+			requiredVariable = "{{MagicLink}}"
+		case "suspicious_activity":
+			requiredVariable = "{{Reason}}"
+		case "verification_code":
+			requiredVariable = "{{OTPCode}}"
+		}
+
 		upsertTemplateRequest := clerk.UpsertTemplateRequest{
-			Name:    "Remarketing SMS",
+			Name:    "Remarketing email",
 			Subject: "Unmissable opportunity",
 			Markup:  "",
-			Body:    "Click {{link}} for free unicorns",
+			Body:    fmt.Sprintf("Click %s for free unicorns", requiredVariable),
 		}
 
 		upsertedTemplate, err := client.Templates().Upsert(templateType, slug, &upsertTemplateRequest)
