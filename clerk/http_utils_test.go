@@ -20,7 +20,7 @@ func setup(token string) (client Client, mux *http.ServeMux, serverURL *url.URL,
 	server := httptest.NewServer(apiHandler)
 
 	baseURL, _ := url.Parse(server.URL + versionPath + "/")
-	client, _ = NewClientWithBaseUrl(token, baseURL.String())
+	client, _ = NewClient(token, WithBaseURL(baseURL.String()))
 
 	return client, mux, baseURL, server.Close
 }

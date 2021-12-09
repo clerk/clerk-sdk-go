@@ -3,8 +3,9 @@
 package integration
 
 import (
-	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"os"
+
+	"github.com/clerkinc/clerk-sdk-go/clerk"
 )
 
 type key string
@@ -17,14 +18,12 @@ const (
 func createClient() clerk.Client {
 	apiUrl := getEnv(APIUrl)
 	apiKey := getEnv(APIKey)
-	return createClientWithKey(apiUrl, apiKey)
-}
 
-func createClientWithKey(apiUrl string, apiKey string) clerk.Client {
-	client, err := clerk.NewClientWithBaseUrl(apiKey, apiUrl)
+	client, err := clerk.NewClient(apiKey, clerk.WithBaseURL(apiUrl))
 	if err != nil {
 		panic("Unable to create Clerk client")
 	}
+
 	return client
 }
 
