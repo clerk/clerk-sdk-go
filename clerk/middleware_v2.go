@@ -73,6 +73,15 @@ func WithSessionV2(client Client) func(handler http.Handler) http.Handler {
 				return
 			}
 
+			// In development or staging environments only, based on the request User Agent, detect non-browser
+			// requests (e.g. scripts). If there is no Authorization header, consider the user as signed out
+			// and prevent interstitial rendering
+			if isDevelopmentOrStaging(client) && !strings.HasPrefix(r.UserAgent(), "Mozilla/") {
+				// signed out
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			// in cross-origin requests the use of Authorization
 			// header is mandatory
 			if isCrossOrigin(r) {
