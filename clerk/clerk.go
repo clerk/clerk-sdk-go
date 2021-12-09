@@ -3,11 +3,13 @@ package clerk
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 const (
@@ -21,6 +23,10 @@ const (
 	TemplatesUrl     = "templates"
 	UsersUrl         = "users"
 	WebhooksUrl      = "webhooks"
+)
+
+var (
+	defaultHTTPClient = &http.Client{Timeout: time.Second * 5}
 )
 
 type Client interface {
@@ -68,19 +74,27 @@ type client struct {
 // NewClient creates a new Clerk client.
 // Because the token supplied will be used for all authenticated requests,
 // the created client should not be used across different users
-func NewClient(token string) (Client, error) {
-	return NewClientWithBaseUrl(token, ProdUrl)
-}
+func NewClient(token string, options ...ClerkOption) (Client, error) {
+	if token == "" {
+		return nil, errors.New("you must provide an API token")
+	}
 
-func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
-	httpClient := http.Client{}
+	defaultBaseURL, err := toURLWithEndingSlash(ProdUrl)
+	if err != nil {
+		return nil, err
+	}
 
-	return NewClientWithCustomHTTP(token, baseUrl, &httpClient)
-}
+	client := &client{
+		client:  defaultHTTPClient,
+		baseURL: defaultBaseURL,
+		token:   token,
+	}
 
-func NewClientWithCustomHTTP(token string, urlStr string, httpClient *http.Client) (Client, error) {
-	baseURL := toURLWithEndingSlash(urlStr)
-	client := &client{client: httpClient, baseURL: baseURL, token: token}
+	for _, option := range options {
+		if err = option(client); err != nil {
+			return nil, err
+		}
+	}
 
 	commonService := &service{client: client}
 	client.clients = (*ClientsService)(commonService)
@@ -98,12 +112,27 @@ func NewClientWithCustomHTTP(token string, urlStr string, httpClient *http.Clien
 	return client, nil
 }
 
-func toURLWithEndingSlash(u string) *url.URL {
-	baseURL, _ := url.Parse(u)
+// Deprecated: NewClientWithBaseUrl is deprecated. Use the NewClient instead e.g. NewClient(token, WithBaseURL(baseUrl))
+func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
+	return NewClient(token, WithBaseURL(baseUrl))
+}
+
+// Deprecated: NewClientWithCustomHTTP is deprecated. Use the NewClient instead e.g. NewClient(token, WithBaseURL(urlStr), WithHTTPClient(httpClient))
+func NewClientWithCustomHTTP(token string, urlStr string, httpClient *http.Client) (Client, error) {
+	return NewClient(token, WithBaseURL(urlStr), WithHTTPClient(httpClient))
+}
+
+func toURLWithEndingSlash(u string) (*url.URL, error) {
+	baseURL, err := url.Parse(u)
+	if err != nil {
+		return nil, err
+	}
+
 	if !strings.HasSuffix(baseURL.Path, "/") {
 		baseURL.Path += "/"
 	}
-	return baseURL
+
+	return baseURL, err
 }
 
 // NewRequest creates an API request.

@@ -23,7 +23,7 @@ func TestNewClient_baseUrl(t *testing.T) {
 
 func TestNewClient_baseUrlWithoutSlash(t *testing.T) {
 	input, want := "http://host/v1", "http://host/v1/"
-	c, _ := NewClientWithBaseUrl("token", input)
+	c, _ := NewClient("token", WithBaseURL(input))
 
 	if got := c.(*client).baseURL.String(); got != want {
 		t.Errorf("NewClient BaseURL is %v, want %v", got, want)
@@ -31,10 +31,13 @@ func TestNewClient_baseUrlWithoutSlash(t *testing.T) {
 }
 
 func TestNewClient_createsDifferentClients(t *testing.T) {
+	httpClient1, httpClient2 := &http.Client{}, &http.Client{}
+
 	token := "token"
-	c, _ := NewClient(token)
-	c2, _ := NewClient(token)
-	if c.(*client).client == c2.(*client).client {
+	c1, _ := NewClient(token, WithHTTPClient(httpClient1))
+	c2, _ := NewClient(token, WithHTTPClient(httpClient2))
+
+	if c1.(*client).client == c2.(*client).client {
 		t.Error("NewClient returned same http.Clients, but they should differ")
 	}
 }
@@ -160,7 +163,7 @@ func TestDo_sendsTokenInRequest(t *testing.T) {
 }
 
 func TestDo_invalidServer(t *testing.T) {
-	client, _ := NewClientWithBaseUrl("token", "http://dummy_url:1337")
+	client, _ := NewClient("token", WithBaseURL("http://dummy_url:1337"))
 
 	req, _ := client.NewRequest("GET", "test")
 
