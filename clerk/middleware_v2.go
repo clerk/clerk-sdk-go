@@ -43,17 +43,17 @@ func SessionFromContext(ctx context.Context) (*SessionClaims, bool) {
 func WithSessionV2(client Client) func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			headerToken := strings.TrimSpace(r.Header.Get("authorization"))
-			headerToken = strings.TrimPrefix(headerToken, "Bearer ")
-			cookieToken, _ := r.Cookie("__session")
-			clientUat, _ := r.Cookie("__client_uat")
-
 			// ****************************************************
 			//                                                    *
 			//                HEADER AUTHENTICATION               *
 			//                                                    *
 			// ****************************************************
-			if headerToken != "" {
+			_, authorizationHeaderExists := r.Header["Authorization"]
+
+			if authorizationHeaderExists {
+				headerToken := strings.TrimSpace(r.Header.Get("Authorization"))
+				headerToken = strings.TrimPrefix(headerToken, "Bearer ")
+
 				_, err := client.DecodeToken(headerToken)
 				if err != nil {
 					// signed out
@@ -95,6 +95,9 @@ func WithSessionV2(client Client) func(handler http.Handler) http.Handler {
 			//                COOKIE AUTHENTICATION               *
 			//                                                    *
 			// ****************************************************
+			cookieToken, _ := r.Cookie("__session")
+			clientUat, _ := r.Cookie("__client_uat")
+
 			if isDevelopmentOrStaging(client) && (r.Referer() == "" || isCrossOrigin(r)) {
 				renderInterstitial(client, w)
 				return
