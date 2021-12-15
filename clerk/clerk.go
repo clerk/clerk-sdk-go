@@ -23,6 +23,7 @@ const (
 	TemplatesUrl     = "templates"
 	UsersUrl         = "users"
 	WebhooksUrl      = "webhooks"
+	JWTTemplatesUrl  = "jwt_templates"
 )
 
 var (
@@ -39,6 +40,7 @@ type Client interface {
 	Clients() *ClientsService
 	Emails() *EmailService
 	JWKS() *JWKSService
+	JWTTemplates() *JWTTemplatesService
 	Sessions() *SessionsService
 	SMS() *SMSService
 	Templates() *TemplatesService
@@ -63,6 +65,7 @@ type client struct {
 	clients      *ClientsService
 	emails       *EmailService
 	jwks         *JWKSService
+	jwtTemplates *JWTTemplatesService
 	sessions     *SessionsService
 	sms          *SMSService
 	templates    *TemplatesService
@@ -100,6 +103,7 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	client.clients = (*ClientsService)(commonService)
 	client.emails = (*EmailService)(commonService)
 	client.jwks = (*JWKSService)(commonService)
+	client.jwtTemplates = (*JWTTemplatesService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
 	client.sms = (*SMSService)(commonService)
 	client.templates = (*TemplatesService)(commonService)
@@ -221,6 +225,10 @@ func (c *client) Emails() *EmailService {
 
 func (c *client) JWKS() *JWKSService {
 	return c.jwks
+}
+
+func (c *client) JWTTemplates() *JWTTemplatesService {
+	return c.jwtTemplates
 }
 
 func (c *client) Sessions() *SessionsService {
