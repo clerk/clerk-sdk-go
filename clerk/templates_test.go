@@ -201,7 +201,7 @@ const dummyTemplateJSON = `{
         "michael",
         "jackson"
     ],
-    "mandatory_variables": [
+    "required_variables": [
         "michael"
     ]
 }`

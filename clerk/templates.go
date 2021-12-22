@@ -22,7 +22,7 @@ type TemplateExtended struct {
 	Markup             string   `json:"markup"`
 	Body               string   `json:"body"`
 	AvailableVariables []string `json:"available_variables"`
-	MandatoryVariables []string `json:"mandatory_variables"`
+	RequiredVariables  []string `json:"required_variables"`
 }
 
 type TemplatePreview struct {
