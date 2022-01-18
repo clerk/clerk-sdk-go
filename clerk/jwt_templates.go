@@ -15,15 +15,21 @@ type JWTTemplate struct {
 	Claims           json.RawMessage `json:"claims"`
 	Lifetime         int             `json:"lifetime"`
 	AllowedClockSkew int             `json:"allowed_clock_skew"`
+	CustomSigningKey bool            `json:"custom_signing_key"`
+	SigningAlgorithm string          `json:"signing_algorithm"`
 	CreatedAt        int64           `json:"created_at"`
 	UpdatedAt        int64           `json:"updated_at"`
 }
 
 type CreateUpdateJWTTemplate struct {
-	Claims           map[string]interface{}
-	Name             string
-	Lifetime         *int
-	AllowedClockSkew *int
+	Name             string                 `json:"name"`
+	Claims           map[string]interface{} `json:"claims"`
+	Lifetime         *int                   `json:"lifetime"`
+	AllowedClockSkew *int                   `json:"allowed_clock_skew"`
+
+	CustomSigningKey bool    `json:"custom_signing_key"`
+	SigningAlgorithm *string `json:"signing_algorithm"`
+	SigningKey       *string `json:"signing_key"`
 }
 
 func (t CreateUpdateJWTTemplate) toRequest() (*createUpdateJWTTemplateRequest, error) {
@@ -37,14 +43,20 @@ func (t CreateUpdateJWTTemplate) toRequest() (*createUpdateJWTTemplateRequest, e
 		Name:             t.Name,
 		Lifetime:         t.Lifetime,
 		AllowedClockSkew: t.AllowedClockSkew,
+		CustomSigningKey: t.CustomSigningKey,
+		SigningAlgorithm: t.SigningAlgorithm,
+		SigningKey:       t.SigningKey,
 	}, nil
 }
 
 type createUpdateJWTTemplateRequest struct {
-	Claims           string `json:"claims"`
-	Name             string `json:"name"`
-	Lifetime         *int   `json:"lifetime,omitempty"`
-	AllowedClockSkew *int   `json:"allowed_clock_skew,omitempty"`
+	Claims           string  `json:"claims"`
+	Name             string  `json:"name"`
+	Lifetime         *int    `json:"lifetime,omitempty"`
+	AllowedClockSkew *int    `json:"allowed_clock_skew,omitempty"`
+	CustomSigningKey bool    `json:"custom_signing_key"`
+	SigningAlgorithm *string `json:"signing_algorithm,omitempty"`
+	SigningKey       *string `json:"signing_key,omitempty"`
 }
 
 func (s JWTTemplatesService) ListAll() ([]JWTTemplate, error) {
