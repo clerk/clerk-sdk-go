@@ -89,8 +89,44 @@ func TestJWTTemplatesService_Create(t *testing.T) {
 	}
 }
 
+func TestJWTTemplatesService_CreateWithCustomSigningKey(t *testing.T) {
+	c, mux, _, teardown := setup("token")
+	defer teardown()
+
+	customSigningAlgorithm := "HS256"
+	customSigningKey := "random-secret"
+
+	mux.HandleFunc("/jwt_templates", func(w http.ResponseWriter, r *http.Request) {
+		testHttpMethod(t, r, http.MethodPost)
+		testHeader(t, r, "Authorization", "Bearer token")
+
+		var req createUpdateJWTTemplateRequest
+		_ = json.NewDecoder(r.Body).Decode(&req)
+
+		assert.Equal(t, true, req.CustomSigningKey)
+		assert.Equal(t, customSigningAlgorithm, *req.SigningAlgorithm)
+		assert.Equal(t, customSigningKey, *req.SigningKey)
+
+		_, _ = fmt.Fprint(w, dummyJWTTemplateCustomSigningKeyJSON)
+	})
+
+	newJWTTmpl := &CreateUpdateJWTTemplate{
+		Name: "Testing-Custom-Signing-Key",
+		Claims: map[string]interface{}{
+			"name": "{{user.first_name}}",
+			"role": "tester",
+		},
+		CustomSigningKey: true,
+		SigningAlgorithm: &customSigningAlgorithm,
+		SigningKey:       &customSigningKey,
+	}
+
+	_, err := c.JWTTemplates().Create(newJWTTmpl)
+	assert.Nil(t, err)
+}
+
 func TestJWTTemplatesService_Update(t *testing.T) {
-	dummyResponse := dummyJWTTemplateUpdateJSON
+	dummyResponse := dummyJWTTemplateCustomLifetimeAndClockSkewJSON
 
 	c, mux, _, teardown := setup("token")
 	defer teardown()
@@ -162,10 +198,12 @@ const (
 		"role": "tester"
 	},
 	"lifetime": 60,
-	"allowed_clock_skew": 5
+	"allowed_clock_skew": 5,
+	"custom_signing_key": false,
+	"signing_algorithm": "RS256"
 }`
 
-	dummyJWTTemplateUpdateJSON = `
+	dummyJWTTemplateCustomLifetimeAndClockSkewJSON = `
 {
     "object": "jwt_template",
 	"id": "` + dummyJWTTemplateID + `",
@@ -175,6 +213,23 @@ const (
 		"age": 28
 	},
 	"lifetime": 60,
-	"allowed_clock_skew": 5
+	"allowed_clock_skew": 5,
+	"custom_signing_key": false,
+	"signing_algorithm": "RS256"
+}`
+
+	dummyJWTTemplateCustomSigningKeyJSON = `
+{
+    "object": "jwt_template",
+	"id": "` + dummyJWTTemplateID + `",
+    "name": "Testing",
+    "claims": {
+		"name": "{{user.first_name}}",
+		"role": "tester"
+	},
+	"lifetime": 60,
+	"allowed_clock_skew": 5,
+	"custom_signing_key": true,
+	"signing_algorithm": "HS256"
 }`
 )
