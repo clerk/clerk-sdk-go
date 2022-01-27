@@ -35,7 +35,7 @@ type Client interface {
 	Do(req *http.Request, v interface{}) (*http.Response, error)
 
 	DecodeToken(token string) (*TokenClaims, error)
-	VerifyToken(token string) (*SessionClaims, error)
+	VerifyToken(token string, opts ...VerifyTokenOption) (*SessionClaims, error)
 
 	Clients() *ClientsService
 	Emails() *EmailService
