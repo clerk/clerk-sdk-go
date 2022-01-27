@@ -46,7 +46,8 @@ var (
 			Expiry:   nil,
 			IssuedAt: nil,
 		},
-		SessionID: "session_id",
+		SessionID:       "session_id",
+		AuthorizedParty: "authorized_party",
 	}
 )
 
@@ -162,6 +163,23 @@ func TestClient_VerifyToken_ExpiredToken(t *testing.T) {
 	}
 }
 
+func TestClient_VerifyToken_InvalidAuthorizedParty(t *testing.T) {
+	c, _ := NewClient("token")
+
+	claims := dummySessionClaims
+	claims.AuthorizedParty = "fake-party"
+
+	token, pubKey := testGenerateTokenJWT(t, claims, "kid")
+
+	client := c.(*client)
+	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
+
+	_, err := c.VerifyToken(token, WithAuthorizedParty("authorized_party"))
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+}
+
 func TestClient_VerifyToken_Success(t *testing.T) {
 	c, _ := NewClient("token")
 	token, pubKey := testGenerateTokenJWT(t, dummySessionClaims, "kid")
@@ -191,6 +209,27 @@ func TestClient_VerifyToken_Success_ExpiredCache(t *testing.T) {
 	client.jwksCache.expiresAt = time.Now().Add(time.Second * -5)
 
 	got, _ := c.VerifyToken(token)
+	if !reflect.DeepEqual(got, &dummySessionClaims) {
+		t.Errorf("Expected %+v, but got %+v", dummySessionClaims, got)
+	}
+}
+
+func TestClient_VerifyToken_Success_AuthorizedParty(t *testing.T) {
+	c, mux, _, teardown := setup("token")
+	defer teardown()
+
+	token, pubKey := testGenerateTokenJWT(t, dummySessionClaims, "kid")
+
+	mux.HandleFunc("/jwks", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer token")
+		_ = json.NewEncoder(w).Encode(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
+	})
+
+	client := c.(*client)
+	client.jwksCache.expiresAt = time.Now().Add(time.Second * -5)
+
+	got, _ := c.VerifyToken(token, WithAuthorizedParty("authorized_party"))
 	if !reflect.DeepEqual(got, &dummySessionClaims) {
 		t.Errorf("Expected %+v, but got %+v", dummySessionClaims, got)
 	}

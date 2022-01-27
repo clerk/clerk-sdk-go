@@ -21,7 +21,8 @@ type TokenClaims struct {
 
 type SessionClaims struct {
 	jwt.Claims
-	SessionID string `json:"sid"`
+	SessionID       string `json:"sid"`
+	AuthorizedParty string `json:"azp"`
 }
 
 // DecodeToken decodes a jwt token without verifying it.
@@ -46,8 +47,18 @@ func (c *client) DecodeToken(token string) (*TokenClaims, error) {
 	return &TokenClaims{Claims: standardClaims, Extra: extraClaims}, nil
 }
 
+type verifyTokenOptions struct {
+	authorizedParties map[string]struct{}
+}
+
 // VerifyToken verifies the session jwt token.
-func (c *client) VerifyToken(token string) (*SessionClaims, error) {
+func (c *client) VerifyToken(token string, opts ...VerifyTokenOption) (*SessionClaims, error) {
+	options := &verifyTokenOptions{}
+
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	parsedToken, err := jwt.ParseSigned(token)
 	if err != nil {
 		return nil, err
@@ -82,6 +93,12 @@ func (c *client) VerifyToken(token string) (*SessionClaims, error) {
 
 	if !strings.HasPrefix(claims.Issuer, "https://clerk.") {
 		return nil, fmt.Errorf("invalid issuer %s", claims.Issuer)
+	}
+
+	if claims.AuthorizedParty != "" && len(options.authorizedParties) > 0 {
+		if _, ok := options.authorizedParties[claims.AuthorizedParty]; !ok {
+			return nil, fmt.Errorf("invalid authorized party %s", claims.AuthorizedParty)
+		}
 	}
 
 	return &claims, nil

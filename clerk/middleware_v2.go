@@ -14,7 +14,7 @@ var urlSchemeRe = regexp.MustCompile(`(^\w+:|^)\/\/`)
 
 // RequireSessionV2 will hijack the request and return an HTTP status 403
 // if the session is not authenticated.
-func RequireSessionV2(client Client) func(handler http.Handler) http.Handler {
+func RequireSessionV2(client Client, verifyTokenOptions ...VerifyTokenOption) func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		f := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			claims, ok := r.Context().Value(ActiveSessionClaims).(*SessionClaims)
@@ -26,7 +26,7 @@ func RequireSessionV2(client Client) func(handler http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 
-		return WithSessionV2(client)(f)
+		return WithSessionV2(client, verifyTokenOptions...)(f)
 	}
 }
 
@@ -40,7 +40,7 @@ func SessionFromContext(ctx context.Context) (*SessionClaims, bool) {
 // WithSessionV2 is the new middleware that supports Auth v2. If the session is
 // authenticated, it adds the corresponding session claims found in the JWT to
 // request's context.
-func WithSessionV2(client Client) func(handler http.Handler) http.Handler {
+func WithSessionV2(client Client, verifyTokenOptions ...VerifyTokenOption) func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// ****************************************************
@@ -61,7 +61,7 @@ func WithSessionV2(client Client) func(handler http.Handler) http.Handler {
 					return
 				}
 
-				claims, err := client.VerifyToken(headerToken)
+				claims, err := client.VerifyToken(headerToken, verifyTokenOptions...)
 				if err == nil { // signed in
 					ctx := context.WithValue(r.Context(), ActiveSessionClaims, claims)
 					next.ServeHTTP(w, r.WithContext(ctx))
