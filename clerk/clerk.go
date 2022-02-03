@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -11,6 +12,8 @@ import (
 	"strings"
 	"time"
 )
+
+const version = "1.2.0"
 
 const (
 	ProdUrl = "https://api.clerk.dev/v1/"
@@ -164,6 +167,9 @@ func (c *client) NewRequest(method string, url string, body ...interface{}) (*ht
 	if err != nil {
 		return nil, err
 	}
+
+	// Add custom header with the current SDK version
+	req.Header.Set("X-Clerk-SDK", fmt.Sprintf("go/%s", version))
 
 	return req, nil
 }
