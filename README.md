@@ -5,6 +5,14 @@
 
 Go client library for accessing the [Clerk Backend API v1](https://docs.clerk.dev/reference/backend-api-reference).
 
+---
+
+**Clerk is Hiring!**
+
+Would you like to work on Open Source software and help maintain this repository? Apply today https://apply.workable.com/clerk-dev/.
+
+---
+
 ## Usage ##
 
 First, add the Clerk SDK as a dependency to your project.
