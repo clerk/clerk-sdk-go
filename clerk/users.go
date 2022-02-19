@@ -18,13 +18,16 @@ type User struct {
 	ProfileImageURL       string         `json:"profile_image_url"`
 	PrimaryEmailAddressID *string        `json:"primary_email_address_id"`
 	PrimaryPhoneNumberID  *string        `json:"primary_phone_number_id"`
+	PrimaryWeb3WalletId   *string        `json:"primary_web3_wallet_id"`
 	PasswordEnabled       bool           `json:"password_enabled"`
 	TwoFactorEnabled      bool           `json:"two_factor_enabled"`
 	EmailAddresses        []EmailAddress `json:"email_addresses"`
 	PhoneNumbers          []PhoneNumber  `json:"phone_numbers"`
 	ExternalAccounts      []interface{}  `json:"external_accounts"`
+	ExternalID            *string        `json:"external_id"`
 	PublicMetadata        interface{}    `json:"public_metadata"`
 	PrivateMetadata       interface{}    `json:"private_metadata"`
+	UnsafeMetadata        interface{}    `json:"unsafe_metadata"`
 	CreatedAt             int64          `json:"created_at"`
 	UpdatedAt             int64          `json:"updated_at"`
 }
