@@ -10,9 +10,7 @@ import (
 	"gopkg.in/square/go-jose.v2/jwt"
 )
 
-var (
-	standardClaimsKeys = []string{"iss", "sub", "aud", "exp", "nbf", "iat", "jti"}
-)
+var standardClaimsKeys = []string{"iss", "sub", "aud", "exp", "nbf", "iat", "jti"}
 
 type TokenClaims struct {
 	jwt.Claims

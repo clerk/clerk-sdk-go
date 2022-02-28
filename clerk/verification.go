@@ -54,7 +54,7 @@ func (s *VerificationService) useClientActiveSession(token string) (*Session, er
 	return nil, errors.New("active session not included in client's sessions")
 }
 
-func doVerify(client Client, url string, token string, response interface{}) error {
+func doVerify(client Client, url, token string, response interface{}) error {
 	tokenPayload := verifyRequest{Token: token}
 	req, _ := client.NewRequest("POST", url, &tokenPayload)
 

@@ -29,12 +29,10 @@ const (
 	JWTTemplatesUrl  = "jwt_templates"
 )
 
-var (
-	defaultHTTPClient = &http.Client{Timeout: time.Second * 5}
-)
+var defaultHTTPClient = &http.Client{Timeout: time.Second * 5}
 
 type Client interface {
-	NewRequest(method string, url string, body ...interface{}) (*http.Request, error)
+	NewRequest(method, url string, body ...interface{}) (*http.Request, error)
 	Do(req *http.Request, v interface{}) (*http.Response, error)
 
 	DecodeToken(token string) (*TokenClaims, error)
@@ -120,12 +118,12 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 }
 
 // Deprecated: NewClientWithBaseUrl is deprecated. Use the NewClient instead e.g. NewClient(token, WithBaseURL(baseUrl))
-func NewClientWithBaseUrl(token string, baseUrl string) (Client, error) {
+func NewClientWithBaseUrl(token, baseUrl string) (Client, error) {
 	return NewClient(token, WithBaseURL(baseUrl))
 }
 
 // Deprecated: NewClientWithCustomHTTP is deprecated. Use the NewClient instead e.g. NewClient(token, WithBaseURL(urlStr), WithHTTPClient(httpClient))
-func NewClientWithCustomHTTP(token string, urlStr string, httpClient *http.Client) (Client, error) {
+func NewClientWithCustomHTTP(token, urlStr string, httpClient *http.Client) (Client, error) {
 	return NewClient(token, WithBaseURL(urlStr), WithHTTPClient(httpClient))
 }
 
@@ -146,7 +144,7 @@ func toURLWithEndingSlash(u string) (*url.URL, error) {
 // A relative URL `url` can be specified which is resolved relative to the baseURL of the client.
 // Relative URLs should be specified without a preceding slash.
 // The `body` parameter can be used to pass a body to the request. If no body is required, the parameter can be omitted.
-func (c *client) NewRequest(method string, url string, body ...interface{}) (*http.Request, error) {
+func (c *client) NewRequest(method, url string, body ...interface{}) (*http.Request, error) {
 	fullUrl, err := c.baseURL.Parse(url)
 	if err != nil {
 		return nil, err

@@ -187,7 +187,7 @@ func TestVerificationService_Verify_noSessionCookie(t *testing.T) {
 	}
 }
 
-func setupRequest(sessionId *string, sessionToken *string) *http.Request {
+func setupRequest(sessionId, sessionToken *string) *http.Request {
 	var request http.Request
 	request.Method = "GET"
 
@@ -216,7 +216,7 @@ func setupRequest(sessionId *string, sessionToken *string) *http.Request {
 	return &request
 }
 
-func addQueryParam(req *http.Request, key string, value string) {
+func addQueryParam(req *http.Request, key, value string) {
 	url := req.URL
 	query := url.Query()
 	query.Add(key, value)

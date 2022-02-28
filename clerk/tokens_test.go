@@ -243,7 +243,7 @@ func testGenerateTokenJWT(t *testing.T, claims interface{}, kid string) (string,
 		t.Error(err)
 	}
 
-	var signerOpts = &jose.SignerOptions{}
+	signerOpts := &jose.SignerOptions{}
 	signerOpts.WithType("JWT")
 	if kid != "" {
 		signerOpts.WithHeader("kid", kid)

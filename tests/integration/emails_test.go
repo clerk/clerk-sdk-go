@@ -1,11 +1,13 @@
+//go:build integration
 // +build integration
 
 package integration
 
 import (
-	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"reflect"
 	"testing"
+
+	"github.com/clerkinc/clerk-sdk-go/clerk"
 )
 
 func TestEmails(t *testing.T) {

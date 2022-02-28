@@ -1,10 +1,12 @@
+//go:build integration
 // +build integration
 
 package integration
 
 import (
-	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"testing"
+
+	"github.com/clerkinc/clerk-sdk-go/clerk"
 )
 
 type addressDetails struct {
