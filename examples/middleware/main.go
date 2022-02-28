@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"log"
 	"net/http"
+
+	"github.com/clerkinc/clerk-sdk-go/clerk"
 )
 
 func returnActiveSession(w http.ResponseWriter, req *http.Request) {

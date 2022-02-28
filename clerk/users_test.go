@@ -3,11 +3,12 @@ package clerk
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/url"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUsersService_ListAll_happyPath(t *testing.T) {
