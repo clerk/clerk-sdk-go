@@ -235,6 +235,22 @@ func TestClient_VerifyToken_Success_AuthorizedParty(t *testing.T) {
 	}
 }
 
+func TestClient_VerifyToken_Success_WithLeeway(t *testing.T) {
+	c, _ := NewClient("token")
+
+	expiredClaims := dummySessionClaims
+	expiredClaims.Expiry = jwt.NewNumericDate(time.Now().Add(time.Second * -1))
+	token, pubKey := testGenerateTokenJWT(t, expiredClaims, "kid")
+
+	client := c.(*client)
+	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
+
+	_, err := c.VerifyToken(token, WithLeeway(3*time.Second))
+	if err != nil {
+		t.Errorf("Expected no error to be returned, but got: %+v", err)
+	}
+}
+
 func testGenerateTokenJWT(t *testing.T, claims interface{}, kid string) (string, crypto.PublicKey) {
 	t.Helper()
 
