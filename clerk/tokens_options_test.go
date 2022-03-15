@@ -2,6 +2,7 @@ package clerk
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -29,6 +30,15 @@ func TestWithAuthorizedPartyMultiple(t *testing.T) {
 
 	assert.Len(t, opts.authorizedParties, len(authorizedParties))
 	assert.Equal(t, arrayToMap(t, authorizedParties), opts.authorizedParties)
+}
+
+func TestWithLeeway(t *testing.T) {
+	leeway := 5 * time.Second
+
+	opts := &verifyTokenOptions{}
+	WithLeeway(leeway)(opts)
+
+	assert.Equal(t, opts.leeway, leeway)
 }
 
 func arrayToMap(t *testing.T, input []string) map[string]struct{} {
