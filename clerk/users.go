@@ -56,6 +56,11 @@ type ListAllUsersParams struct {
 	Offset         *int
 	EmailAddresses []string
 	PhoneNumbers   []string
+	Web3Wallets    []string
+	Usernames      []string
+	UserIDs        []string
+	Query          *string
+	OrderBy        *string
 }
 
 func (s *UsersService) ListAll(params ListAllUsersParams) ([]User, error) {
@@ -77,6 +82,27 @@ func (s *UsersService) ListAll(params ListAllUsersParams) ([]User, error) {
 		for _, phone := range params.PhoneNumbers {
 			query.Add("phone_number", phone)
 		}
+	}
+	if params.Web3Wallets != nil {
+		for _, web3Wallet := range params.Web3Wallets {
+			query.Add("web3_wallet", web3Wallet)
+		}
+	}
+	if params.Usernames != nil {
+		for _, username := range params.Usernames {
+			query.Add("username", username)
+		}
+	}
+	if params.UserIDs != nil {
+		for _, userID := range params.UserIDs {
+			query.Add("user_id", userID)
+		}
+	}
+	if params.Query != nil {
+		query.Add("query", *params.Query)
+	}
+	if params.OrderBy != nil {
+		query.Add("order_by", *params.OrderBy)
 	}
 	req.URL.RawQuery = query.Encode()
 
