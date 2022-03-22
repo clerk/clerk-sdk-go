@@ -2,6 +2,7 @@ package clerk
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 )
 
@@ -66,6 +67,8 @@ type ListAllUsersParams struct {
 func (s *UsersService) ListAll(params ListAllUsersParams) ([]User, error) {
 	req, _ := s.client.NewRequest("GET", UsersUrl)
 
+	s.addUserSearchParamsToRequest(req, params)
+
 	query := req.URL.Query()
 	if params.Limit != nil {
 		query.Set("limit", strconv.Itoa(*params.Limit))
@@ -73,6 +76,39 @@ func (s *UsersService) ListAll(params ListAllUsersParams) ([]User, error) {
 	if params.Offset != nil {
 		query.Set("offset", strconv.Itoa(*params.Offset))
 	}
+	if params.OrderBy != nil {
+		query.Add("order_by", *params.OrderBy)
+	}
+	req.URL.RawQuery = query.Encode()
+
+	var users []User
+	_, err := s.client.Do(req, &users)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+type UserCount struct {
+	Object     string `json:"object"`
+	TotalCount int    `json:"total_count"`
+}
+
+func (s *UsersService) Count(params ListAllUsersParams) (*UserCount, error) {
+	req, _ := s.client.NewRequest("GET", UsersCountUrl)
+
+	s.addUserSearchParamsToRequest(req, params)
+
+	var userCount UserCount
+	_, err := s.client.Do(req, &userCount)
+	if err != nil {
+		return nil, err
+	}
+	return &userCount, nil
+}
+
+func (s *UsersService) addUserSearchParamsToRequest(r *http.Request, params ListAllUsersParams) {
+	query := r.URL.Query()
 	if params.EmailAddresses != nil {
 		for _, email := range params.EmailAddresses {
 			query.Add("email_address", email)
@@ -101,17 +137,7 @@ func (s *UsersService) ListAll(params ListAllUsersParams) ([]User, error) {
 	if params.Query != nil {
 		query.Add("query", *params.Query)
 	}
-	if params.OrderBy != nil {
-		query.Add("order_by", *params.OrderBy)
-	}
-	req.URL.RawQuery = query.Encode()
-
-	var users []User
-	_, err := s.client.Do(req, &users)
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
+	r.URL.RawQuery = query.Encode()
 }
 
 func (s *UsersService) Read(userId string) (*User, error) {

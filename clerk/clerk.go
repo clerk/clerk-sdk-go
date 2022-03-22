@@ -25,6 +25,7 @@ const (
 	SMSUrl           = "sms_messages"
 	TemplatesUrl     = "templates"
 	UsersUrl         = "users"
+	UsersCountUrl    = UsersUrl + "/count"
 	WebhooksUrl      = "webhooks"
 	JWTTemplatesUrl  = "jwt_templates"
 )
