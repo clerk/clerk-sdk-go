@@ -33,6 +33,14 @@ func TestUsers(t *testing.T) {
 		t.Fatalf("Users.ListAll returned nil")
 	}
 
+	userCount, err := client.Users().Count(clerk.ListAllUsersParams{})
+	if err != nil {
+		t.Fatalf("Users.Count returned error: %v", err)
+	}
+	if userCount.TotalCount != len(users) {
+		t.Fatalf("Users.Count returned %d, expected %d", userCount.TotalCount, len(users))
+	}
+
 	for i, user := range users {
 		userId := user.ID
 		user, err := client.Users().Read(userId)

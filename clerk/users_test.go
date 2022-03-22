@@ -101,6 +101,79 @@ func TestUsersService_ListAll_invalidServer(t *testing.T) {
 	}
 }
 
+func TestUsersService_Count_happyPath(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	expectedResponse := dummyUserCountJson
+
+	mux.HandleFunc("/users/count", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer token")
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	var want UserCount
+	_ = json.Unmarshal([]byte(expectedResponse), &want)
+
+	got, _ := client.Users().Count(ListAllUsersParams{})
+	if !reflect.DeepEqual(*got, want) {
+		t.Errorf("Response = %v, want %v", *got, want)
+	}
+}
+
+func TestUsersService_Count_happyPathWithParameters(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	expectedResponse := dummyUserCountJson
+
+	mux.HandleFunc("/users/count", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer token")
+
+		actualQuery := req.URL.Query()
+		expectedQuery := url.Values(map[string][]string{
+			"email_address": {"email1", "email2"},
+			"phone_number":  {"phone1", "phone2"},
+			"web3_wallet":   {"wallet1", "wallet2"},
+			"username":      {"username1", "username2"},
+			"user_id":       {"userid1", "userid2"},
+			"query":         {"my-query"},
+		})
+		assert.Equal(t, expectedQuery, actualQuery)
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	var want UserCount
+	_ = json.Unmarshal([]byte(expectedResponse), &want)
+
+	queryString := "my-query"
+	got, _ := client.Users().Count(ListAllUsersParams{
+		EmailAddresses: []string{"email1", "email2"},
+		PhoneNumbers:   []string{"phone1", "phone2"},
+		Web3Wallets:    []string{"wallet1", "wallet2"},
+		Usernames:      []string{"username1", "username2"},
+		UserIDs:        []string{"userid1", "userid2"},
+		Query:          &queryString,
+	})
+	if !reflect.DeepEqual(*got, want) {
+		t.Errorf("Response = %v, want %v", got, want)
+	}
+}
+
+func TestUsersService_Count_invalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+
+	users, err := client.Users().Count(ListAllUsersParams{})
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+	if users != nil {
+		t.Errorf("Was not expecting any users to be returned, instead got %v", users)
+	}
+}
+
 func TestUsersService_Read_happyPath(t *testing.T) {
 	token := "token"
 	userId := "someUserId"
@@ -276,4 +349,9 @@ const dummyUpdateRequestJson = `{
 		"private_metadata": {
 			app_id: 5
 		},
+	}`
+
+const dummyUserCountJson = `{
+		"object": "total_count",
+		"total_count": 2
 	}`
