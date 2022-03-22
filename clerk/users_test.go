@@ -52,6 +52,11 @@ func TestUsersService_ListAll_happyPathWithParameters(t *testing.T) {
 			"offset":        {"6"},
 			"email_address": {"email1", "email2"},
 			"phone_number":  {"phone1", "phone2"},
+			"web3_wallet":   {"wallet1", "wallet2"},
+			"username":      {"username1", "username2"},
+			"user_id":       {"userid1", "userid2"},
+			"query":         {"my-query"},
+			"order_by":      {"created_at"},
 		})
 		assert.Equal(t, expectedQuery, actualQuery)
 		fmt.Fprint(w, expectedResponse)
@@ -62,11 +67,18 @@ func TestUsersService_ListAll_happyPathWithParameters(t *testing.T) {
 
 	limit := 5
 	offset := 6
+	queryString := "my-query"
+	orderBy := "created_at"
 	got, _ := client.Users().ListAll(ListAllUsersParams{
 		Limit:          &limit,
 		Offset:         &offset,
 		EmailAddresses: []string{"email1", "email2"},
 		PhoneNumbers:   []string{"phone1", "phone2"},
+		Web3Wallets:    []string{"wallet1", "wallet2"},
+		Usernames:      []string{"username1", "username2"},
+		UserIDs:        []string{"userid1", "userid2"},
+		Query:          &queryString,
+		OrderBy:        &orderBy,
 	})
 	if len(got) != len(want) {
 		t.Errorf("Was expecting %d user to be returned, instead got %d", len(want), len(got))
