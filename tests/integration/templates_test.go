@@ -36,7 +36,7 @@ func TestTemplates(t *testing.T) {
 
 		var requiredVariable string
 		switch slug {
-		case "invitation":
+		case "invitation", "organization_invitation":
 			requiredVariable = "{{ActionURL}}"
 		case "magic_link":
 			requiredVariable = "{{MagicLink}}"
