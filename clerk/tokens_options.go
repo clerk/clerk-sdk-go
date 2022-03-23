@@ -1,5 +1,7 @@
 package clerk
 
+import "time"
+
 // VerifyTokenOption describes a functional parameter for the VerifyToken method
 type VerifyTokenOption func(*verifyTokenOptions)
 
@@ -12,5 +14,12 @@ func WithAuthorizedParty(parties ...string) VerifyTokenOption {
 		}
 
 		o.authorizedParties = authorizedParties
+	}
+}
+
+// WithLeeway allows to set a custom leeway that gives some extra time to the token to accomodate for clock skew, etc.
+func WithLeeway(leeway time.Duration) VerifyTokenOption {
+	return func(o *verifyTokenOptions) {
+		o.leeway = leeway
 	}
 }

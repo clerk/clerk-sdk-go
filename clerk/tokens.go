@@ -47,6 +47,7 @@ func (c *client) DecodeToken(token string) (*TokenClaims, error) {
 
 type verifyTokenOptions struct {
 	authorizedParties map[string]struct{}
+	leeway            time.Duration
 }
 
 // VerifyToken verifies the session jwt token.
@@ -85,7 +86,7 @@ func (c *client) VerifyToken(token string, opts ...VerifyTokenOption) (*SessionC
 		return nil, err
 	}
 
-	if err = claims.Claims.ValidateWithLeeway(jwt.Expected{Time: time.Now()}, 0); err != nil {
+	if err = claims.Claims.ValidateWithLeeway(jwt.Expected{Time: time.Now()}, options.leeway); err != nil {
 		return nil, err
 	}
 
