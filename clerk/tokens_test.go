@@ -264,6 +264,20 @@ func TestClient_VerifyToken_Success_WithJWTVerificationKey(t *testing.T) {
 	}
 }
 
+func TestClient_VerifyToken_Error_WithJWTVerificationKey(t *testing.T) {
+	c, _ := NewClient("token")
+	token, _ := testGenerateTokenJWT(t, dummySessionClaims, "kid")
+
+	// Generate new public key not matching the one from the token
+	_, pubKey := testGenerateTokenJWT(t, dummySessionClaims, "kid")
+	verificationKey := testRSAPublicKeyToPEM(t, pubKey)
+
+	_, err := c.VerifyToken(token, WithJWTVerificationKey(verificationKey))
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+}
+
 func testGenerateTokenJWT(t *testing.T, claims interface{}, kid string) (string, crypto.PublicKey) {
 	t.Helper()
 
