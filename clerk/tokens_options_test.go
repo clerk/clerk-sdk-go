@@ -9,36 +9,44 @@ import (
 
 func TestWithAuthorizedPartyNone(t *testing.T) {
 	opts := &verifyTokenOptions{}
-	WithAuthorizedParty()(opts)
+	err := WithAuthorizedParty()(opts)
 
-	assert.Len(t, opts.authorizedParties, 0)
+	if assert.NoError(t, err) {
+		assert.Len(t, opts.authorizedParties, 0)
+	}
 }
 
 func TestWithAuthorizedPartySingle(t *testing.T) {
 	opts := &verifyTokenOptions{}
-	WithAuthorizedParty("test-party")(opts)
+	err := WithAuthorizedParty("test-party")(opts)
 
-	assert.Len(t, opts.authorizedParties, 1)
-	assert.Equal(t, arrayToMap(t, []string{"test-party"}), opts.authorizedParties)
+	if assert.NoError(t, err) {
+		assert.Len(t, opts.authorizedParties, 1)
+		assert.Equal(t, arrayToMap(t, []string{"test-party"}), opts.authorizedParties)
+	}
 }
 
 func TestWithAuthorizedPartyMultiple(t *testing.T) {
 	authorizedParties := []string{"test-party", "another_party", "yet-another-party"}
 
 	opts := &verifyTokenOptions{}
-	WithAuthorizedParty(authorizedParties...)(opts)
+	err := WithAuthorizedParty(authorizedParties...)(opts)
 
-	assert.Len(t, opts.authorizedParties, len(authorizedParties))
-	assert.Equal(t, arrayToMap(t, authorizedParties), opts.authorizedParties)
+	if assert.NoError(t, err) {
+		assert.Len(t, opts.authorizedParties, len(authorizedParties))
+		assert.Equal(t, arrayToMap(t, authorizedParties), opts.authorizedParties)
+	}
 }
 
 func TestWithLeeway(t *testing.T) {
 	leeway := 5 * time.Second
 
 	opts := &verifyTokenOptions{}
-	WithLeeway(leeway)(opts)
+	err := WithLeeway(leeway)(opts)
 
-	assert.Equal(t, opts.leeway, leeway)
+	if assert.NoError(t, err) {
+		assert.Equal(t, opts.leeway, leeway)
+	}
 }
 
 func arrayToMap(t *testing.T, input []string) map[string]struct{} {

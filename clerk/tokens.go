@@ -55,7 +55,9 @@ func (c *client) VerifyToken(token string, opts ...VerifyTokenOption) (*SessionC
 	options := &verifyTokenOptions{}
 
 	for _, opt := range opts {
-		opt(options)
+		if err := opt(options); err != nil {
+			return nil, err
+		}
 	}
 
 	parsedToken, err := jwt.ParseSigned(token)
