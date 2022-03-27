@@ -48,6 +48,7 @@ func (c *client) DecodeToken(token string) (*TokenClaims, error) {
 type verifyTokenOptions struct {
 	authorizedParties map[string]struct{}
 	leeway            time.Duration
+	jwk               *jose.JSONWebKey
 }
 
 // VerifyToken verifies the session jwt token.
@@ -74,9 +75,12 @@ func (c *client) VerifyToken(token string, opts ...VerifyTokenOption) (*SessionC
 		return nil, fmt.Errorf("missing jwt kid header claim")
 	}
 
-	jwk, err := c.getJWK(kid)
-	if err != nil {
-		return nil, err
+	jwk := options.jwk
+	if jwk == nil {
+		jwk, err = c.getJWK(kid)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if parsedToken.Headers[0].Algorithm != jwk.Algorithm {

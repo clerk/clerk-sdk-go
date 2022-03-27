@@ -4,7 +4,9 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"net/http"
 	"reflect"
 	"testing"
@@ -251,6 +253,17 @@ func TestClient_VerifyToken_Success_WithLeeway(t *testing.T) {
 	}
 }
 
+func TestClient_VerifyToken_Success_WithJWTVerificationKey(t *testing.T) {
+	c, _ := NewClient("token")
+	token, pubKey := testGenerateTokenJWT(t, dummySessionClaims, "kid")
+	verificationKey := testRSAPublicKeyToPEM(t, pubKey)
+
+	_, err := c.VerifyToken(token, WithJWTVerificationKey(verificationKey))
+	if err != nil {
+		t.Errorf("Expected no error, but got: %+v", err)
+	}
+}
+
 func testGenerateTokenJWT(t *testing.T, claims interface{}, kid string) (string, crypto.PublicKey) {
 	t.Helper()
 
@@ -292,4 +305,25 @@ func testBuildJWKS(t *testing.T, pubKey crypto.PublicKey, alg jose.SignatureAlgo
 			Use:       "sig",
 		},
 	}}
+}
+
+func testRSAPublicKeyToPEM(t *testing.T, input interface{}) string {
+	t.Helper()
+
+	rsaPubKey, ok := input.(*rsa.PublicKey)
+	if !ok {
+		t.Error("provided input is not an RSA public key")
+	}
+
+	pubKeyBytes, err := x509.MarshalPKIXPublicKey(rsaPubKey)
+	if err != nil {
+		t.Error("failed to marshal public key")
+	}
+
+	pemBytes := pem.EncodeToMemory(&pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: pubKeyBytes,
+	})
+
+	return string(pemBytes)
 }
