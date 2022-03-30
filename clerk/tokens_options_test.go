@@ -20,10 +20,9 @@ func TestWithAuthorizedPartySingle(t *testing.T) {
 	opts := &verifyTokenOptions{}
 	err := WithAuthorizedParty("test-party")(opts)
 
-	if assert.NoError(t, err) {
-		assert.Len(t, opts.authorizedParties, 1)
-		assert.Equal(t, arrayToMap(t, []string{"test-party"}), opts.authorizedParties)
-	}
+	assert.NoError(t, err)
+	assert.Len(t, opts.authorizedParties, 1)
+	assert.Equal(t, arrayToMap(t, []string{"test-party"}), opts.authorizedParties)
 }
 
 func TestWithAuthorizedPartyMultiple(t *testing.T) {
@@ -32,10 +31,9 @@ func TestWithAuthorizedPartyMultiple(t *testing.T) {
 	opts := &verifyTokenOptions{}
 	err := WithAuthorizedParty(authorizedParties...)(opts)
 
-	if assert.NoError(t, err) {
-		assert.Len(t, opts.authorizedParties, len(authorizedParties))
-		assert.Equal(t, arrayToMap(t, authorizedParties), opts.authorizedParties)
-	}
+	assert.NoError(t, err)
+	assert.Len(t, opts.authorizedParties, len(authorizedParties))
+	assert.Equal(t, arrayToMap(t, authorizedParties), opts.authorizedParties)
 }
 
 func TestWithLeeway(t *testing.T) {
@@ -44,9 +42,8 @@ func TestWithLeeway(t *testing.T) {
 	opts := &verifyTokenOptions{}
 	err := WithLeeway(leeway)(opts)
 
-	if assert.NoError(t, err) {
-		assert.Equal(t, opts.leeway, leeway)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, opts.leeway, leeway)
 }
 
 func TestWithJWTVerificationKey(t *testing.T) {
