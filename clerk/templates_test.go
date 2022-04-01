@@ -189,12 +189,13 @@ func TestTemplatesService_Preview_happyPath(t *testing.T) {
 const dummyTemplateJSON = `{
     "object": "template",
     "slug": "derp",
+    "resource_type": "user",
     "template_type": "email",
     "name": "Vin Diesel",
     "position": 0,
     "created_at": 1633541368454,
     "updated_at": 1633541368454,
-	"subject": "Choo choo train",
+    "subject": "Choo choo train",
     "markup": "<p>Hee Hee</p>",
     "body": "<p>Ho Ho</p>",
 	"available_variables": [

@@ -330,7 +330,8 @@ const dummyUserJson = `{
 		},
 		"private_metadata": {
 			"app_id": 5
-		}
+		},
+		"last_sign_in_at": 1610783813
     }`
 
 const dummyUpdateRequestJson = `{

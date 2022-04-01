@@ -7,6 +7,7 @@ type TemplatesService service
 type Template struct {
 	Object       string `json:"object"`
 	Slug         string `json:"slug"`
+	ResourceType string `json:"resource_type"`
 	TemplateType string `json:"template_type"`
 	Name         string `json:"name"`
 	Position     int    `json:"position"`
