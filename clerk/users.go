@@ -26,6 +26,7 @@ type User struct {
 	ExternalAccounts      []interface{}  `json:"external_accounts"`
 	PublicMetadata        interface{}    `json:"public_metadata"`
 	PrivateMetadata       interface{}    `json:"private_metadata"`
+	LastSignInAt          *int64         `json:"last_sign_in_at"`
 	CreatedAt             int64          `json:"created_at"`
 	UpdatedAt             int64          `json:"updated_at"`
 }
