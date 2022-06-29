@@ -51,5 +51,7 @@ const dummySMSMessageResponseJson = `{
     "object": "sms_message",
     "phone_number_id": "idn_1mebQ9KkZWrhb9rL6iEiXQGF8Yj",
     "status": "queued",
-    "to_phone_number": "87654321"
+    "to_phone_number": "87654321",
+	"data": { "baz": "xyz" },
+	"delivered_by_clerk": true
 }`

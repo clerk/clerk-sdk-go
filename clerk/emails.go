@@ -1,5 +1,9 @@
 package clerk
 
+import (
+	"encoding/json"
+)
+
 type EmailService service
 
 type Email struct {
@@ -10,10 +14,12 @@ type Email struct {
 }
 
 type EmailResponse struct {
-	ID             string  `json:"id"`
-	Object         string  `json:"object"`
-	Status         string  `json:"status,omitempty"`
-	ToEmailAddress *string `json:"to_email_address,omitempty"`
+	ID               string          `json:"id"`
+	Object           string          `json:"object"`
+	Status           string          `json:"status,omitempty"`
+	ToEmailAddress   *string         `json:"to_email_address,omitempty"`
+	DeliveredByClerk bool            `json:"delivered_by_clerk"`
+	Data             json.RawMessage `json:"data"`
 	Email
 }
 

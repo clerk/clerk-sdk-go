@@ -37,20 +37,25 @@ func TestTemplates(t *testing.T) {
 		var requiredVariable string
 		switch slug {
 		case "invitation", "organization_invitation":
-			requiredVariable = "{{ActionURL}}"
+			requiredVariable = "{{action_url}}"
 		case "magic_link":
-			requiredVariable = "{{MagicLink}}"
+			requiredVariable = "{{magic_link}}"
 		case "suspicious_activity":
-			requiredVariable = "{{Reason}}"
+			requiredVariable = "{{reason}}"
 		case "verification_code":
-			requiredVariable = "{{OTPCode}}"
+			requiredVariable = "{{otp_code}}"
 		}
 
+		deliveredByClerk := false
+		fromEmailName := "marketing"
+
 		upsertTemplateRequest := clerk.UpsertTemplateRequest{
-			Name:    "Remarketing email",
-			Subject: "Unmissable opportunity",
-			Markup:  "",
-			Body:    fmt.Sprintf("Click %s for free unicorns", requiredVariable),
+			Name:             "Remarketing email",
+			Subject:          "Unmissable opportunity",
+			Markup:           "",
+			Body:             fmt.Sprintf("Click %s for free unicorns", requiredVariable),
+			FromEmailName:    &fromEmailName,
+			DeliveredByClerk: &deliveredByClerk,
 		}
 
 		upsertedTemplate, err := client.Templates().Upsert(templateType, slug, &upsertTemplateRequest)
@@ -62,8 +67,9 @@ func TestTemplates(t *testing.T) {
 		}
 
 		previewTemplateRequest := clerk.PreviewTemplateRequest{
-			Subject: "{{AppName}} is da bomb",
-			Body:    "<p><a href=\"{{AppURL}}\">{{AppName}}</a> is the greatest app of all time!</p>",
+			Subject:       "{{AppName}} is da bomb",
+			Body:          "<p><a href=\"{{AppURL}}\">{{AppName}}</a> is the greatest app of all time!</p>",
+			FromEmailName: &fromEmailName,
 		}
 
 		templatePreview, err := client.Templates().Preview(templateType, slug, &previewTemplateRequest)

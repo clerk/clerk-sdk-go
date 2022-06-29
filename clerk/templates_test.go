@@ -198,6 +198,8 @@ const dummyTemplateJSON = `{
     "subject": "Choo choo train",
     "markup": "<p>Hee Hee</p>",
     "body": "<p>Ho Ho</p>",
+	"from_email_name": "noreply",
+	"delivered_by_clerk": true,
 	"available_variables": [
         "michael",
         "jackson"
@@ -211,7 +213,9 @@ const dummyUpsertRequestJSON = `{
 	"name": "Dominic Toretto",
 	"subject": "NOS bottles for sale",
 	"markup": "<p>Family</p>",
-	"body": "<p>One quarter of a mile at a time<p>"
+	"body": "<p>One quarter of a mile at a time<p>",
+	"from_email_name": "sales",
+	"delivered_by_clerk": false
 }`
 
 const dummyPreviewRequestJSON = `{
