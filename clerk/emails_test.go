@@ -51,5 +51,7 @@ const dummyEmailJson = `{
     "id": "ema_1mvFol71HiKCcypBd6xxg0IpMBN",
     "object": "email",
     "status": "queued",
-    "subject": "This is a test email"
+    "subject": "This is a test email",
+	"data": { "foo": "bar" },
+	"delivered_by_clerk": false
 }`

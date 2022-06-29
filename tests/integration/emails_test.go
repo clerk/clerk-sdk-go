@@ -4,8 +4,9 @@
 package integration
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/clerkinc/clerk-sdk-go/clerk"
 )
@@ -31,25 +32,17 @@ func TestEmails(t *testing.T) {
 		EmailAddressID: *user.PrimaryEmailAddressID,
 	}
 
-	got, err := client.Emails().Create(email)
+	emailResponse, err := client.Emails().Create(email)
 	if err != nil {
 		t.Fatalf("Emails.Create returned error: %v", err)
 	}
 
-	want := clerk.EmailResponse{
-		ID:             got.ID,
-		Object:         "email",
-		Status:         "queued",
-		ToEmailAddress: got.ToEmailAddress,
-		Email: clerk.Email{
-			FromEmailName:  email.FromEmailName,
-			Subject:        email.Subject,
-			Body:           email.Body,
-			EmailAddressID: email.EmailAddressID,
-		},
-	}
-
-	if !reflect.DeepEqual(*got, want) {
-		t.Fatalf("Emails.Create(%v) got: %v, wanted %v", email, got, want)
-	}
+	assert.Equal(t, "email", emailResponse.Object)
+	assert.Equal(t, "queued", emailResponse.Status)
+	assert.Equal(t, email.FromEmailName, emailResponse.FromEmailName)
+	assert.Equal(t, email.EmailAddressID, emailResponse.EmailAddressID)
+	assert.Equal(t, email.Subject, emailResponse.Subject)
+	assert.Equal(t, email.Body, emailResponse.Body)
+	assert.True(t, emailResponse.DeliveredByClerk)
+	// assert.Nil(t, emailResponse.Data)
 }

@@ -5,16 +5,18 @@ import "fmt"
 type TemplatesService service
 
 type Template struct {
-	Object       string `json:"object"`
-	Slug         string `json:"slug"`
-	ResourceType string `json:"resource_type"`
-	TemplateType string `json:"template_type"`
-	Name         string `json:"name"`
-	Position     int    `json:"position"`
-	CanRevert    bool   `json:"can_revert"`
-	CanDelete    bool   `json:"can_delete"`
-	CreatedAt    int64  `json:"created_at"`
-	UpdatedAt    int64  `json:"updated_at"`
+	Object           string  `json:"object"`
+	Slug             string  `json:"slug"`
+	ResourceType     string  `json:"resource_type"`
+	TemplateType     string  `json:"template_type"`
+	Name             string  `json:"name"`
+	Position         int     `json:"position"`
+	CanRevert        bool    `json:"can_revert"`
+	CanDelete        bool    `json:"can_delete"`
+	FromEmailName    *string `json:"from_email_name"`
+	DeliveredByClerk bool    `json:"delivered_by_clerk"`
+	CreatedAt        int64   `json:"created_at"`
+	UpdatedAt        int64   `json:"updated_at"`
 }
 
 type TemplateExtended struct {
@@ -27,8 +29,9 @@ type TemplateExtended struct {
 }
 
 type TemplatePreview struct {
-	Subject string `json:"subject,omitempty"`
-	Body    string `json:"body"`
+	Subject          string  `json:"subject,omitempty"`
+	Body             string  `json:"body"`
+	FromEmailAddress *string `json:"from_email_address,omitempty"`
 }
 
 func (s *TemplatesService) ListAll(templateType string) ([]Template, error) {
@@ -61,15 +64,18 @@ func (s *TemplatesService) Read(templateType, slug string) (*TemplateExtended, e
 }
 
 type UpsertTemplateRequest struct {
-	Name    string `json:"name"`
-	Subject string `json:"subject,omitempty"`
-	Markup  string `json:"markup,omitempty"`
-	Body    string `json:"body"`
+	Name             string  `json:"name"`
+	Subject          string  `json:"subject,omitempty"`
+	Markup           string  `json:"markup,omitempty"`
+	Body             string  `json:"body"`
+	FromEmailName    *string `json:"from_email_name"`
+	DeliveredByClerk *bool   `json:"delivered_by_clerk"`
 }
 
 type PreviewTemplateRequest struct {
-	Subject string `json:"subject,omitempty"`
-	Body    string `json:"body"`
+	Subject       string  `json:"subject,omitempty"`
+	Body          string  `json:"body"`
+	FromEmailName *string `json:"from_email_name"`
 }
 
 func (s *TemplatesService) Upsert(templateType, slug string, upsertTemplateRequest *UpsertTemplateRequest) (*TemplateExtended, error) {

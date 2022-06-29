@@ -1,5 +1,9 @@
 package clerk
 
+import (
+	"encoding/json"
+)
+
 type SMSService service
 
 type SMSMessage struct {
@@ -8,11 +12,13 @@ type SMSMessage struct {
 }
 
 type SMSMessageResponse struct {
-	Object          string  `json:"object"`
-	ID              string  `json:"id"`
-	FromPhoneNumber string  `json:"from_phone_number"`
-	ToPhoneNumber   *string `json:"to_phone_number,omitempty"`
-	Status          string  `json:"status"`
+	Object           string          `json:"object"`
+	ID               string          `json:"id"`
+	FromPhoneNumber  string          `json:"from_phone_number"`
+	ToPhoneNumber    *string         `json:"to_phone_number,omitempty"`
+	Status           string          `json:"status"`
+	DeliveredByClerk bool            `json:"delivered_by_clerk"`
+	Data             json.RawMessage `json:"data"`
 	SMSMessage
 }
 
