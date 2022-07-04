@@ -21,6 +21,7 @@ const (
 	ClientsUrl       = "clients"
 	ClientsVerifyUrl = ClientsUrl + "/verify"
 	EmailsUrl        = "emails"
+	OrganizationsUrl = "organizations"
 	SessionsUrl      = "sessions"
 	SMSUrl           = "sms_messages"
 	TemplatesUrl     = "templates"
@@ -43,6 +44,7 @@ type Client interface {
 	Emails() *EmailService
 	JWKS() *JWKSService
 	JWTTemplates() *JWTTemplatesService
+	Organizations() *OrganizationsService
 	Sessions() *SessionsService
 	SMS() *SMSService
 	Templates() *TemplatesService
@@ -64,16 +66,17 @@ type client struct {
 	jwksCache *jwksCache
 	token     string
 
-	clients      *ClientsService
-	emails       *EmailService
-	jwks         *JWKSService
-	jwtTemplates *JWTTemplatesService
-	sessions     *SessionsService
-	sms          *SMSService
-	templates    *TemplatesService
-	users        *UsersService
-	webhooks     *WebhooksService
-	verification *VerificationService
+	clients       *ClientsService
+	emails        *EmailService
+	jwks          *JWKSService
+	jwtTemplates  *JWTTemplatesService
+	organizations *OrganizationsService
+	sessions      *SessionsService
+	sms           *SMSService
+	templates     *TemplatesService
+	users         *UsersService
+	webhooks      *WebhooksService
+	verification  *VerificationService
 }
 
 // NewClient creates a new Clerk client.
@@ -106,6 +109,7 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	client.emails = (*EmailService)(commonService)
 	client.jwks = (*JWKSService)(commonService)
 	client.jwtTemplates = (*JWTTemplatesService)(commonService)
+	client.organizations = (*OrganizationsService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
 	client.sms = (*SMSService)(commonService)
 	client.templates = (*TemplatesService)(commonService)
@@ -234,6 +238,10 @@ func (c *client) JWKS() *JWKSService {
 
 func (c *client) JWTTemplates() *JWTTemplatesService {
 	return c.jwtTemplates
+}
+
+func (c *client) Organizations() *OrganizationsService {
+	return c.organizations
 }
 
 func (c *client) Sessions() *SessionsService {
