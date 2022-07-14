@@ -20,7 +20,8 @@ type TokenClaims struct {
 type SessionClaims struct {
 	jwt.Claims
 	SessionID       string `json:"sid"`
-	AuthorizedParty string `json:"azp"`
+	AuthorizedParty string `json:"azp,omitempty"`
+	Raw             map[string]interface{}
 }
 
 // DecodeToken decodes a jwt token without verifying it.
@@ -88,7 +89,8 @@ func (c *client) VerifyToken(token string, opts ...VerifyTokenOption) (*SessionC
 	}
 
 	claims := SessionClaims{}
-	if err = parsedToken.Claims(jwk.Key, &claims); err != nil {
+	rawClaims := make(map[string]interface{})
+	if err = parsedToken.Claims(jwk.Key, &claims, &rawClaims); err != nil {
 		return nil, err
 	}
 
@@ -106,6 +108,7 @@ func (c *client) VerifyToken(token string, opts ...VerifyTokenOption) (*SessionC
 		}
 	}
 
+	claims.Raw = rawClaims
 	return &claims, nil
 }
 

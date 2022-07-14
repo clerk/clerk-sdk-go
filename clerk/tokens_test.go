@@ -50,6 +50,7 @@ var (
 		},
 		SessionID:       "session_id",
 		AuthorizedParty: "authorized_party",
+		Raw:             map[string]interface{}{},
 	}
 )
 
@@ -190,6 +191,7 @@ func TestClient_VerifyToken_Success(t *testing.T) {
 	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
 
 	got, _ := c.VerifyToken(token)
+	got.Raw = make(map[string]interface{})
 	if !reflect.DeepEqual(got, &dummySessionClaims) {
 		t.Errorf("Expected %+v, but got %+v", dummySessionClaims, got)
 	}
@@ -211,6 +213,7 @@ func TestClient_VerifyToken_Success_ExpiredCache(t *testing.T) {
 	client.jwksCache.expiresAt = time.Now().Add(time.Second * -5)
 
 	got, _ := c.VerifyToken(token)
+	got.Raw = make(map[string]interface{})
 	if !reflect.DeepEqual(got, &dummySessionClaims) {
 		t.Errorf("Expected %+v, but got %+v", dummySessionClaims, got)
 	}
@@ -232,6 +235,7 @@ func TestClient_VerifyToken_Success_AuthorizedParty(t *testing.T) {
 	client.jwksCache.expiresAt = time.Now().Add(time.Second * -5)
 
 	got, _ := c.VerifyToken(token, WithAuthorizedParty("authorized_party"))
+	got.Raw = make(map[string]interface{})
 	if !reflect.DeepEqual(got, &dummySessionClaims) {
 		t.Errorf("Expected %+v, but got %+v", dummySessionClaims, got)
 	}
@@ -261,6 +265,36 @@ func TestClient_VerifyToken_Success_WithJWTVerificationKey(t *testing.T) {
 	_, err := c.VerifyToken(token, WithJWTVerificationKey(verificationKey))
 	if err != nil {
 		t.Errorf("Expected no error, but got: %+v", err)
+	}
+}
+
+func TestClient_VerifyToken_Success_WithRaw(t *testing.T) {
+	c, _ := NewClient("token")
+
+	expectedClaims := map[string]interface{}{
+		"iss":   "https://clerk.issuer",
+		"sub":   "subject",
+		"sid":   "session_id",
+		"azp":   "authorized_party",
+		"foo":   "bar",
+		"extra": "claim",
+	}
+
+	token, pubKey := testGenerateTokenJWT(t, expectedClaims, "kid")
+
+	client := c.(*client)
+	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
+
+	got, _ := c.VerifyToken(token)
+
+	for expectedKey, expectedVal := range expectedClaims {
+		val, ok := got.Raw[expectedKey]
+		if !ok {
+			t.Errorf("Expected raw key %s to be present", expectedKey)
+		}
+		if expectedVal != val {
+			t.Errorf("Expected raw key %s to be equal to %v, but got %v", expectedKey, expectedVal, val)
+		}
 	}
 }
 

@@ -113,6 +113,7 @@ func TestWithSession_addSessionClaimsToContext_Header(t *testing.T) {
 
 	var got SessionClaims
 	_ = json.NewDecoder(resp.Body).Decode(&got)
+	got.Raw = make(map[string]interface{})
 
 	if !reflect.DeepEqual(got, expectedClaims) {
 		t.Errorf("Response = %v, want %v", got, expectedClaims)
@@ -155,6 +156,7 @@ func TestWithSession_addSessionClaimsToContext_Cookie(t *testing.T) {
 
 	var got SessionClaims
 	_ = json.NewDecoder(resp.Body).Decode(&got)
+	got.Raw = make(map[string]interface{})
 
 	if !reflect.DeepEqual(got, expectedClaims) {
 		t.Errorf("Response = %v, want %v", got, expectedClaims)
