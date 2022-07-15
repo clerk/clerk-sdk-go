@@ -54,6 +54,15 @@ func WithJWTVerificationKey(key string) VerifyTokenOption {
 	}
 }
 
+// WithCustomClaims allows to pass a type (e.g. struct), which will be populated with the token claims based on json tags.
+// For this option to work you must pass a pointer.
+func WithCustomClaims(customClaims interface{}) VerifyTokenOption {
+	return func(o *verifyTokenOptions) error {
+		o.customClaims = customClaims
+		return nil
+	}
+}
+
 func pemToJWK(key string) (*jose.JSONWebKey, error) {
 	block, _ := pem.Decode([]byte(key))
 	if block == nil {

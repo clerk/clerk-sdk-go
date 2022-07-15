@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/square/go-jose.v2"
-
 	"gopkg.in/square/go-jose.v2/jwt"
 )
 
@@ -262,6 +262,37 @@ func TestClient_VerifyToken_Success_WithJWTVerificationKey(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected no error, but got: %+v", err)
 	}
+}
+
+func TestClient_VerifyToken_Success_WithCustomClaims(t *testing.T) {
+	c, _ := NewClient("token")
+
+	expectedClaims := map[string]interface{}{
+		"iss":       "https://clerk.issuer",
+		"sub":       "subject",
+		"sid":       "session_id",
+		"azp":       "authorized_party",
+		"role":      "tester",
+		"interests": []string{"tennis", "football"},
+	}
+
+	token, pubKey := testGenerateTokenJWT(t, expectedClaims, "kid")
+
+	client := c.(*client)
+	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
+
+	customClaims := struct {
+		Issuer    string   `json:"iss"`
+		UserID    string   `json:"sub"`
+		Role      string   `json:"role"`
+		Interests []string `json:"interests"`
+	}{}
+
+	_, _ = c.VerifyToken(token, WithCustomClaims(&customClaims))
+	assert.Equal(t, expectedClaims["iss"], customClaims.Issuer)
+	assert.Equal(t, expectedClaims["sub"], customClaims.UserID)
+	assert.Equal(t, expectedClaims["role"], customClaims.Role)
+	assert.Equal(t, expectedClaims["interests"], customClaims.Interests)
 }
 
 func TestClient_VerifyToken_Error_WithJWTVerificationKey(t *testing.T) {

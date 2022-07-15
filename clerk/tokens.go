@@ -49,6 +49,7 @@ type verifyTokenOptions struct {
 	authorizedParties map[string]struct{}
 	leeway            time.Duration
 	jwk               *jose.JSONWebKey
+	customClaims      interface{}
 }
 
 // VerifyToken verifies the session jwt token.
@@ -88,7 +89,7 @@ func (c *client) VerifyToken(token string, opts ...VerifyTokenOption) (*SessionC
 	}
 
 	claims := SessionClaims{}
-	if err = parsedToken.Claims(jwk.Key, &claims); err != nil {
+	if err = verifyTokenParseClaims(parsedToken, jwk.Key, &claims, options); err != nil {
 		return nil, err
 	}
 
@@ -120,4 +121,11 @@ func (c *client) getJWK(kid string) (*jose.JSONWebKey, error) {
 	}
 
 	return c.jwksCache.get(kid)
+}
+
+func verifyTokenParseClaims(parsedToken *jwt.JSONWebToken, key interface{}, sessionClaims *SessionClaims, options *verifyTokenOptions) error {
+	if options.customClaims == nil {
+		return parsedToken.Claims(key, sessionClaims)
+	}
+	return parsedToken.Claims(key, sessionClaims, options.customClaims)
 }
