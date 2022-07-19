@@ -54,8 +54,9 @@ func TestOrganizationsService_ListAll_happyPathWithParameters(t *testing.T) {
 
 		actualQuery := req.URL.Query()
 		expectedQuery := url.Values(map[string][]string{
-			"limit":  {"5"},
-			"offset": {"6"},
+			"limit":                 {"5"},
+			"offset":                {"6"},
+			"include_members_count": {"true"},
 		})
 		assert.Equal(t, expectedQuery, actualQuery)
 		fmt.Fprint(w, expectedResponse)
@@ -67,8 +68,9 @@ func TestOrganizationsService_ListAll_happyPathWithParameters(t *testing.T) {
 	limit := 5
 	offset := 6
 	got, _ := client.Organizations().ListAll(ListAllOrganizationsParams{
-		Limit:  &limit,
-		Offset: &offset,
+		Limit:               &limit,
+		Offset:              &offset,
+		IncludeMembersCount: true,
 	})
 	if len(got.Data) != len(want.Data) {
 		t.Errorf("Was expecting %d organizations to be returned, instead got %d", len(want.Data), len(got.Data))
@@ -96,6 +98,7 @@ const dummyOrganizationJson = `{
         "id": "org_1mebQggrD3xO5JfuHk7clQ94ysA",
         "name": "test-org",
         "slug": "org_slug",
+		"members_count": 42,
         "created_at": 1610783813,
         "updated_at": 1610783813,
 		"public_metadata": {
