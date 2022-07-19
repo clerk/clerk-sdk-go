@@ -14,6 +14,7 @@ type Organization struct {
 	Name            string          `json:"name"`
 	Slug            *string         `json:"slug"`
 	LogoURL         *string         `json:"logo_url"`
+	MembersCount    int             `json:"members_count,omitempty"`
 	PublicMetadata  json.RawMessage `json:"public_metadata"`
 	PrivateMetadata json.RawMessage `json:"private_metadata,omitempty"`
 	CreatedAt       int64           `json:"created_at"`
@@ -26,8 +27,9 @@ type OrganizationsResponse struct {
 }
 
 type ListAllOrganizationsParams struct {
-	Limit  *int
-	Offset *int
+	Limit               *int
+	Offset              *int
+	IncludeMembersCount bool
 }
 
 func (s *OrganizationsService) ListAll(params ListAllOrganizationsParams) (*OrganizationsResponse, error) {
@@ -39,6 +41,9 @@ func (s *OrganizationsService) ListAll(params ListAllOrganizationsParams) (*Orga
 	}
 	if params.Offset != nil {
 		query.Set("offset", strconv.Itoa(*params.Offset))
+	}
+	if params.IncludeMembersCount {
+		query.Set("include_members_count", strconv.FormatBool(params.IncludeMembersCount))
 	}
 	req.URL.RawQuery = query.Encode()
 
