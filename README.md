@@ -77,6 +77,25 @@ and respond with 403 if the user is not authenticated.
 Finally, to retrieve the authenticated session's claims you can use 
 `clerk.SessionFromContext()`.
 
+### Additional options
+The new middlewares (`clerk.WithSessionV2()` & `clerk.RequireSessionV2()`) also support the ability to pass some additional options.
+- clerk.WithAuthorizedParty() to set the authorized parties to check against the azp claim of the token
+- clerk.WithLeeway() to set a custom leeway that gives some extra time to the token to accommodate for clock skew
+- clerk.WithJWTVerificationKey() to set the JWK to use for verifying tokens without the need to fetch or cache any JWKs at runtime 
+- clerk.WithCustomClaims() to pass a type (e.g. struct), which will be populated with the token claims based on json tags.
+
+For example 
+```golang
+customClaims := myCustomClaimsStruct{}
+
+clerk.WithSessionV2(
+	clerkClient, 
+	clerk.WithAuthorizedParty("my-authorized-party"), 
+	clerk.WithLeeway(5 * time.Second),
+	clerk.WithCustomClaims(&customClaims),
+	)
+```
+
 ## License ##
 
 This SDK is licensed under the MIT license found in the [LICENSE](./LICENSE) file.
