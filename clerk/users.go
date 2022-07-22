@@ -186,3 +186,21 @@ func (s *UsersService) Update(userId string, updateRequest *UpdateUser) (*User, 
 	}
 	return &updatedUser, nil
 }
+
+type UpdateUserMetadata struct {
+	PublicMetadata  interface{} `json:"public_metadata"`
+	PrivateMetadata interface{} `json:"private_metadata"`
+	UnsafeMetadata  interface{} `json:"unsafe_metadata"`
+}
+
+func (s *UsersService) UpdateMetadata(userId string, updateMetadataRequest *UpdateUserMetadata) (*User, error) {
+	updateUserMetadataURL := fmt.Sprintf("%s/%s/metadata", UsersUrl, userId)
+	req, _ := s.client.NewRequest(http.MethodPatch, updateUserMetadataURL, updateMetadataRequest)
+
+	var updatedUser User
+	_, err := s.client.Do(req, &updatedUser)
+	if err != nil {
+		return nil, err
+	}
+	return &updatedUser, nil
+}

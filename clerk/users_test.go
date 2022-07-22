@@ -277,6 +277,40 @@ func TestUsersService_Update_invalidServer(t *testing.T) {
 	}
 }
 
+func TestUsersService_UpdateMetadata_happyPath(t *testing.T) {
+	token := "token"
+	userId := "someUserId"
+	var payload UpdateUserMetadata
+	_ = json.Unmarshal([]byte(dummyUpdateMetadataRequestJson), &payload)
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/users/"+userId+"/metadata", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, http.MethodPatch)
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, dummyUserJson)
+	})
+
+	got, _ := client.Users().UpdateMetadata(userId, &payload)
+
+	var want User
+	_ = json.Unmarshal([]byte(dummyUserJson), &want)
+
+	if !reflect.DeepEqual(*got, want) {
+		t.Errorf("Response = %v, want %v", *got, payload)
+	}
+}
+
+func TestUsersService_UpdateMetadata_invalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+
+	_, err := client.Users().UpdateMetadata("someUserId", nil)
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+}
+
 const dummyUserJson = `{
         "birthday": "",
         "created_at": 1610783813,
@@ -349,6 +383,15 @@ const dummyUpdateRequestJson = `{
 		},
 		"private_metadata": {
 			app_id: 5
+		},
+	}`
+
+const dummyUpdateMetadataRequestJson = `{
+		"public_metadata": {
+			"value": "public_value",
+		},
+		"private_metadata": {
+			"contact_id": "some_contact_id",
 		},
 	}`
 

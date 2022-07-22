@@ -18,8 +18,9 @@ type userAddress struct {
 	Address addressDetails `json:"address"`
 }
 
-type userAppID struct {
-	AppID int `json:"app_id"`
+type userAppAndContactID struct {
+	AppID     int `json:"app_id"`
+	ContactID int `json:"contact_id"`
 }
 
 func TestUsers(t *testing.T) {
@@ -58,7 +59,7 @@ func TestUsers(t *testing.T) {
 				Street: "Fifth Avenue",
 				Number: "890",
 			}},
-			PrivateMetadata: userAppID{AppID: i},
+			PrivateMetadata: userAppAndContactID{AppID: i},
 		}
 		updatedUser, err := client.Users().Update(userId, &updateRequest)
 		if err != nil {
@@ -66,6 +67,18 @@ func TestUsers(t *testing.T) {
 		}
 		if updatedUser == nil {
 			t.Errorf("Users.Update returned nil")
+		}
+
+		updatedUser, err = client.Users().UpdateMetadata(userId, &clerk.UpdateUserMetadata{
+			PrivateMetadata: userAppAndContactID{
+				ContactID: i,
+			},
+		})
+		if err != nil {
+			t.Fatalf("Users.UpdateMetadata returned error: %v", err)
+		}
+		if updatedUser == nil {
+			t.Errorf("Users.UpdateMetadata returned nil")
 		}
 	}
 }
