@@ -42,6 +42,7 @@ type Client interface {
 
 	Clients() *ClientsService
 	Emails() *EmailService
+	Instances() *InstanceService
 	JWKS() *JWKSService
 	JWTTemplates() *JWTTemplatesService
 	Organizations() *OrganizationsService
@@ -68,6 +69,7 @@ type client struct {
 
 	clients       *ClientsService
 	emails        *EmailService
+	instances     *InstanceService
 	jwks          *JWKSService
 	jwtTemplates  *JWTTemplatesService
 	organizations *OrganizationsService
@@ -107,6 +109,7 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	commonService := &service{client: client}
 	client.clients = (*ClientsService)(commonService)
 	client.emails = (*EmailService)(commonService)
+	client.instances = (*InstanceService)(commonService)
 	client.jwks = (*JWKSService)(commonService)
 	client.jwtTemplates = (*JWTTemplatesService)(commonService)
 	client.organizations = (*OrganizationsService)(commonService)
@@ -230,6 +233,10 @@ func (c *client) Clients() *ClientsService {
 
 func (c *client) Emails() *EmailService {
 	return c.emails
+}
+
+func (c *client) Instances() *InstanceService {
+	return c.instances
 }
 
 func (c *client) JWKS() *JWKSService {
