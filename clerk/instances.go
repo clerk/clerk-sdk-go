@@ -17,6 +17,12 @@ type UpdateInstanceParams struct {
 	// By default, this is enabled in all instances.
 	HIBP *bool `json:"hibp,omitempty"`
 
+	// EnhancedEmailDeliverability controls how Clerk delivers emails.
+	// Specifically, when set to true, if the instance is a production
+	// instance, OTP verification emails are sent by the Clerk's shared
+	// domain via Postmark.
+	EnhancedEmailDeliverability *bool `json:"enhanced_email_deliverability,omitempty"`
+
 	// SupportEmail is the contact email address that will be displayed
 	// on the frontend, in case your instance users need support.
 	// If the empty string is provided, the support email that is currently

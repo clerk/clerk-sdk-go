@@ -19,9 +19,10 @@ func TestInstanceService_Update_happyPath(t *testing.T) {
 	enabled := true
 	supportEmail := "support@clerk.dev"
 	err := client.Instances().Update(UpdateInstanceParams{
-		TestMode:     &enabled,
-		HIBP:         &enabled,
-		SupportEmail: &supportEmail,
+		TestMode:                    &enabled,
+		HIBP:                        &enabled,
+		EnhancedEmailDeliverability: &enabled,
+		SupportEmail:                &supportEmail,
 	})
 
 	if err != nil {
@@ -35,9 +36,10 @@ func TestInstanceService_Update_invalidServer(t *testing.T) {
 	enabled := true
 	supportEmail := "support@clerk.dev"
 	err := client.Instances().Update(UpdateInstanceParams{
-		TestMode:     &enabled,
-		HIBP:         &enabled,
-		SupportEmail: &supportEmail,
+		TestMode:                    &enabled,
+		HIBP:                        &enabled,
+		EnhancedEmailDeliverability: &enabled,
+		SupportEmail:                &supportEmail,
 	})
 	if err == nil {
 		t.Errorf("Expected error to be returned")
