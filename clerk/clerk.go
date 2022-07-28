@@ -159,7 +159,9 @@ func (c *client) NewRequest(method, url string, body ...interface{}) (*http.Requ
 	}
 
 	var buf io.ReadWriter
+	var hasBody bool
 	if len(body) > 0 && body[0] != nil {
+		hasBody = true
 		buf = &bytes.Buffer{}
 		enc := json.NewEncoder(buf)
 		enc.SetEscapeHTML(false)
@@ -172,6 +174,10 @@ func (c *client) NewRequest(method, url string, body ...interface{}) (*http.Requ
 	req, err := http.NewRequest(method, fullUrl.String(), buf)
 	if err != nil {
 		return nil, err
+	}
+
+	if hasBody {
+		req.Header.Set("Content-Type", "application/json")
 	}
 
 	// Add custom header with the current SDK version

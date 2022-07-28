@@ -87,6 +87,9 @@ func TestNewRequest_noBody(t *testing.T) {
 	if req.Body != nil {
 		t.Fatalf("Expected nil Body but request contains a non-nil Body")
 	}
+	if req.Header.Get("Content-Type") != "" {
+		t.Fatalf("Expected empty Content-Type header but request contains %q", req.Header.Get("Content-Type"))
+	}
 }
 
 func TestNewRequest_nilBody(t *testing.T) {
@@ -94,6 +97,9 @@ func TestNewRequest_nilBody(t *testing.T) {
 	req, _ := client.NewRequest("GET", ".", nil)
 	if req.Body != nil {
 		t.Fatalf("Expected nil Body but request contains a non-nil Body")
+	}
+	if req.Header.Get("Content-Type") != "" {
+		t.Fatalf("Expected empty Content-Type header but request contains %q", req.Header.Get("Content-Type"))
 	}
 }
 
@@ -110,6 +116,10 @@ func TestNewRequest_withBody(t *testing.T) {
 	body, _ := ioutil.ReadAll(req.Body)
 	if got, want := string(body), outBody; got != want {
 		t.Errorf("NewRequest(%q) Body is %v, want %v", inBody, got, want)
+	}
+
+	if req.Header.Get("Content-Type") != "application/json" {
+		t.Fatalf("Expected application/json Content-Type header but request contains %q", req.Header.Get("Content-Type"))
 	}
 }
 
