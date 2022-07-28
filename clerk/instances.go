@@ -16,6 +16,12 @@ type UpdateInstanceParams struct {
 	// known security breaches.
 	// By default, this is enabled in all instances.
 	HIBP *bool `json:"hibp,omitempty"`
+
+	// SupportEmail is the contact email address that will be displayed
+	// on the frontend, in case your instance users need support.
+	// If the empty string is provided, the support email that is currently
+	// configured in the instance will be removed.
+	SupportEmail *string `json:"support_email,omitempty"`
 }
 
 func (s *InstanceService) Update(params UpdateInstanceParams) error {
