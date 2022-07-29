@@ -22,6 +22,7 @@ const (
 	ClientsVerifyUrl = ClientsUrl + "/verify"
 	EmailsUrl        = "emails"
 	OrganizationsUrl = "organizations"
+	RedirectURLsUrl  = "redirect_urls"
 	SessionsUrl      = "sessions"
 	SMSUrl           = "sms_messages"
 	TemplatesUrl     = "templates"
@@ -46,6 +47,7 @@ type Client interface {
 	JWKS() *JWKSService
 	JWTTemplates() *JWTTemplatesService
 	Organizations() *OrganizationsService
+	RedirectURLs() *RedirectURLsService
 	Sessions() *SessionsService
 	SMS() *SMSService
 	Templates() *TemplatesService
@@ -73,6 +75,7 @@ type client struct {
 	jwks          *JWKSService
 	jwtTemplates  *JWTTemplatesService
 	organizations *OrganizationsService
+	redirectURLs  *RedirectURLsService
 	sessions      *SessionsService
 	sms           *SMSService
 	templates     *TemplatesService
@@ -113,6 +116,7 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	client.jwks = (*JWKSService)(commonService)
 	client.jwtTemplates = (*JWTTemplatesService)(commonService)
 	client.organizations = (*OrganizationsService)(commonService)
+	client.redirectURLs = (*RedirectURLsService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
 	client.sms = (*SMSService)(commonService)
 	client.templates = (*TemplatesService)(commonService)
@@ -249,6 +253,10 @@ func (c *client) JWTTemplates() *JWTTemplatesService {
 
 func (c *client) Organizations() *OrganizationsService {
 	return c.organizations
+}
+
+func (c *client) RedirectURLs() *RedirectURLsService {
+	return c.redirectURLs
 }
 
 func (c *client) Sessions() *SessionsService {
