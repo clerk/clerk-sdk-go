@@ -384,6 +384,9 @@ const dummyUpdateRequestJson = `{
 		"private_metadata": {
 			app_id: 5
 		},
+		"unsafe_metadata": {
+			viewed_profile: true
+		},
 	}`
 
 const dummyUpdateMetadataRequestJson = `{
@@ -392,6 +395,9 @@ const dummyUpdateMetadataRequestJson = `{
 		},
 		"private_metadata": {
 			"contact_id": "some_contact_id",
+		},
+		"unsafe_metadata": {
+			viewed_profile: true
 		},
 	}`
 

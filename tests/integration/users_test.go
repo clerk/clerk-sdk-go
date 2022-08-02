@@ -23,6 +23,10 @@ type userAppAndContactID struct {
 	ContactID int `json:"contact_id"`
 }
 
+type userEvent struct {
+	ViewedProfile bool `json:"viewed_profile"`
+}
+
 func TestUsers(t *testing.T) {
 	client := createClient()
 
@@ -60,6 +64,9 @@ func TestUsers(t *testing.T) {
 				Number: "890",
 			}},
 			PrivateMetadata: userAppAndContactID{AppID: i},
+			UnsafeMetadata: userEvent{
+				ViewedProfile: true,
+			},
 		}
 		updatedUser, err := client.Users().Update(userId, &updateRequest)
 		if err != nil {
