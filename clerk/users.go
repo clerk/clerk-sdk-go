@@ -26,6 +26,7 @@ type User struct {
 	ExternalAccounts      []interface{}  `json:"external_accounts"`
 	PublicMetadata        interface{}    `json:"public_metadata"`
 	PrivateMetadata       interface{}    `json:"private_metadata"`
+	UnsafeMetadata        interface{}    `json:"unsafe_metadata"`
 	LastSignInAt          *int64         `json:"last_sign_in_at"`
 	CreatedAt             int64          `json:"created_at"`
 	UpdatedAt             int64          `json:"updated_at"`
@@ -173,6 +174,7 @@ type UpdateUser struct {
 	Password              *string     `json:"password,omitempty"`
 	PublicMetadata        interface{} `json:"public_metadata,omitempty"`
 	PrivateMetadata       interface{} `json:"private_metadata,omitempty"`
+	UnsafeMetadata        interface{} `json:"unsafe_metadata,omitempty"`
 }
 
 func (s *UsersService) Update(userId string, updateRequest *UpdateUser) (*User, error) {
