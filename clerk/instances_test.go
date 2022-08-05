@@ -18,15 +18,17 @@ func TestInstanceService_Update_happyPath(t *testing.T) {
 
 	enabled := true
 	supportEmail := "support@clerk.dev"
+	clerkJSVersion := "42"
 	err := client.Instances().Update(UpdateInstanceParams{
 		TestMode:                    &enabled,
 		HIBP:                        &enabled,
 		EnhancedEmailDeliverability: &enabled,
 		SupportEmail:                &supportEmail,
+		ClerkJSVersion:              &clerkJSVersion,
 	})
 
 	if err != nil {
-		t.Errorf("expected no error to be return, found %v instead", err)
+		t.Errorf("expected no error to be returned, found %v instead", err)
 	}
 }
 
@@ -35,11 +37,13 @@ func TestInstanceService_Update_invalidServer(t *testing.T) {
 
 	enabled := true
 	supportEmail := "support@clerk.dev"
+	clerkJSVersion := "999"
 	err := client.Instances().Update(UpdateInstanceParams{
 		TestMode:                    &enabled,
 		HIBP:                        &enabled,
 		EnhancedEmailDeliverability: &enabled,
 		SupportEmail:                &supportEmail,
+		ClerkJSVersion:              &clerkJSVersion,
 	})
 	if err == nil {
 		t.Errorf("Expected error to be returned")
