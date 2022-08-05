@@ -28,6 +28,11 @@ type UpdateInstanceParams struct {
 	// If the empty string is provided, the support email that is currently
 	// configured in the instance will be removed.
 	SupportEmail *string `json:"support_email,omitempty"`
+
+	// ClerkJSVersion allows you to request a specific Clerk JS version on the Clerk Hosted Account pages.
+	// If an empty string is provided, the stored version will be removed.
+	// If an explicit version is not set, the Clerk JS version will be automatically be resolved.
+	ClerkJSVersion *string `json:"clerk_js_version,omitempty"`
 }
 
 func (s *InstanceService) Update(params UpdateInstanceParams) error {
