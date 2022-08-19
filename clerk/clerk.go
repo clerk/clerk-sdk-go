@@ -18,6 +18,7 @@ const version = "1.15.0"
 const (
 	ProdUrl = "https://api.clerk.dev/v1/"
 
+	AllowlistsUrl    = "allowlist_identifiers"
 	BlocklistsUrl    = "blocklist_identifiers"
 	ClientsUrl       = "clients"
 	ClientsVerifyUrl = ClientsUrl + "/verify"
@@ -42,6 +43,7 @@ type Client interface {
 	DecodeToken(token string) (*TokenClaims, error)
 	VerifyToken(token string, opts ...VerifyTokenOption) (*SessionClaims, error)
 
+	Allowlists() *AllowlistsService
 	Blocklists() *BlocklistsService
 	Clients() *ClientsService
 	Emails() *EmailService
@@ -71,6 +73,7 @@ type client struct {
 	jwksCache *jwksCache
 	token     string
 
+	allowlists    *AllowlistsService
 	blocklists    *BlocklistsService
 	clients       *ClientsService
 	emails        *EmailService
@@ -113,6 +116,7 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	}
 
 	commonService := &service{client: client}
+	client.allowlists = (*AllowlistsService)(commonService)
 	client.blocklists = (*BlocklistsService)(commonService)
 	client.clients = (*ClientsService)(commonService)
 	client.emails = (*EmailService)(commonService)
@@ -233,6 +237,10 @@ func checkForErrors(resp *http.Response) error {
 	}
 
 	return errorResponse
+}
+
+func (c *client) Allowlists() *AllowlistsService {
+	return c.allowlists
 }
 
 func (c *client) Blocklists() *BlocklistsService {
