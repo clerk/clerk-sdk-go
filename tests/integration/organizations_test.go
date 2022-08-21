@@ -26,6 +26,6 @@ func TestOrganizations(t *testing.T) {
 	assert.Greater(t, len(organizations.Data), 0)
 	assert.Greater(t, organizations.TotalCount, int64(0))
 	for _, organization := range organizations.Data {
-		assert.Greater(t, organization.MembersCount, 0)
+		assert.Greater(t, *organization.MembersCount, 0)
 	}
 }

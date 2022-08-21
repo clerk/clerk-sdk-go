@@ -14,7 +14,7 @@ type Organization struct {
 	Name            string          `json:"name"`
 	Slug            *string         `json:"slug"`
 	LogoURL         *string         `json:"logo_url"`
-	MembersCount    int             `json:"members_count,omitempty"`
+	MembersCount    *int            `json:"members_count,omitempty"`
 	PublicMetadata  json.RawMessage `json:"public_metadata"`
 	PrivateMetadata json.RawMessage `json:"private_metadata,omitempty"`
 	CreatedAt       int64           `json:"created_at"`
