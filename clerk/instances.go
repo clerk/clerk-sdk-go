@@ -41,3 +41,25 @@ func (s *InstanceService) Update(params UpdateInstanceParams) error {
 	_, err := s.client.Do(req, nil)
 	return err
 }
+
+type InstanceRestrictionsResponse struct {
+	Object    string `json:"object"`
+	Allowlist bool   `json:"allowlist"`
+	Blocklist bool   `json:"blocklist"`
+}
+
+type UpdateRestrictionsParams struct {
+	Allowlist *bool `json:"allowlist"`
+	Blocklist *bool `json:"blocklist"`
+}
+
+func (s *InstanceService) UpdateRestrictions(params UpdateRestrictionsParams) (*InstanceRestrictionsResponse, error) {
+	req, _ := s.client.NewRequest(http.MethodPatch, "instance/restrictions", &params)
+
+	var instanceRestrictionsResponse InstanceRestrictionsResponse
+	_, err := s.client.Do(req, &instanceRestrictionsResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &instanceRestrictionsResponse, nil
+}
