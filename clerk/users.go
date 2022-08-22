@@ -1,6 +1,7 @@
 package clerk
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -52,6 +53,29 @@ type PhoneNumber struct {
 type IdentificationLink struct {
 	IdentType string `json:"type"`
 	IdentID   string `json:"id"`
+}
+
+type CreateUserParams struct {
+	EmailAddresses  []string         `json:"email_address,omitempty"`
+	PhoneNumbers    []string         `json:"phone_number,omitempty"`
+	Web3Wallets     []string         `json:"web3_wallet,omitempty"`
+	Username        *string          `json:"username,omitempty"`
+	Password        *string          `json:"password,omitempty"`
+	FirstName       *string          `json:"first_name,omitempty"`
+	LastName        *string          `json:"last_name,omitempty"`
+	UnsafeMetadata  *json.RawMessage `json:"unsafe_metadata,omitempty"`
+	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
+}
+
+func (s *UsersService) Create(params CreateUserParams) (*User, error) {
+	req, _ := s.client.NewRequest("POST", UsersUrl, &params)
+	var user User
+	_, err := s.client.Do(req, &user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 type ListAllUsersParams struct {
