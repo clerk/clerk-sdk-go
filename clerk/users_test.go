@@ -11,6 +11,38 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestUsersService_Create_happyPath(t *testing.T) {
+	token := "token"
+	var payload CreateUserParams
+	_ = json.Unmarshal([]byte(dummyCreateUserRequestJson), &payload)
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/users", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, http.MethodPost)
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, dummyUserJson)
+	})
+
+	got, err := client.Users().Create(payload)
+
+	var want User
+	_ = json.Unmarshal([]byte(dummyUserJson), &want)
+
+	assert.Nil(t, err)
+	assert.Equal(t, want, *got)
+}
+
+func TestUsersService_Create_invalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+
+	_, err := client.Users().Create(CreateUserParams{})
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+}
+
 func TestUsersService_ListAll_happyPath(t *testing.T) {
 	client, mux, _, teardown := setup("token")
 	defer teardown()
@@ -367,6 +399,26 @@ const dummyUserJson = `{
 		},
 		"last_sign_in_at": 1610783813
     }`
+
+const dummyCreateUserRequestJson = `{
+		"first_name": "Tony",
+		"last_name": "Stark",
+		"email_address": ["email@example.com"],
+		"phone_number": ["+30123456789"],
+		"password": "new_password",
+		"public_metadata": {
+			"address": {
+				"street": "Pennsylvania Avenue",
+				"number": "1600"
+			}
+		},
+		"private_metadata": {
+			app_id: 5
+		},
+		"unsafe_metadata": {
+			viewed_profile: true
+		},
+	}`
 
 const dummyUpdateRequestJson = `{
 		"first_name": "Tony",
