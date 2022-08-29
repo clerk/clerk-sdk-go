@@ -7,11 +7,12 @@ import (
 type BlocklistsService service
 
 type BlocklistIdentifierResponse struct {
-	Object     string `json:"object"`
-	ID         string `json:"id"`
-	Identifier string `json:"identifier"`
-	CreatedAt  int64  `json:"created_at"`
-	UpdatedAt  int64  `json:"updated_at"`
+	Object         string `json:"object"`
+	ID             string `json:"id"`
+	Identifier     string `json:"identifier"`
+	IdentifierType string `json:"identifier_type"`
+	CreatedAt      int64  `json:"created_at"`
+	UpdatedAt      int64  `json:"updated_at"`
 }
 
 type CreateBlocklistIdentifierParams struct {

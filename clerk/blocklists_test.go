@@ -104,6 +104,7 @@ const dummyBlocklistIdentifierJson = `{
     "id": "blid_1mvFol71HiKCcypBd6xxg0IpMBN",
     "object": "blocklist_identifier",
 	"identifier": "dummy@example.com",
+	"identifier_type": "email_address",
 	"created_at": 1610783813,
 	"updated_at": 1610783813
 }`

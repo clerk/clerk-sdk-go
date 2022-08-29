@@ -104,6 +104,7 @@ const dummyAllowlistIdentifierJson = `{
     "id": "alid_1mvFol71HiKCcypBd6xxg0IpMBN",
     "object": "allowlist_identifier",
 	"identifier": "dummy@example.com",
+	"identifier_type": "email_address",
 	"invitation_id": "inv_1mvFol71PeRCcypBd628g0IuRmF",
 	"created_at": 1610783813,
 	"updated_at": 1610783813

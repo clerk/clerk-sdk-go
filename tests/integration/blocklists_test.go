@@ -27,6 +27,7 @@ func TestBlocklists(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEmpty(t, blocklistIdentifier.ID)
 	assert.Equal(t, identifier, blocklistIdentifier.Identifier)
+	assert.Equal(t, "email_address", blocklistIdentifier.IdentifierType)
 	assert.Equal(t, "blocklist_identifier", blocklistIdentifier.Object)
 
 	blocklistIdentifiers, err = client.Blocklists().ListAllIdentifiers()
