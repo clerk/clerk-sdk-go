@@ -5,12 +5,13 @@ import "net/http"
 type AllowlistsService service
 
 type AllowlistIdentifierResponse struct {
-	Object       string `json:"object"`
-	ID           string `json:"id"`
-	InvitationID string `json:"invitation_id,omitempty"`
-	Identifier   string `json:"identifier"`
-	CreatedAt    int64  `json:"created_at"`
-	UpdatedAt    int64  `json:"updated_at"`
+	Object         string `json:"object"`
+	ID             string `json:"id"`
+	InvitationID   string `json:"invitation_id,omitempty"`
+	Identifier     string `json:"identifier"`
+	IdentifierType string `json:"identifier_type"`
+	CreatedAt      int64  `json:"created_at"`
+	UpdatedAt      int64  `json:"updated_at"`
 }
 
 type CreateAllowlistIdentifierParams struct {
