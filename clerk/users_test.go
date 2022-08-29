@@ -418,6 +418,7 @@ const dummyCreateUserRequestJson = `{
 		"unsafe_metadata": {
 			viewed_profile: true
 		},
+		"totp_secret": "AICJ3HCXKO4KOY6NDH6RII4E3ZYL5ZBH",
 	}`
 
 const dummyUpdateRequestJson = `{

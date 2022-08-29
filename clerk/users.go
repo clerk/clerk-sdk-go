@@ -66,6 +66,7 @@ type CreateUserParams struct {
 	UnsafeMetadata  *json.RawMessage `json:"unsafe_metadata,omitempty"`
 	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
 	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
+	TOTPSecret      *string          `json:"totp_secret,omitempty"`
 }
 
 func (s *UsersService) Create(params CreateUserParams) (*User, error) {
