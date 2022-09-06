@@ -231,3 +231,19 @@ func (s *UsersService) UpdateMetadata(userId string, updateMetadataRequest *Upda
 	}
 	return &updatedUser, nil
 }
+
+type UserDisableMFAResponse struct {
+	UserID string `json:"user_id"`
+}
+
+func (s *UsersService) DisableMFA(userID string) (*UserDisableMFAResponse, error) {
+	url := fmt.Sprintf("%s/%s/mfa", UsersUrl, userID)
+	req, _ := s.client.NewRequest(http.MethodDelete, url)
+
+	var response UserDisableMFAResponse
+	if _, err := s.client.Do(req, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
