@@ -343,6 +343,26 @@ func TestUsersService_UpdateMetadata_invalidServer(t *testing.T) {
 	}
 }
 
+func TestUsersService_DisableMFA_happyPath(t *testing.T) {
+	token := "token"
+	userID := "test-user-id"
+	var payload UpdateUserMetadata
+	_ = json.Unmarshal([]byte(dummyUpdateMetadataRequestJson), &payload)
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/users/"+userID+"/mfa", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, http.MethodDelete)
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, `{"user_id":"`+userID+`"}`)
+	})
+
+	got, err := client.Users().DisableMFA(userID)
+	assert.NoError(t, err)
+	assert.Equal(t, userID, got.UserID)
+}
+
 const dummyUserJson = `{
         "birthday": "",
         "created_at": 1610783813,
