@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/clerkinc/clerk-sdk-go/clerk"
+	"github.com/stretchr/testify/assert"
 )
 
 type addressDetails struct {
@@ -92,5 +93,12 @@ func TestUsers(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Users.Ban returned error: %v", err)
 		}
+		assert.True(t, updatedUser.Banned)
+
+		updatedUser, err = client.Users().Unban(userId)
+		if err != nil {
+			t.Fatalf("Users.Unban returned error: %v", err)
+		}
+		assert.False(t, updatedUser.Banned)
 	}
 }
