@@ -87,5 +87,10 @@ func TestUsers(t *testing.T) {
 		if updatedUser == nil {
 			t.Errorf("Users.UpdateMetadata returned nil")
 		}
+
+		updatedUser, err = client.Users().Ban(userId)
+		if err != nil {
+			t.Fatalf("Users.Ban returned error: %v", err)
+		}
 	}
 }

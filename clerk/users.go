@@ -29,6 +29,7 @@ type User struct {
 	PrivateMetadata       interface{}    `json:"private_metadata"`
 	UnsafeMetadata        interface{}    `json:"unsafe_metadata"`
 	LastSignInAt          *int64         `json:"last_sign_in_at"`
+	Banned                bool           `json:"banned"`
 	CreatedAt             int64          `json:"created_at"`
 	UpdatedAt             int64          `json:"updated_at"`
 }
@@ -241,6 +242,18 @@ func (s *UsersService) DisableMFA(userID string) (*UserDisableMFAResponse, error
 	req, _ := s.client.NewRequest(http.MethodDelete, url)
 
 	var response UserDisableMFAResponse
+	if _, err := s.client.Do(req, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+func (s *UsersService) Ban(userID string) (*User, error) {
+	url := fmt.Sprintf("%s/%s/ban", UsersUrl, userID)
+	req, _ := s.client.NewRequest(http.MethodPost, url)
+
+	var response User
 	if _, err := s.client.Do(req, &response); err != nil {
 		return nil, err
 	}
