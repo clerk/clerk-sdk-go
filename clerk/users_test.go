@@ -363,6 +363,23 @@ func TestUsersService_DisableMFA_happyPath(t *testing.T) {
 	assert.Equal(t, userID, got.UserID)
 }
 
+func TestUsersService_Ban_happyPath(t *testing.T) {
+	token := "token"
+	userID := "test-user-id"
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/users/"+userID+"/ban", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, http.MethodPost)
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, dummyUserJson)
+	})
+
+	_, err := client.Users().Ban(userID)
+	assert.NoError(t, err)
+}
+
 const dummyUserJson = `{
         "birthday": "",
         "created_at": 1610783813,
@@ -417,7 +434,8 @@ const dummyUserJson = `{
 		"private_metadata": {
 			"app_id": 5
 		},
-		"last_sign_in_at": 1610783813
+		"last_sign_in_at": 1610783813,
+		"banned": false
     }`
 
 const dummyCreateUserRequestJson = `{
