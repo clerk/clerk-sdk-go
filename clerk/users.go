@@ -260,3 +260,15 @@ func (s *UsersService) Ban(userID string) (*User, error) {
 
 	return &response, nil
 }
+
+func (s *UsersService) Unban(userID string) (*User, error) {
+	url := fmt.Sprintf("%s/%s/unban", UsersUrl, userID)
+	req, _ := s.client.NewRequest(http.MethodPost, url)
+
+	var response User
+	if _, err := s.client.Do(req, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}

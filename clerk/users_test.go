@@ -380,6 +380,23 @@ func TestUsersService_Ban_happyPath(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUsersService_Unban_happyPath(t *testing.T) {
+	token := "token"
+	userID := "test-user-id"
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/users/"+userID+"/unban", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, http.MethodPost)
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, dummyUserJson)
+	})
+
+	_, err := client.Users().Unban(userID)
+	assert.NoError(t, err)
+}
+
 const dummyUserJson = `{
         "birthday": "",
         "created_at": 1610783813,
