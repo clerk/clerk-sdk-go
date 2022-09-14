@@ -4,7 +4,9 @@
 package integration
 
 import (
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/clerkinc/clerk-sdk-go/clerk"
 )
@@ -20,7 +22,8 @@ func createClient() clerk.Client {
 	apiUrl := getEnv(APIUrl)
 	apiKey := getEnv(APIKey)
 
-	client, err := clerk.NewClient(apiKey, clerk.WithBaseURL(apiUrl))
+	httpClient := &http.Client{Timeout: time.Second * 20}
+	client, err := clerk.NewClient(apiKey, clerk.WithBaseURL(apiUrl), clerk.WithHTTPClient(httpClient))
 	if err != nil {
 		panic("Unable to create Clerk client")
 	}
