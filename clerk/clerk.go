@@ -13,26 +13,26 @@ import (
 	"time"
 )
 
-const version = "1.21.0"
+const version = "1.22.0"
 
 const (
 	ProdUrl = "https://api.clerk.dev/v1/"
 
-	AllowlistsUrl          = "allowlist_identifiers"
-	BlocklistsUrl          = "blocklist_identifiers"
-	ClientsUrl             = "clients"
-	ClientsVerifyUrl       = ClientsUrl + "/verify"
-	EmailsUrl              = "emails"
-	ImpersonationTokensUrl = "impersonation_tokens"
-	OrganizationsUrl       = "organizations"
-	RedirectURLsUrl        = "redirect_urls"
-	SessionsUrl            = "sessions"
-	SMSUrl                 = "sms_messages"
-	TemplatesUrl           = "templates"
-	UsersUrl               = "users"
-	UsersCountUrl          = UsersUrl + "/count"
-	WebhooksUrl            = "webhooks"
-	JWTTemplatesUrl        = "jwt_templates"
+	AllowlistsUrl    = "allowlist_identifiers"
+	BlocklistsUrl    = "blocklist_identifiers"
+	ClientsUrl       = "clients"
+	ClientsVerifyUrl = ClientsUrl + "/verify"
+	EmailsUrl        = "emails"
+	ActorTokensUrl   = "actor_tokens"
+	OrganizationsUrl = "organizations"
+	RedirectURLsUrl  = "redirect_urls"
+	SessionsUrl      = "sessions"
+	SMSUrl           = "sms_messages"
+	TemplatesUrl     = "templates"
+	UsersUrl         = "users"
+	UsersCountUrl    = UsersUrl + "/count"
+	WebhooksUrl      = "webhooks"
+	JWTTemplatesUrl  = "jwt_templates"
 )
 
 var defaultHTTPClient = &http.Client{Timeout: time.Second * 5}
@@ -48,7 +48,7 @@ type Client interface {
 	Blocklists() *BlocklistsService
 	Clients() *ClientsService
 	Emails() *EmailService
-	ImpersonationTokens() *ImpersonationTokenService
+	ActorTokens() *ActorTokenService
 	Instances() *InstanceService
 	JWKS() *JWKSService
 	JWTTemplates() *JWTTemplatesService
@@ -75,22 +75,22 @@ type client struct {
 	jwksCache *jwksCache
 	token     string
 
-	allowlists          *AllowlistsService
-	blocklists          *BlocklistsService
-	clients             *ClientsService
-	emails              *EmailService
-	impersonationTokens *ImpersonationTokenService
-	instances           *InstanceService
-	jwks                *JWKSService
-	jwtTemplates        *JWTTemplatesService
-	organizations       *OrganizationsService
-	redirectURLs        *RedirectURLsService
-	sessions            *SessionsService
-	sms                 *SMSService
-	templates           *TemplatesService
-	users               *UsersService
-	webhooks            *WebhooksService
-	verification        *VerificationService
+	allowlists    *AllowlistsService
+	blocklists    *BlocklistsService
+	clients       *ClientsService
+	emails        *EmailService
+	actorTokens   *ActorTokenService
+	instances     *InstanceService
+	jwks          *JWKSService
+	jwtTemplates  *JWTTemplatesService
+	organizations *OrganizationsService
+	redirectURLs  *RedirectURLsService
+	sessions      *SessionsService
+	sms           *SMSService
+	templates     *TemplatesService
+	users         *UsersService
+	webhooks      *WebhooksService
+	verification  *VerificationService
 }
 
 // NewClient creates a new Clerk client.
@@ -123,7 +123,7 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	client.blocklists = (*BlocklistsService)(commonService)
 	client.clients = (*ClientsService)(commonService)
 	client.emails = (*EmailService)(commonService)
-	client.impersonationTokens = (*ImpersonationTokenService)(commonService)
+	client.actorTokens = (*ActorTokenService)(commonService)
 	client.instances = (*InstanceService)(commonService)
 	client.jwks = (*JWKSService)(commonService)
 	client.jwtTemplates = (*JWTTemplatesService)(commonService)
@@ -259,8 +259,8 @@ func (c *client) Emails() *EmailService {
 	return c.emails
 }
 
-func (c *client) ImpersonationTokens() *ImpersonationTokenService {
-	return c.impersonationTokens
+func (c *client) ActorTokens() *ActorTokenService {
+	return c.actorTokens
 }
 
 func (c *client) Instances() *InstanceService {
