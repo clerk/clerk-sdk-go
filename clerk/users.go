@@ -249,6 +249,27 @@ func (s *UsersService) DisableMFA(userID string) (*UserDisableMFAResponse, error
 	return &response, nil
 }
 
+type OAuthProviderToken struct {
+	Object         string      `json:"object"`
+	Provider       string      `json:"provider"`
+	Token          string      `json:"token"`
+	PublicMetadata interface{} `json:"public_metadata"`
+	Label          string      `json:"label"`
+	Scopes         []string    `json:"scopes"`
+}
+
+func (s *UsersService) GetOAuthAccessToken(userID, providerID string) ([]OAuthProviderToken, error) {
+	url := fmt.Sprintf("%s/%s/oauth_access_tokens/%s", UsersUrl, userID, providerID)
+	req, _ := s.client.NewRequest(http.MethodGet, url)
+
+	var response []OAuthProviderToken
+	if _, err := s.client.Do(req, &response); err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
 func (s *UsersService) Ban(userID string) (*User, error) {
 	url := fmt.Sprintf("%s/%s/ban", UsersUrl, userID)
 	req, _ := s.client.NewRequest(http.MethodPost, url)
