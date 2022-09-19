@@ -213,12 +213,7 @@ func (c *client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	}
 
 	if resp.Body != nil && v != nil {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return resp, err
-		}
-
-		err = json.Unmarshal(body, &v)
+		err = json.NewDecoder(resp.Body).Decode(&v)
 		if err != nil {
 			return resp, err
 		}
@@ -234,11 +229,8 @@ func checkForErrors(resp *http.Response) error {
 
 	errorResponse := &ErrorResponse{Response: resp}
 
-	data, err := ioutil.ReadAll(resp.Body)
-	if err == nil && data != nil {
-		// it's ok if we cannot unmarshal to Clerk's error response
-		_ = json.Unmarshal(data, errorResponse)
-	}
+	// it's ok if we cannot unmarshal to Clerk's error response
+	_ = json.NewDecoder(resp.Body).Decode(errorResponse)
 
 	return errorResponse
 }
