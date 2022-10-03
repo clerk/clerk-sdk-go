@@ -22,6 +22,8 @@ type User struct {
 	PrimaryPhoneNumberID  *string        `json:"primary_phone_number_id"`
 	PasswordEnabled       bool           `json:"password_enabled"`
 	TwoFactorEnabled      bool           `json:"two_factor_enabled"`
+	TOTPEnabled           bool           `json:"totp_enabled"`
+	BackupCodeEnabled     bool           `json:"backup_code_enabled"`
 	EmailAddresses        []EmailAddress `json:"email_addresses"`
 	PhoneNumbers          []PhoneNumber  `json:"phone_numbers"`
 	ExternalAccounts      []interface{}  `json:"external_accounts"`
