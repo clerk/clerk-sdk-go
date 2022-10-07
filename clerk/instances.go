@@ -63,3 +63,23 @@ func (s *InstanceService) UpdateRestrictions(params UpdateRestrictionsParams) (*
 	}
 	return &instanceRestrictionsResponse, nil
 }
+
+type OrganizationSettingsResponse struct {
+	Object  string `json:"object"`
+	Enabled bool   `json:"enabled"`
+}
+
+type UpdateOrganizationSettingsParams struct {
+	Enabled *bool `json:"enabled"`
+}
+
+func (s *InstanceService) UpdateOrganizationSettings(params UpdateOrganizationSettingsParams) (*OrganizationSettingsResponse, error) {
+	req, _ := s.client.NewRequest(http.MethodPatch, "instance/organization_settings", &params)
+
+	var organizationSettingsResponse OrganizationSettingsResponse
+	_, err := s.client.Do(req, &organizationSettingsResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &organizationSettingsResponse, nil
+}

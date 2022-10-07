@@ -93,3 +93,40 @@ func TestInstanceService_UpdateRestrictions_invalidServer(t *testing.T) {
 		t.Errorf("Expected error to be returned")
 	}
 }
+
+func TestInstanceService_UpdateOrganizationSettings_happyPath(t *testing.T) {
+	token := "token"
+	dummyOrganizationSettingsResponseJSON := `{
+		"enabled": true
+	}`
+	var organizationSettingsResponse OrganizationSettingsResponse
+	_ = json.Unmarshal([]byte(dummyOrganizationSettingsResponseJSON), &organizationSettingsResponse)
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/instance/organization_settings", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, http.MethodPatch)
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, dummyOrganizationSettingsResponseJSON)
+	})
+
+	enabled := true
+	got, _ := client.Instances().UpdateOrganizationSettings(UpdateOrganizationSettingsParams{
+		Enabled: &enabled,
+	})
+
+	assert.Equal(t, &organizationSettingsResponse, got)
+}
+
+func TestInstanceService_UpdateOrganizationSettings_invalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+
+	enabled := true
+	_, err := client.Instances().UpdateOrganizationSettings(UpdateOrganizationSettingsParams{
+		Enabled: &enabled,
+	})
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+}
