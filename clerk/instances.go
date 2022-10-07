@@ -70,7 +70,7 @@ type OrganizationSettingsResponse struct {
 }
 
 type UpdateOrganizationSettingsParams struct {
-	Enabled *bool `json:"enabled"`
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 func (s *InstanceService) UpdateOrganizationSettings(params UpdateOrganizationSettingsParams) (*OrganizationSettingsResponse, error) {
