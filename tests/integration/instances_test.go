@@ -38,3 +38,14 @@ func TestInstanceRestrictions(t *testing.T) {
 	assert.True(t, restrictionsResponse.Allowlist)
 	assert.True(t, restrictionsResponse.Blocklist)
 }
+
+func TestInstanceOrganizationSettings(t *testing.T) {
+	client := createClient()
+
+	enabled := true
+	organizationSettingsResponse, err := client.Instances().UpdateOrganizationSettings(clerk.UpdateOrganizationSettingsParams{
+		Enabled: &enabled,
+	})
+	assert.Nil(t, err)
+	assert.True(t, organizationSettingsResponse.Enabled)
+}
