@@ -97,7 +97,8 @@ func TestInstanceService_UpdateRestrictions_invalidServer(t *testing.T) {
 func TestInstanceService_UpdateOrganizationSettings_happyPath(t *testing.T) {
 	token := "token"
 	dummyOrganizationSettingsResponseJSON := `{
-		"enabled": true
+		"enabled": true,
+		"max_allowed_memberships": 2
 	}`
 	var organizationSettingsResponse OrganizationSettingsResponse
 	_ = json.Unmarshal([]byte(dummyOrganizationSettingsResponseJSON), &organizationSettingsResponse)

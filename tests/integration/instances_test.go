@@ -43,8 +43,10 @@ func TestInstanceOrganizationSettings(t *testing.T) {
 	client := createClient()
 
 	enabled := true
+	allowedMemberships := 0
 	organizationSettingsResponse, err := client.Instances().UpdateOrganizationSettings(clerk.UpdateOrganizationSettingsParams{
-		Enabled: &enabled,
+		Enabled:               &enabled,
+		MaxAllowedMemberships: &allowedMemberships,
 	})
 	assert.Nil(t, err)
 	assert.True(t, organizationSettingsResponse.Enabled)
