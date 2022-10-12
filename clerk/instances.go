@@ -65,12 +65,14 @@ func (s *InstanceService) UpdateRestrictions(params UpdateRestrictionsParams) (*
 }
 
 type OrganizationSettingsResponse struct {
-	Object  string `json:"object"`
-	Enabled bool   `json:"enabled"`
+	Object                string `json:"object"`
+	Enabled               bool   `json:"enabled"`
+	MaxAllowedMemberships int    `json:"max_allowed_memberships"`
 }
 
 type UpdateOrganizationSettingsParams struct {
-	Enabled *bool `json:"enabled,omitempty"`
+	Enabled               *bool `json:"enabled,omitempty"`
+	MaxAllowedMemberships *int  `json:"max_allowed_memberships,omitempty"`
 }
 
 func (s *InstanceService) UpdateOrganizationSettings(params UpdateOrganizationSettingsParams) (*OrganizationSettingsResponse, error) {
