@@ -13,6 +13,36 @@ import (
 func TestOrganizations(t *testing.T) {
 	client := createClient()
 
+	limit := 1
+	users, err := client.Users().ListAll(clerk.ListAllUsersParams{
+		Limit: &limit,
+	})
+	if err != nil {
+		t.Fatalf("Users.ListAll returned error: %v", err)
+	}
+	if len(users) != 1 {
+		t.Fatalf("Users.ListAll returned %d results, expected 1", len(users))
+	}
+
+	newOrganization, err := client.Organizations().Create(clerk.CreateOrganizationParams{
+		Name:      "my-org",
+		CreatedBy: users[0].ID,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotEmpty(t, newOrganization.ID)
+	assert.Equal(t, "my-org", newOrganization.Name)
+
+	membershipLimit := 20
+	updatedOrganization, err := client.Organizations().Update(newOrganization.ID, clerk.UpdateOrganizationParams{
+		MaxAllowedMemberships: &membershipLimit,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, membershipLimit, updatedOrganization.MaxAllowedMemberships)
+
 	organizations, err := client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
 		IncludeMembersCount: true,
 	})
@@ -28,4 +58,10 @@ func TestOrganizations(t *testing.T) {
 	for _, organization := range organizations.Data {
 		assert.Greater(t, *organization.MembersCount, 0)
 	}
+
+	deleteResponse, err := client.Organizations().Delete(newOrganization.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, newOrganization.ID, deleteResponse.ID)
 }

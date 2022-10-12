@@ -2,6 +2,7 @@ package clerk
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -9,16 +10,64 @@ import (
 type OrganizationsService service
 
 type Organization struct {
-	Object          string          `json:"object"`
-	ID              string          `json:"id"`
-	Name            string          `json:"name"`
-	Slug            *string         `json:"slug"`
-	LogoURL         *string         `json:"logo_url"`
-	MembersCount    *int            `json:"members_count,omitempty"`
-	PublicMetadata  json.RawMessage `json:"public_metadata"`
-	PrivateMetadata json.RawMessage `json:"private_metadata,omitempty"`
-	CreatedAt       int64           `json:"created_at"`
-	UpdatedAt       int64           `json:"updated_at"`
+	Object                string          `json:"object"`
+	ID                    string          `json:"id"`
+	Name                  string          `json:"name"`
+	Slug                  *string         `json:"slug"`
+	LogoURL               *string         `json:"logo_url"`
+	MembersCount          *int            `json:"members_count,omitempty"`
+	MaxAllowedMemberships int             `json:"max_allowed_memberships"`
+	PublicMetadata        json.RawMessage `json:"public_metadata"`
+	PrivateMetadata       json.RawMessage `json:"private_metadata,omitempty"`
+	CreatedAt             int64           `json:"created_at"`
+	UpdatedAt             int64           `json:"updated_at"`
+}
+
+type CreateOrganizationParams struct {
+	Name                  string          `json:"name"`
+	Slug                  *string         `json:"slug,omitempty"`
+	CreatedBy             string          `json:"created_by"`
+	MaxAllowedMemberships *int            `json:"max_allowed_memberships,omitempty"`
+	PublicMetadata        json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata       json.RawMessage `json:"private_metadata,omitempty"`
+}
+
+func (s *OrganizationsService) Create(params CreateOrganizationParams) (*Organization, error) {
+	req, _ := s.client.NewRequest(http.MethodPost, OrganizationsUrl, &params)
+
+	var organization Organization
+	_, err := s.client.Do(req, &organization)
+	if err != nil {
+		return nil, err
+	}
+	return &organization, nil
+}
+
+type UpdateOrganizationParams struct {
+	Name                  *string `json:"name,omitempty"`
+	MaxAllowedMemberships *int    `json:"max_allowed_memberships,omitempty"`
+}
+
+func (s *OrganizationsService) Update(organizationID string, params UpdateOrganizationParams) (*Organization, error) {
+	req, _ := s.client.NewRequest(http.MethodPatch, fmt.Sprintf("%s/%s", OrganizationsUrl, organizationID), &params)
+
+	var organization Organization
+	_, err := s.client.Do(req, &organization)
+	if err != nil {
+		return nil, err
+	}
+	return &organization, nil
+}
+
+func (s *OrganizationsService) Delete(organizationID string) (*DeleteResponse, error) {
+	req, _ := s.client.NewRequest(http.MethodDelete, fmt.Sprintf("%s/%s", OrganizationsUrl, organizationID))
+
+	var deleteResponse DeleteResponse
+	_, err := s.client.Do(req, &deleteResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &deleteResponse, nil
 }
 
 type OrganizationsResponse struct {
