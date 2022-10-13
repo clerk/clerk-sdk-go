@@ -70,6 +70,7 @@ type CreateUserParams struct {
 	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
 	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
 	TOTPSecret      *string          `json:"totp_secret,omitempty"`
+	BackupCodes     []string         `json:"backup_codes,omitempty"`
 }
 
 func (s *UsersService) Create(params CreateUserParams) (*User, error) {
@@ -203,6 +204,8 @@ type UpdateUser struct {
 	PublicMetadata        interface{} `json:"public_metadata,omitempty"`
 	PrivateMetadata       interface{} `json:"private_metadata,omitempty"`
 	UnsafeMetadata        interface{} `json:"unsafe_metadata,omitempty"`
+	TOTPSecret            *string     `json:"totp_secret,omitempty"`
+	BackupCodes           []string    `json:"backup_codes,omitempty"`
 }
 
 func (s *UsersService) Update(userId string, updateRequest *UpdateUser) (*User, error) {
