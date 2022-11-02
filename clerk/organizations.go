@@ -103,3 +103,32 @@ func (s *OrganizationsService) ListAll(params ListAllOrganizationsParams) (*Orga
 	}
 	return organizationsResponse, nil
 }
+
+type OrganizationInvitation struct {
+	Object         string          `json:"object"`
+	ID             string          `json:"id"`
+	EmailAddress   string          `json:"email_address"`
+	OrganizationID string          `json:"organization_id"`
+	PublicMetadata json.RawMessage `json:"public_metadata"`
+	Role           string          `json:"role"`
+	Status         string          `json:"status"`
+	CreatedAt      int64           `json:"created_at"`
+	UpdatedAt      int64           `json:"updated_at"`
+}
+
+type CreateOrganizationInvitationParams struct {
+	EmailAddress   string          `json:"email_address"`
+	InviterUserID  string          `json:"inviter_user_id"`
+	OrganizationID string          `json:"organization_id"`
+	PublicMetadata json.RawMessage `json:"public_metadata,omitempty"`
+	RedirectURL    string          `json:"redirect_url,omitempty"`
+	Role           string          `json:"role"`
+}
+
+func (s *OrganizationsService) CreateInvitation(params CreateOrganizationInvitationParams) (*OrganizationInvitation, error) {
+	endpoint := fmt.Sprintf("%s/%s/%s", OrganizationsUrl, params.OrganizationID, InvitationsURL)
+	req, _ := s.client.NewRequest(http.MethodPost, endpoint, &params)
+	var organizationInvitation OrganizationInvitation
+	_, err := s.client.Do(req, &organizationInvitation)
+	return &organizationInvitation, err
+}
