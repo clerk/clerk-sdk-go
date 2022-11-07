@@ -16,6 +16,21 @@ type verifyRequest struct {
 	Token string `json:"token"`
 }
 
+type Verification struct {
+	Status           string `json:"status"`
+	Strategy         string `json:"strategy"`
+	Attempts         *int   `json:"attempts"`
+	ExpireAt         *int64 `json:"expire_at"`
+	VerifiedAtClient string `json:"verified_at_client,omitempty"`
+
+	// needed for Web3
+	Nonce *string `json:"nonce,omitempty"`
+
+	// needed for OAuth
+	ExternalVerificationRedirectURL *string `json:"external_verification_redirect_url,omitempty"`
+	Error                           []byte  `json:"error,omitempty"`
+}
+
 func (s *VerificationService) Verify(req *http.Request) (*Session, error) {
 	if req == nil {
 		return nil, errors.New("cannot verify empty request")

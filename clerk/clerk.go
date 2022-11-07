@@ -18,22 +18,24 @@ const version = "1.27.0"
 const (
 	ProdUrl = "https://api.clerk.dev/v1/"
 
-	ActorTokensUrl   = "actor_tokens"
-	AllowlistsUrl    = "allowlist_identifiers"
-	BlocklistsUrl    = "blocklist_identifiers"
-	ClientsUrl       = "clients"
-	ClientsVerifyUrl = ClientsUrl + "/verify"
-	EmailsUrl        = "emails"
-	InvitationsURL   = "invitations"
-	OrganizationsUrl = "organizations"
-	RedirectURLsUrl  = "redirect_urls"
-	SessionsUrl      = "sessions"
-	SMSUrl           = "sms_messages"
-	TemplatesUrl     = "templates"
-	UsersUrl         = "users"
-	UsersCountUrl    = UsersUrl + "/count"
-	WebhooksUrl      = "webhooks"
-	JWTTemplatesUrl  = "jwt_templates"
+	ActorTokensUrl    = "actor_tokens"
+	AllowlistsUrl     = "allowlist_identifiers"
+	BlocklistsUrl     = "blocklist_identifiers"
+	ClientsUrl        = "clients"
+	ClientsVerifyUrl  = ClientsUrl + "/verify"
+	EmailAddressesURL = "email_addresses"
+	EmailsUrl         = "emails"
+	InvitationsURL    = "invitations"
+	OrganizationsUrl  = "organizations"
+	PhoneNumbersURL   = "phone_numbers"
+	RedirectURLsUrl   = "redirect_urls"
+	SessionsUrl       = "sessions"
+	SMSUrl            = "sms_messages"
+	TemplatesUrl      = "templates"
+	UsersUrl          = "users"
+	UsersCountUrl     = UsersUrl + "/count"
+	WebhooksUrl       = "webhooks"
+	JWTTemplatesUrl   = "jwt_templates"
 )
 
 var defaultHTTPClient = &http.Client{Timeout: time.Second * 5}
@@ -48,12 +50,14 @@ type Client interface {
 	Allowlists() *AllowlistsService
 	Blocklists() *BlocklistsService
 	Clients() *ClientsService
+	EmailAddresses() *EmailAddressesService
 	Emails() *EmailService
 	ActorTokens() *ActorTokenService
 	Instances() *InstanceService
 	JWKS() *JWKSService
 	JWTTemplates() *JWTTemplatesService
 	Organizations() *OrganizationsService
+	PhoneNumbers() *PhoneNumbersService
 	RedirectURLs() *RedirectURLsService
 	Sessions() *SessionsService
 	SMS() *SMSService
@@ -76,22 +80,24 @@ type client struct {
 	jwksCache *jwksCache
 	token     string
 
-	allowlists    *AllowlistsService
-	blocklists    *BlocklistsService
-	clients       *ClientsService
-	emails        *EmailService
-	actorTokens   *ActorTokenService
-	instances     *InstanceService
-	jwks          *JWKSService
-	jwtTemplates  *JWTTemplatesService
-	organizations *OrganizationsService
-	redirectURLs  *RedirectURLsService
-	sessions      *SessionsService
-	sms           *SMSService
-	templates     *TemplatesService
-	users         *UsersService
-	webhooks      *WebhooksService
-	verification  *VerificationService
+	allowlists     *AllowlistsService
+	blocklists     *BlocklistsService
+	clients        *ClientsService
+	emailAddresses *EmailAddressesService
+	emails         *EmailService
+	actorTokens    *ActorTokenService
+	instances      *InstanceService
+	jwks           *JWKSService
+	jwtTemplates   *JWTTemplatesService
+	organizations  *OrganizationsService
+	phoneNumbers   *PhoneNumbersService
+	redirectURLs   *RedirectURLsService
+	sessions       *SessionsService
+	sms            *SMSService
+	templates      *TemplatesService
+	users          *UsersService
+	webhooks       *WebhooksService
+	verification   *VerificationService
 }
 
 // NewClient creates a new Clerk client.
@@ -123,12 +129,14 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	client.allowlists = (*AllowlistsService)(commonService)
 	client.blocklists = (*BlocklistsService)(commonService)
 	client.clients = (*ClientsService)(commonService)
+	client.emailAddresses = (*EmailAddressesService)(commonService)
 	client.emails = (*EmailService)(commonService)
 	client.actorTokens = (*ActorTokenService)(commonService)
 	client.instances = (*InstanceService)(commonService)
 	client.jwks = (*JWKSService)(commonService)
 	client.jwtTemplates = (*JWTTemplatesService)(commonService)
 	client.organizations = (*OrganizationsService)(commonService)
+	client.phoneNumbers = (*PhoneNumbersService)(commonService)
 	client.redirectURLs = (*RedirectURLsService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
 	client.sms = (*SMSService)(commonService)
@@ -256,6 +264,10 @@ func (c *client) Clients() *ClientsService {
 	return c.clients
 }
 
+func (c *client) EmailAddresses() *EmailAddressesService {
+	return c.emailAddresses
+}
+
 func (c *client) Emails() *EmailService {
 	return c.emails
 }
@@ -278,6 +290,10 @@ func (c *client) JWTTemplates() *JWTTemplatesService {
 
 func (c *client) Organizations() *OrganizationsService {
 	return c.organizations
+}
+
+func (c *client) PhoneNumbers() *PhoneNumbersService {
+	return c.phoneNumbers
 }
 
 func (c *client) RedirectURLs() *RedirectURLsService {
