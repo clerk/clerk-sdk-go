@@ -36,23 +36,6 @@ type User struct {
 	UpdatedAt             int64          `json:"updated_at"`
 }
 
-type EmailAddress struct {
-	ID           string               `json:"id"`
-	Object       string               `json:"object"`
-	EmailAddress string               `json:"email_address"`
-	Verification interface{}          `json:"verification"`
-	LinkedTo     []IdentificationLink `json:"linked_to"`
-}
-
-type PhoneNumber struct {
-	ID                      string               `json:"id"`
-	Object                  string               `json:"object"`
-	PhoneNumber             string               `json:"phone_number"`
-	ReservedForSecondFactor bool                 `json:"reserved_for_second_factor"`
-	Verification            interface{}          `json:"verification"`
-	LinkedTo                []IdentificationLink `json:"linked_to"`
-}
-
 type IdentificationLink struct {
 	IdentType string `json:"type"`
 	IdentID   string `json:"id"`
