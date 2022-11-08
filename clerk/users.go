@@ -69,6 +69,8 @@ type CreateUserParams struct {
 	UnsafeMetadata  *json.RawMessage `json:"unsafe_metadata,omitempty"`
 	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
 	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
+	PasswordDigest  *string          `json:"password_digest,omitempty"`
+	PasswordHasher  *string          `json:"password_hasher,omitempty"`
 	TOTPSecret      *string          `json:"totp_secret,omitempty"`
 	BackupCodes     []string         `json:"backup_codes,omitempty"`
 }
