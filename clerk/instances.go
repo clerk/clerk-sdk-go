@@ -33,6 +33,11 @@ type UpdateInstanceParams struct {
 	// If an empty string is provided, the stored version will be removed.
 	// If an explicit version is not set, the Clerk JS version will be automatically be resolved.
 	ClerkJSVersion *string `json:"clerk_js_version,omitempty"`
+
+	// CookielessDev can be used to enable the new mode in which no third-party
+	// cookies are used in development instances. Make sure to also enable the
+	// setting in Clerk.js
+	CookielessDev *bool `json:"cookieless_dev,omitempty"`
 }
 
 func (s *InstanceService) Update(params UpdateInstanceParams) error {
