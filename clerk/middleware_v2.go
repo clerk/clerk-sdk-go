@@ -129,7 +129,7 @@ func WithSessionV2(client Client, verifyTokenOptions ...VerifyTokenOption) func(
 				return
 			}
 
-			claims, err := client.VerifyToken(cookieToken.Value)
+			claims, err := client.VerifyToken(cookieToken.Value, verifyTokenOptions...)
 			if err == nil && claims.IssuedAt != nil && clientUatTs <= int64(*claims.IssuedAt) {
 				ctx := context.WithValue(r.Context(), ActiveSessionClaims, claims)
 				next.ServeHTTP(w, r.WithContext(ctx))
