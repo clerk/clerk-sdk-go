@@ -30,6 +30,7 @@ const (
 	PhoneNumbersURL   = "phone_numbers"
 	RedirectURLsUrl   = "redirect_urls"
 	SessionsUrl       = "sessions"
+	SignUpsURL        = "sign_ups"
 	SMSUrl            = "sms_messages"
 	TemplatesUrl      = "templates"
 	UsersUrl          = "users"
@@ -60,6 +61,7 @@ type Client interface {
 	PhoneNumbers() *PhoneNumbersService
 	RedirectURLs() *RedirectURLsService
 	Sessions() *SessionsService
+	SignUps() *SignUpService
 	SMS() *SMSService
 	Templates() *TemplatesService
 	Users() *UsersService
@@ -93,6 +95,7 @@ type client struct {
 	phoneNumbers   *PhoneNumbersService
 	redirectURLs   *RedirectURLsService
 	sessions       *SessionsService
+	signUps        *SignUpService
 	sms            *SMSService
 	templates      *TemplatesService
 	users          *UsersService
@@ -139,6 +142,7 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	client.phoneNumbers = (*PhoneNumbersService)(commonService)
 	client.redirectURLs = (*RedirectURLsService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
+	client.signUps = (*SignUpService)(commonService)
 	client.sms = (*SMSService)(commonService)
 	client.templates = (*TemplatesService)(commonService)
 	client.users = (*UsersService)(commonService)
@@ -302,6 +306,10 @@ func (c *client) RedirectURLs() *RedirectURLsService {
 
 func (c *client) Sessions() *SessionsService {
 	return c.sessions
+}
+
+func (c *client) SignUps() *SignUpService {
+	return c.signUps
 }
 
 func (c *client) SMS() *SMSService {

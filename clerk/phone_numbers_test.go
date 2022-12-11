@@ -3,10 +3,11 @@ package clerk
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPhoneNumbersService_Create_HappyPath(t *testing.T) {
@@ -109,7 +110,7 @@ func TestPhoneNumbersService_Update_HappyPath(t *testing.T) {
 
 func TestPhoneNumbersService_Delete_HappyPath(t *testing.T) {
 	token := "token"
-	phoneNumberID := "idn_banana"
+	phoneNumberID := "idn_avocado"
 
 	client, mux, _, teardown := setup(token)
 	defer teardown()
