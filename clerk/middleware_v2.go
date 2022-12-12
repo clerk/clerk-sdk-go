@@ -169,7 +169,7 @@ func isCrossOrigin(r *http.Request) bool {
 }
 
 func isDevelopmentOrStaging(c Client) bool {
-	return strings.HasPrefix(c.APIKey(), "test_")
+	return strings.HasPrefix(c.APIKey(), "test_") || strings.HasPrefix(c.APIKey(), "sk_test_")
 }
 
 func isProduction(c Client) bool {
