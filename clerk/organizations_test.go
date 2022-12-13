@@ -11,6 +11,36 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestOrganizationsService_Read(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	expectedResponse := dummyOrganizationJson
+	orgID := "randomIDorSlug"
+
+	mux.HandleFunc(fmt.Sprintf("/organizations/%s", orgID), func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer token")
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	got, err := client.Organizations().Read(orgID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var want Organization
+	err = json.Unmarshal([]byte(expectedResponse), &want)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(got, &want) {
+		t.Errorf("Response = %v, want %v", got, &want)
+	}
+
+}
+
 func TestOrganizationsService_ListAll_happyPath(t *testing.T) {
 	client, mux, _, teardown := setup("token")
 	defer teardown()
