@@ -70,6 +70,20 @@ func (s *OrganizationsService) Delete(organizationID string) (*DeleteResponse, e
 	return &deleteResponse, nil
 }
 
+func (s *OrganizationsService) Read(organizationIDOrSlug string) (*Organization, error) {
+	req, err := s.client.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", OrganizationsUrl, organizationIDOrSlug))
+	if err != nil {
+		return nil, err
+	}
+
+	var organization Organization
+	_, err = s.client.Do(req, &organization)
+	if err != nil {
+		return nil, err
+	}
+	return &organization, nil
+}
+
 type OrganizationsResponse struct {
 	Data       []Organization `json:"data"`
 	TotalCount int64          `json:"total_count"`
