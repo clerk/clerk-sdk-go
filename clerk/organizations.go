@@ -67,7 +67,7 @@ type UpdateMetadataParams struct {
 
 func (s *OrganizationsService) UpdateMetadata(params UpdateMetadataParams) (*Organization, error) {
 
-	req, _ := s.client.NewRequest(http.MethodPatch, fmt.Sprintf("%s/%s/%s", OrganizationsUrl, params.OrganizationID, "metadata"), &params)
+	req, _ := s.client.NewRequest(http.MethodPatch, fmt.Sprintf("%s/%s/metadata", OrganizationsUrl, params.OrganizationID), &params)
 
 	var organization Organization
 	_, err := s.client.Do(req, &organization)
