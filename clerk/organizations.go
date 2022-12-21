@@ -74,7 +74,7 @@ func (s *OrganizationsService) UpdateMetadata(params UpdateMetadataParams) (*Org
 	if err != nil {
 		return nil, err
 	}
-	return &organization, nil
+	return &organization, err
 }
 
 func (s *OrganizationsService) Delete(organizationID string) (*DeleteResponse, error) {
