@@ -69,9 +69,6 @@ func (s *OrganizationsService) UpdateMetadata(organizationID string, params Upda
 
 	var organization Organization
 	_, err := s.client.Do(req, &organization)
-	if err != nil {
-		return nil, err
-	}
 	return &organization, err
 }
 
