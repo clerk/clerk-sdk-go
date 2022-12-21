@@ -59,15 +59,13 @@ func (s *OrganizationsService) Update(organizationID string, params UpdateOrgani
 	return &organization, nil
 }
 
-type UpdateMetadataParams struct {
-	PublicMetadata  json.RawMessage `json:"public_metadata"`
-	PrivateMetadata json.RawMessage `json:"private_metadata"`
-	OrganizationID  string          `json:"-"`
+type UpdateOrganizationMetadataParams struct {
+	PublicMetadata  json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata json.RawMessage `json:"private_metadata,omitempty"`
 }
 
-func (s *OrganizationsService) UpdateMetadata(params UpdateMetadataParams) (*Organization, error) {
-
-	req, _ := s.client.NewRequest(http.MethodPatch, fmt.Sprintf("%s/%s/metadata", OrganizationsUrl, params.OrganizationID), &params)
+func (s *OrganizationsService) UpdateMetadata(organizationID string, params UpdateOrganizationMetadataParams) (*Organization, error) {
+	req, _ := s.client.NewRequest(http.MethodPatch, fmt.Sprintf("%s/%s/metadata", OrganizationsUrl, organizationID), &params)
 
 	var organization Organization
 	_, err := s.client.Do(req, &organization)
