@@ -198,6 +198,27 @@ func TestClient_VerifyToken_Success(t *testing.T) {
 	}
 }
 
+func TestClient_VerifyToken_Success_NewIssuerFormat(t *testing.T) {
+	c, _ := NewClient("token")
+
+	claims := dummySessionClaims
+	claims.Issuer = "https://foo-bar-13.clerk.accounts.dev"
+
+	token, pubKey := testGenerateTokenJWT(t, dummySessionClaims, "kid")
+
+	client := c.(*client)
+	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
+
+	got, err := c.VerifyToken(token)
+	if err != nil {
+		t.Fatalf("Expected no error but got %v", err)
+	}
+
+	if !reflect.DeepEqual(got, &dummySessionClaims) {
+		t.Errorf("Expected %+v, but got %+v", dummySessionClaims, got)
+	}
+}
+
 func TestClient_VerifyToken_Success_ExpiredCache(t *testing.T) {
 	c, mux, _, teardown := setup("token")
 	defer teardown()
