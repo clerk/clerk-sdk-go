@@ -100,7 +100,7 @@ func (c *client) VerifyToken(token string, opts ...VerifyTokenOption) (*SessionC
 		return nil, err
 	}
 
-	if !strings.HasPrefix(claims.Issuer, "https://clerk.") {
+	if !isValidIssuer(claims.Issuer) {
 		return nil, fmt.Errorf("invalid issuer %s", claims.Issuer)
 	}
 
@@ -131,4 +131,8 @@ func verifyTokenParseClaims(parsedToken *jwt.JSONWebToken, key interface{}, sess
 		return parsedToken.Claims(key, sessionClaims)
 	}
 	return parsedToken.Claims(key, sessionClaims, options.customClaims)
+}
+
+func isValidIssuer(issuer string) bool {
+	return strings.HasPrefix(issuer, "https://clerk.") || strings.Contains(issuer, ".clerk.accounts")
 }
