@@ -4,11 +4,16 @@
 package integration
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/stretchr/testify/assert"
 )
+
+type organizationMetadata struct {
+	AppID int `json:"app_id"`
+}
 
 func TestOrganizations(t *testing.T) {
 	client := createClient()
@@ -42,6 +47,26 @@ func TestOrganizations(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, membershipLimit, updatedOrganization.MaxAllowedMemberships)
+
+	privateMetadata, err := json.Marshal(
+		organizationMetadata{
+			AppID: 6,
+		},
+	)
+	publicMetadata, err := json.Marshal(
+		organizationMetadata{
+			AppID: 2,
+		},
+	)
+	updatedOrganization, err = client.Organizations().Update(newOrganization.ID, clerk.UpdateOrganizationParams{
+		PrivateMetadata: privateMetadata,
+		PublicMetadata:  publicMetadata,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, updatedOrganization.PrivateMetadata, json.RawMessage(privateMetadata))
+	assert.Equal(t, updatedOrganization.PublicMetadata, json.RawMessage(publicMetadata))
 
 	organizations, err := client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
 		IncludeMembersCount: true,
