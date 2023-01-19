@@ -20,18 +20,21 @@ type User struct {
 	ProfileImageURL       string         `json:"profile_image_url"`
 	PrimaryEmailAddressID *string        `json:"primary_email_address_id"`
 	PrimaryPhoneNumberID  *string        `json:"primary_phone_number_id"`
+	PrimaryWeb3WalletID   *string        `json:"primary_web3_wallet_id"`
 	PasswordEnabled       bool           `json:"password_enabled"`
 	TwoFactorEnabled      bool           `json:"two_factor_enabled"`
 	TOTPEnabled           bool           `json:"totp_enabled"`
 	BackupCodeEnabled     bool           `json:"backup_code_enabled"`
 	EmailAddresses        []EmailAddress `json:"email_addresses"`
 	PhoneNumbers          []PhoneNumber  `json:"phone_numbers"`
+	Web3Wallets           []Web3Wallet   `json:"web3_wallets"`
 	ExternalAccounts      []interface{}  `json:"external_accounts"`
 	PublicMetadata        interface{}    `json:"public_metadata"`
 	PrivateMetadata       interface{}    `json:"private_metadata"`
 	UnsafeMetadata        interface{}    `json:"unsafe_metadata"`
 	LastSignInAt          *int64         `json:"last_sign_in_at"`
 	Banned                bool           `json:"banned"`
+	ExternalID            *string        `json:"external_id"`
 	CreatedAt             int64          `json:"created_at"`
 	UpdatedAt             int64          `json:"updated_at"`
 }
@@ -42,20 +45,25 @@ type IdentificationLink struct {
 }
 
 type CreateUserParams struct {
-	EmailAddresses  []string         `json:"email_address,omitempty"`
-	PhoneNumbers    []string         `json:"phone_number,omitempty"`
-	Web3Wallets     []string         `json:"web3_wallet,omitempty"`
-	Username        *string          `json:"username,omitempty"`
-	Password        *string          `json:"password,omitempty"`
-	FirstName       *string          `json:"first_name,omitempty"`
-	LastName        *string          `json:"last_name,omitempty"`
-	UnsafeMetadata  *json.RawMessage `json:"unsafe_metadata,omitempty"`
-	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
-	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
-	PasswordDigest  *string          `json:"password_digest,omitempty"`
-	PasswordHasher  *string          `json:"password_hasher,omitempty"`
-	TOTPSecret      *string          `json:"totp_secret,omitempty"`
-	BackupCodes     []string         `json:"backup_codes,omitempty"`
+	EmailAddresses          []string         `json:"email_address,omitempty"`
+	PhoneNumbers            []string         `json:"phone_number,omitempty"`
+	Web3Wallets             []string         `json:"web3_wallet,omitempty"`
+	Username                *string          `json:"username,omitempty"`
+	Password                *string          `json:"password,omitempty"`
+	FirstName               *string          `json:"first_name,omitempty"`
+	LastName                *string          `json:"last_name,omitempty"`
+	ExternalID              *string          `json:"external_id,omitempty"`
+	UnsafeMetadata          *json.RawMessage `json:"unsafe_metadata,omitempty"`
+	PublicMetadata          *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata         *json.RawMessage `json:"private_metadata,omitempty"`
+	PasswordDigest          *string          `json:"password_digest,omitempty"`
+	PasswordHasher          *string          `json:"password_hasher,omitempty"`
+	SkipPasswordRequirement *bool            `json:"skip_password_requirement,omitempty"`
+	SkipPasswordChecks      *bool            `json:"skip_password_checks,omitempty"`
+	TOTPSecret              *string          `json:"totp_secret,omitempty"`
+	BackupCodes             []string         `json:"backup_codes,omitempty"`
+	// Specified in RFC3339 format
+	CreatedAt *string `json:"created_at,omitempty"`
 }
 
 func (s *UsersService) Create(params CreateUserParams) (*User, error) {
@@ -184,13 +192,19 @@ type UpdateUser struct {
 	LastName              *string     `json:"last_name,omitempty"`
 	PrimaryEmailAddressID *string     `json:"primary_email_address_id,omitempty"`
 	PrimaryPhoneNumberID  *string     `json:"primary_phone_number_id,omitempty"`
+	PrimaryWeb3WalletID   *string     `json:"primary_web3_wallet_id,omitempty"`
+	Username              *string     `json:"username,omitempty"`
+	ProfileImageID        *string     `json:"profile_image_id,omitempty"`
 	ProfileImage          *string     `json:"profile_image,omitempty"`
 	Password              *string     `json:"password,omitempty"`
+	ExternalID            *string     `json:"external_id,omitempty"`
 	PublicMetadata        interface{} `json:"public_metadata,omitempty"`
 	PrivateMetadata       interface{} `json:"private_metadata,omitempty"`
 	UnsafeMetadata        interface{} `json:"unsafe_metadata,omitempty"`
 	TOTPSecret            *string     `json:"totp_secret,omitempty"`
 	BackupCodes           []string    `json:"backup_codes,omitempty"`
+	// Specified in RFC3339 format
+	CreatedAt *string `json:"created_at,omitempty"`
 }
 
 func (s *UsersService) Update(userId string, updateRequest *UpdateUser) (*User, error) {
