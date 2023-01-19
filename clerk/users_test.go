@@ -343,6 +343,39 @@ func TestUsersService_UpdateMetadata_invalidServer(t *testing.T) {
 	}
 }
 
+func TestUsersService_ListOAuthAccessTokens_happyPath(t *testing.T) {
+	token := "token"
+	userId := "someUserId"
+	provider := "testProvider"
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc(fmt.Sprintf("/users/%s/oauth_access_tokens/%s", userId, provider), func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, dummyUserOAuthAccessTokensJson)
+	})
+
+	got, _ := client.Users().ListOAuthAccessTokens(userId, provider)
+
+	want := make([]*UserOAuthAccessToken, 0)
+	_ = json.Unmarshal([]byte(dummyUserOAuthAccessTokensJson), &want)
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Response = %v, want %v", got, want)
+	}
+}
+
+func TestUsersService_ListOAuthAccessTokens_invalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+
+	_, err := client.Users().ListOAuthAccessTokens("someUserId", "testProvider")
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+}
+
 func TestUsersService_DisableMFA_happyPath(t *testing.T) {
 	token := "token"
 	userID := "test-user-id"
@@ -454,6 +487,20 @@ const dummyUserJson = `{
 		"last_sign_in_at": 1610783813,
 		"banned": false
     }`
+
+const dummyUserOAuthAccessTokensJson = `[
+		{
+			"object": "oauth_access_token",
+			"token": "test_token",
+			"provider": "oauth_testProvider",
+			"public_metadata": {},
+			"label": null,
+			"scopes": [
+				"user:read",
+				"user:write"
+			]
+		}
+    ]`
 
 const dummyCreateUserRequestJson = `{
 		"first_name": "Tony",

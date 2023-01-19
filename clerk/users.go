@@ -39,6 +39,16 @@ type User struct {
 	UpdatedAt             int64          `json:"updated_at"`
 }
 
+type UserOAuthAccessToken struct {
+	Object         string          `json:"object"`
+	Token          string          `json:"token"`
+	Provider       string          `json:"provider"`
+	PublicMetadata json.RawMessage `json:"public_metadata"`
+	Label          *string         `json:"label"`
+	Scopes         []string        `json:"scopes"`
+	TokenSecret    *string         `json:"token_secret"`
+}
+
 type IdentificationLink struct {
 	IdentType string `json:"type"`
 	IdentID   string `json:"id"`
@@ -235,6 +245,18 @@ func (s *UsersService) UpdateMetadata(userId string, updateMetadataRequest *Upda
 		return nil, err
 	}
 	return &updatedUser, nil
+}
+
+func (s *UsersService) ListOAuthAccessTokens(userID, provider string) ([]*UserOAuthAccessToken, error) {
+	url := fmt.Sprintf("%s/%s/oauth_access_tokens/%s", UsersUrl, userID, provider)
+	req, _ := s.client.NewRequest(http.MethodGet, url)
+
+	response := make([]*UserOAuthAccessToken, 0)
+	_, err := s.client.Do(req, &response)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 }
 
 type UserDisableMFAResponse struct {
