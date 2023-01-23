@@ -84,6 +84,21 @@ func TestOrganizations(t *testing.T) {
 		assert.Greater(t, *organization.MembersCount, 0)
 	}
 
+	organizationMemberships, err := client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
+		OrganizationID: newOrganization.ID,
+	})
+	if err != nil {
+		t.Fatalf("Organizations.ListMemberships returned error: %v", err)
+	}
+	if organizationMemberships == nil {
+		t.Fatalf("Organizations.ListMemberships returned nil")
+	}
+	assert.Greater(t, len(organizationMemberships.Data), 0)
+	assert.Greater(t, organizationMemberships.TotalCount, int64(0))
+	for _, organizationMembership := range organizationMemberships.Data {
+		assert.NotEmpty(t, organizationMembership.ID)
+	}
+
 	deleteResponse, err := client.Organizations().Delete(newOrganization.ID)
 	if err != nil {
 		t.Fatal(err)
