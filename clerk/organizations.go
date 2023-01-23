@@ -161,3 +161,56 @@ func (s *OrganizationsService) CreateInvitation(params CreateOrganizationInvitat
 	_, err := s.client.Do(req, &organizationInvitation)
 	return &organizationInvitation, err
 }
+
+type ListOrganizationMembershipsParams struct {
+	OrganizationID string
+	Limit          *int
+	Offset         *int
+}
+
+type ΟrganizationMembershipPublicUserData struct {
+	FirstName       *string `json:"first_name"`
+	LastName        *string `json:"last_name"`
+	ProfileImageURL string  `json:"profile_image_url"`
+	Identifier      string  `json:"identifier"`
+	UserID          string  `json:"user_id"`
+}
+
+type OrganizationMembership struct {
+	Object          string          `json:"object"`
+	ID              string          `json:"id"`
+	PublicMetadata  json.RawMessage `json:"public_metadata"`
+	PrivateMetadata json.RawMessage `json:"private_metadata"`
+	Role            string          `json:"role"`
+	CreatedAt       int64           `json:"created_at"`
+	UpdatedAt       int64           `json:"updated_at"`
+
+	Organization   *Organization                         `json:"organization"`
+	PublicUserData *ΟrganizationMembershipPublicUserData `json:"public_user_data"`
+}
+
+type ListOrganizationMembershipsResponse struct {
+	Data       []OrganizationMembership `json:"data"`
+	TotalCount int64                    `json:"total_count"`
+}
+
+func (s *OrganizationsService) ListMemberships(params ListOrganizationMembershipsParams) (*ListOrganizationMembershipsResponse, error) {
+	endpoint := fmt.Sprintf("%s/%s/memberships", OrganizationsUrl, params.OrganizationID)
+	req, _ := s.client.NewRequest(http.MethodGet, endpoint)
+
+	query := req.URL.Query()
+	if params.Limit != nil {
+		query.Set("limit", strconv.Itoa(*params.Limit))
+	}
+	if params.Offset != nil {
+		query.Set("offset", strconv.Itoa(*params.Offset))
+	}
+	req.URL.RawQuery = query.Encode()
+
+	var membershipsResponse *ListOrganizationMembershipsResponse
+	_, err := s.client.Do(req, &membershipsResponse)
+	if err != nil {
+		return nil, err
+	}
+	return membershipsResponse, nil
+}
