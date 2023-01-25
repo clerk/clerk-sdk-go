@@ -18,15 +18,15 @@ type organizationMetadata struct {
 func TestOrganizations(t *testing.T) {
 	client := createClient()
 
-	limit := 1
+	limit := 2
 	users, err := client.Users().ListAll(clerk.ListAllUsersParams{
 		Limit: &limit,
 	})
 	if err != nil {
 		t.Fatalf("Users.ListAll returned error: %v", err)
 	}
-	if len(users) != 1 {
-		t.Fatalf("Users.ListAll returned %d results, expected 1", len(users))
+	if len(users) != 2 {
+		t.Fatalf("Users.ListAll returned %d results, expected 2", len(users))
 	}
 
 	newOrganization, err := client.Organizations().Create(clerk.CreateOrganizationParams{
@@ -98,6 +98,30 @@ func TestOrganizations(t *testing.T) {
 	for _, organizationMembership := range organizationMemberships.Data {
 		assert.NotEmpty(t, organizationMembership.ID)
 	}
+
+	createdOrganizationMembership, err := client.Organizations().CreateMembership(newOrganization.ID, clerk.CreateOrganizationMembershipParams{
+		UserID: users[1].ID,
+		Role:   "admin",
+	})
+	if err != nil {
+		t.Fatalf("Organizations.CreateMembership returned error: %v", err)
+	}
+	if createdOrganizationMembership == nil {
+		t.Fatalf("Organizations.CreateMembership returned nil")
+	}
+	assert.Equal(t, createdOrganizationMembership.Role, "admin")
+
+	updatedOrganizationMembership, err := client.Organizations().UpdateMembership(newOrganization.ID, clerk.UpdateOrganizationMembershipParams{
+		UserID: organizationMemberships.Data[0].PublicUserData.UserID,
+		Role:   "basic_member",
+	})
+	if err != nil {
+		t.Fatalf("Organizations.UpdateMembership returned error: %v", err)
+	}
+	if updatedOrganizationMembership == nil {
+		t.Fatalf("Organizations.UpdateMembership returned nil")
+	}
+	assert.Equal(t, updatedOrganizationMembership.Role, "basic_member")
 
 	deleteResponse, err := client.Organizations().Delete(newOrganization.ID)
 	if err != nil {
