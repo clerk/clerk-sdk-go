@@ -166,6 +166,13 @@ type ListOrganizationMembershipsParams struct {
 	OrganizationID string
 	Limit          *int
 	Offset         *int
+	UserIDs        []string `json:"user_id"`
+	EmailAddresses []string `json:"email_address"`
+	PhoneNumbers   []string `json:"phone_number"`
+	Usernames      []string `json:"username"`
+	Web3Wallets    []string `json:"web3_wallet"`
+	OrderBy        *string  `json:"order_by"`
+	Query          *string  `json:"query"`
 }
 
 type ΟrganizationMembershipPublicUserData struct {
@@ -194,9 +201,52 @@ type ListOrganizationMembershipsResponse struct {
 	TotalCount int64                    `json:"total_count"`
 }
 
+func (s *OrganizationsService) addMembersSearchParamsToRequest(r *http.Request, params ListOrganizationMembershipsParams) {
+	query := r.URL.Query()
+	if params.EmailAddresses != nil {
+		for _, email := range params.EmailAddresses {
+			query.Add("email_address", email)
+		}
+	}
+	if params.PhoneNumbers != nil {
+		for _, phone := range params.PhoneNumbers {
+			query.Add("phone_number", phone)
+		}
+	}
+	if params.Web3Wallets != nil {
+		for _, web3Wallet := range params.Web3Wallets {
+			query.Add("web3_wallet", web3Wallet)
+		}
+	}
+	if params.Usernames != nil {
+		for _, username := range params.Usernames {
+			query.Add("username", username)
+		}
+	}
+	if params.UserIDs != nil {
+		for _, userID := range params.UserIDs {
+			query.Add("user_id", userID)
+		}
+	}
+	if params.Query != nil {
+		query.Add("query", *params.Query)
+	}
+	r.URL.RawQuery = query.Encode()
+}
+
 func (s *OrganizationsService) ListMemberships(params ListOrganizationMembershipsParams) (*ListOrganizationMembershipsResponse, error) {
 	endpoint := fmt.Sprintf("%s/%s/memberships", OrganizationsUrl, params.OrganizationID)
 	req, _ := s.client.NewRequest(http.MethodGet, endpoint)
+
+	s.addMembersSearchParamsToRequest(req, ListOrganizationMembershipsParams{
+		EmailAddresses: params.EmailAddresses,
+		PhoneNumbers:   params.PhoneNumbers,
+		Web3Wallets:    params.Web3Wallets,
+		Usernames:      params.Usernames,
+		UserIDs:        params.UserIDs,
+		Query:          params.Query,
+		OrderBy:        params.OrderBy,
+	})
 
 	query := req.URL.Query()
 	if params.Limit != nil {
