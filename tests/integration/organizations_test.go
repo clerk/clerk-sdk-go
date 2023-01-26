@@ -84,6 +84,7 @@ func TestOrganizations(t *testing.T) {
 		assert.Greater(t, *organization.MembersCount, 0)
 	}
 
+	// Should return non empty list of users
 	organizationMemberships, err := client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
 		OrganizationID: newOrganization.ID,
 	})
@@ -99,6 +100,64 @@ func TestOrganizations(t *testing.T) {
 		assert.NotEmpty(t, organizationMembership.ID)
 	}
 
+	// Should return 1 result when providing matching query
+	organizationMembershipsWithQuery, err := client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
+		OrganizationID: newOrganization.ID,
+		Query:          &organizationMemberships.Data[0].PublicUserData.UserID,
+	})
+	if err != nil {
+		t.Fatalf("Organizations.ListMemberships with query returned error: %v", err)
+	}
+	if organizationMembershipsWithQuery == nil {
+		t.Fatalf("Organizations.ListMemberships with query returned nil")
+	}
+	assert.Equal(t, len(organizationMembershipsWithQuery.Data), 1)
+	assert.Equal(t, organizationMembershipsWithQuery.TotalCount, int64(1))
+
+	// Should return 0 results when providing non matching query
+	query := "somequery"
+	organizationMembershipsWithQuery, err = client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
+		OrganizationID: newOrganization.ID,
+		Query:          &query,
+	})
+	if err != nil {
+		t.Fatalf("Organizations.ListMemberships with query returned error: %v", err)
+	}
+	if organizationMembershipsWithQuery == nil {
+		t.Fatalf("Organizations.ListMemberships with query returned nil")
+	}
+	assert.Equal(t, len(organizationMembershipsWithQuery.Data), 0)
+	assert.Equal(t, organizationMembershipsWithQuery.TotalCount, int64(0))
+
+	// Should return 1 results when using the email as search param and email exist
+	organizationMembershipsWithQuery, err = client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
+		OrganizationID: newOrganization.ID,
+		EmailAddresses: []string{organizationMemberships.Data[0].PublicUserData.Identifier},
+	})
+	if err != nil {
+		t.Fatalf("Organizations.ListMemberships with query returned error: %v", err)
+	}
+	if organizationMembershipsWithQuery == nil {
+		t.Fatalf("Organizations.ListMemberships with query returned nil")
+	}
+	assert.Equal(t, len(organizationMembershipsWithQuery.Data), 1)
+	assert.Equal(t, organizationMembershipsWithQuery.TotalCount, int64(1))
+
+	// Should return 0 results when using the email as search param and email does not exist
+	organizationMembershipsWithQuery, err = client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
+		OrganizationID: newOrganization.ID,
+		EmailAddresses: []string{"justanemptyemai@clerk.com"},
+	})
+	if err != nil {
+		t.Fatalf("Organizations.ListMemberships with query returned error: %v", err)
+	}
+	if organizationMembershipsWithQuery == nil {
+		t.Fatalf("Organizations.ListMemberships with query returned nil")
+	}
+	assert.Equal(t, len(organizationMembershipsWithQuery.Data), 0)
+	assert.Equal(t, organizationMembershipsWithQuery.TotalCount, int64(0))
+
+	// Should change the role of a user to admin
 	createdOrganizationMembership, err := client.Organizations().CreateMembership(newOrganization.ID, clerk.CreateOrganizationMembershipParams{
 		UserID: users[1].ID,
 		Role:   "admin",
@@ -111,6 +170,7 @@ func TestOrganizations(t *testing.T) {
 	}
 	assert.Equal(t, createdOrganizationMembership.Role, "admin")
 
+	// Should change the role of a user to basic_member
 	updatedOrganizationMembership, err := client.Organizations().UpdateMembership(newOrganization.ID, clerk.UpdateOrganizationMembershipParams{
 		UserID: organizationMemberships.Data[0].PublicUserData.UserID,
 		Role:   "basic_member",
