@@ -282,12 +282,23 @@ func (s *OrganizationsService) CreateMembership(organizationID string, params Cr
 }
 
 type UpdateOrganizationMembershipParams struct {
-	UserID string
+	UserID string `json:"user_id"`
 	Role   string `json:"role"`
 }
 
 func (s *OrganizationsService) UpdateMembership(organizationID string, params UpdateOrganizationMembershipParams) (*OrganizationMembership, error) {
 	req, _ := s.client.NewRequest(http.MethodPatch, fmt.Sprintf("%s/%s/memberships/%s", OrganizationsUrl, organizationID, params.UserID), &params)
+
+	var organizationMembership OrganizationMembership
+	_, err := s.client.Do(req, &organizationMembership)
+	if err != nil {
+		return nil, err
+	}
+	return &organizationMembership, nil
+}
+
+func (s *OrganizationsService) DeleteMembership(organizationID, userID string) (*OrganizationMembership, error) {
+	req, _ := s.client.NewRequest(http.MethodDelete, fmt.Sprintf("%s/%s/memberships/%s", OrganizationsUrl, organizationID, userID))
 
 	var organizationMembership OrganizationMembership
 	_, err := s.client.Do(req, &organizationMembership)
