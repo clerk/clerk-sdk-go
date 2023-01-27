@@ -183,6 +183,32 @@ func TestOrganizations(t *testing.T) {
 	}
 	assert.Equal(t, updatedOrganizationMembership.Role, "basic_member")
 
+	// Should delete member
+	deletedOrganizationMembership, err := client.Organizations().DeleteMembership(newOrganization.ID,
+		organizationMemberships.Data[0].PublicUserData.UserID,
+	)
+	if err != nil {
+		t.Fatalf("Organizations.DeleteMembership returned error: %v", err)
+	}
+	if deletedOrganizationMembership == nil {
+		t.Fatalf("Organizations.DeleteMembership returned nil")
+	}
+	assert.Equal(t, deletedOrganizationMembership.Role, "basic_member")
+
+	// Should return 0 result
+	afterDeletionMembershipsWithQuery, err := client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
+		OrganizationID: newOrganization.ID,
+		Query:          &organizationMemberships.Data[0].PublicUserData.UserID,
+	})
+	if err != nil {
+		t.Fatalf("Organizations.ListMemberships with query returned error: %v", err)
+	}
+	if afterDeletionMembershipsWithQuery == nil {
+		t.Fatalf("Organizations.ListMemberships with query returned nil")
+	}
+	assert.Equal(t, len(afterDeletionMembershipsWithQuery.Data), 0)
+	assert.Equal(t, afterDeletionMembershipsWithQuery.TotalCount, int64(0))
+
 	deleteResponse, err := client.Organizations().Delete(newOrganization.ID)
 	if err != nil {
 		t.Fatal(err)
