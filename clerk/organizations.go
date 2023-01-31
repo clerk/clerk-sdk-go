@@ -166,6 +166,7 @@ type ListOrganizationMembershipsParams struct {
 	OrganizationID string
 	Limit          *int
 	Offset         *int
+	Roles          []string `json:"role"`
 	UserIDs        []string `json:"user_id"`
 	EmailAddresses []string `json:"email_address"`
 	PhoneNumbers   []string `json:"phone_number"`
@@ -203,31 +204,30 @@ type ListOrganizationMembershipsResponse struct {
 
 func (s *OrganizationsService) addMembersSearchParamsToRequest(r *http.Request, params ListOrganizationMembershipsParams) {
 	query := r.URL.Query()
-	if params.EmailAddresses != nil {
-		for _, email := range params.EmailAddresses {
-			query.Add("email_address", email)
-		}
+	for _, email := range params.EmailAddresses {
+		query.Add("email_address", email)
 	}
-	if params.PhoneNumbers != nil {
-		for _, phone := range params.PhoneNumbers {
-			query.Add("phone_number", phone)
-		}
+
+	for _, phone := range params.PhoneNumbers {
+		query.Add("phone_number", phone)
 	}
-	if params.Web3Wallets != nil {
-		for _, web3Wallet := range params.Web3Wallets {
-			query.Add("web3_wallet", web3Wallet)
-		}
+
+	for _, web3Wallet := range params.Web3Wallets {
+		query.Add("web3_wallet", web3Wallet)
 	}
-	if params.Usernames != nil {
-		for _, username := range params.Usernames {
-			query.Add("username", username)
-		}
+
+	for _, username := range params.Usernames {
+		query.Add("username", username)
 	}
-	if params.UserIDs != nil {
-		for _, userID := range params.UserIDs {
-			query.Add("user_id", userID)
-		}
+
+	for _, userID := range params.UserIDs {
+		query.Add("user_id", userID)
 	}
+
+	for _, role := range params.Roles {
+		query.Add("role", role)
+	}
+
 	if params.Query != nil {
 		query.Add("query", *params.Query)
 	}
@@ -244,6 +244,7 @@ func (s *OrganizationsService) ListMemberships(params ListOrganizationMembership
 		Web3Wallets:    params.Web3Wallets,
 		Usernames:      params.Usernames,
 		UserIDs:        params.UserIDs,
+		Roles:          params.Roles,
 		Query:          params.Query,
 		OrderBy:        params.OrderBy,
 	})

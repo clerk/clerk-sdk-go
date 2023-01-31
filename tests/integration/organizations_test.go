@@ -170,6 +170,20 @@ func TestOrganizations(t *testing.T) {
 	}
 	assert.Equal(t, createdOrganizationMembership.Role, "admin")
 
+	// Should return 2 results when using Role admin as a query param
+	organizationMembershipsWithQuery, err = client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
+		OrganizationID: newOrganization.ID,
+		Roles:          []string{"admin"},
+	})
+	if err != nil {
+		t.Fatalf("Organizations.ListMemberships with query returned error: %v", err)
+	}
+	if organizationMembershipsWithQuery == nil {
+		t.Fatalf("Organizations.ListMemberships with query returned nil")
+	}
+	assert.Equal(t, len(organizationMembershipsWithQuery.Data), 2)
+	assert.Equal(t, organizationMembershipsWithQuery.TotalCount, int64(2))
+
 	// Should change the role of a user to basic_member
 	updatedOrganizationMembership, err := client.Organizations().UpdateMembership(newOrganization.ID, clerk.UpdateOrganizationMembershipParams{
 		UserID: organizationMemberships.Data[0].PublicUserData.UserID,
@@ -182,6 +196,20 @@ func TestOrganizations(t *testing.T) {
 		t.Fatalf("Organizations.UpdateMembership returned nil")
 	}
 	assert.Equal(t, updatedOrganizationMembership.Role, "basic_member")
+
+	// Should return 1 results when using Role admin as a query param
+	organizationMembershipsWithQuery, err = client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
+		OrganizationID: newOrganization.ID,
+		Roles:          []string{"admin"},
+	})
+	if err != nil {
+		t.Fatalf("Organizations.ListMemberships with query returned error: %v", err)
+	}
+	if organizationMembershipsWithQuery == nil {
+		t.Fatalf("Organizations.ListMemberships with query returned nil")
+	}
+	assert.Equal(t, len(organizationMembershipsWithQuery.Data), 1)
+	assert.Equal(t, organizationMembershipsWithQuery.TotalCount, int64(1))
 
 	// Should delete member
 	deletedOrganizationMembership, err := client.Organizations().DeleteMembership(newOrganization.ID,
