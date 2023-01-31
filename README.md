@@ -10,7 +10,7 @@
 
 # Clerk Go SDK
 
-Go client library for accessing the [Clerk Backend API](https://reference.clerk.dev/reference/backend-api-reference).
+Go client library for accessing the [Clerk Backend API](https://clerk.dev/docs/reference/backend-api).
 
 [![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/clerkinc/clerk-sdk-go/clerk)
 [![Test Status](https://github.com/clerkinc/clerk-sdk-go/workflows/tests/badge.svg)](https://github.com/clerkinc/clerk-sdk-go/actions?query=workflow%3Atests)
