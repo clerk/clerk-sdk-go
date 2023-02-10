@@ -37,6 +37,8 @@ type UpdateInstanceParams struct {
 	// CookielessDev can be used to enable the new mode in which no third-party
 	// cookies are used in development instances. Make sure to also enable the
 	// setting in Clerk.js
+	//
+	// Deprecated: Use URLBasedSessionSyncing instead
 	CookielessDev *bool `json:"cookieless_dev,omitempty"`
 
 	// URLBasedSessionSyncing can be used to enable the new mode in which no third-party
