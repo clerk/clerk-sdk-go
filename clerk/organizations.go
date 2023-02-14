@@ -108,6 +108,7 @@ type ListAllOrganizationsParams struct {
 	Limit               *int
 	Offset              *int
 	IncludeMembersCount bool
+	Query               *string
 }
 
 func (s *OrganizationsService) ListAll(params ListAllOrganizationsParams) (*OrganizationsResponse, error) {
@@ -122,6 +123,9 @@ func (s *OrganizationsService) ListAll(params ListAllOrganizationsParams) (*Orga
 	}
 	if params.IncludeMembersCount {
 		query.Set("include_members_count", strconv.FormatBool(params.IncludeMembersCount))
+	}
+	if params.Query != nil {
+		query.Add("query", *params.Query)
 	}
 	req.URL.RawQuery = query.Encode()
 
