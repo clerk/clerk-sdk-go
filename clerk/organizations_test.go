@@ -152,6 +152,42 @@ func TestOrganizationsService_ListAll_happyPathWithParameters(t *testing.T) {
 	}
 }
 
+func TestOrganizationsService_ListAll_happyPathWithQuery(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	expectedResponse := fmt.Sprintf(`{
+		"data": [%s],
+		"total_count": 1
+	}`, dummyOrganizationJson)
+
+	mux.HandleFunc("/organizations", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer token")
+
+		actualQuery := req.URL.Query()
+		expectedQuery := url.Values(map[string][]string{
+			"query": {"test"},
+		})
+		assert.Equal(t, expectedQuery, actualQuery)
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	var want *OrganizationsResponse
+	_ = json.Unmarshal([]byte(expectedResponse), &want)
+	query := "test"
+	got, _ := client.Organizations().ListAll(ListAllOrganizationsParams{
+		Query: &query,
+	})
+	if len(got.Data) != len(want.Data) {
+		t.Errorf("Was expecting %d organizations to be returned, instead got %d", len(want.Data), len(got.Data))
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Response = %v, want %v", got, want)
+	}
+}
+
 func TestOrganizationsService_ListAll_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
 

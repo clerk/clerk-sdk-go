@@ -84,6 +84,87 @@ func TestOrganizations(t *testing.T) {
 		assert.Greater(t, *organization.MembersCount, 0)
 	}
 
+	newOrganization2, err := client.Organizations().Create(clerk.CreateOrganizationParams{
+		Name:      "my-org-2",
+		CreatedBy: users[0].ID,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotEmpty(t, newOrganization2.ID)
+	assert.Equal(t, "my-org-2", newOrganization2.Name)
+
+	// Should return empty list of organizations
+	query := "test-org"
+	organizations, err = client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
+		Query: &query,
+	})
+
+	if err != nil {
+		t.Fatalf("Organizations.ListAll returned error: %v", err)
+	}
+	if organizations == nil {
+		t.Fatalf("Organizations.ListAll returned nil")
+	}
+
+	assert.Equal(t, len(organizations.Data), 0)
+	assert.Greater(t, organizations.TotalCount, int64(0))
+
+	// Should return organizations with "2" in the name
+	query = "2"
+	organizations, err = client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
+		Query: &query,
+	})
+
+	if err != nil {
+		t.Fatalf("Organizations.ListAll returned error: %v", err)
+	}
+	if organizations == nil {
+		t.Fatalf("Organizations.ListAll returned nil")
+	}
+
+	assert.Greater(t, len(organizations.Data), 0)
+	assert.Greater(t, organizations.TotalCount, int64(0))
+	for _, organization := range organizations.Data {
+		assert.Contains(t, organization.Name, query)
+	}
+
+	// Should return 1 organization - exact match on ID
+	query = newOrganization.ID
+	organizations, err = client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
+		Query: &query,
+	})
+
+	if err != nil {
+		t.Fatalf("Organizations.ListAll returned error: %v", err)
+	}
+	if organizations == nil {
+		t.Fatalf("Organizations.ListAll returned nil")
+	}
+
+	assert.Equal(t, len(organizations.Data), 1)
+	assert.Equal(t, organizations.Data[0].ID, newOrganization.ID)
+	assert.Greater(t, organizations.TotalCount, int64(0))
+
+	// Should return all organizations (names all contain "my-org")
+	query = "my-org"
+	organizations, err = client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
+		Query: &query,
+	})
+
+	if err != nil {
+		t.Fatalf("Organizations.ListAll returned error: %v", err)
+	}
+	if organizations == nil {
+		t.Fatalf("Organizations.ListAll returned nil")
+	}
+
+	assert.Greater(t, len(organizations.Data), 0)
+	assert.Greater(t, organizations.TotalCount, int64(0))
+	for _, organization := range organizations.Data {
+		assert.Contains(t, organization.Name, query)
+	}
+
 	// Should return non empty list of users
 	organizationMemberships, err := client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
 		OrganizationID: newOrganization.ID,
@@ -115,7 +196,7 @@ func TestOrganizations(t *testing.T) {
 	assert.Equal(t, organizationMembershipsWithQuery.TotalCount, int64(1))
 
 	// Should return 0 results when providing non matching query
-	query := "somequery"
+	query = "somequery"
 	organizationMembershipsWithQuery, err = client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
 		OrganizationID: newOrganization.ID,
 		Query:          &query,
