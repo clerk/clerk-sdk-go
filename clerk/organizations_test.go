@@ -175,9 +175,8 @@ func TestOrganizationsService_ListAll_happyPathWithQuery(t *testing.T) {
 
 	var want *OrganizationsResponse
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
-	query := "test"
 	got, _ := client.Organizations().ListAll(ListAllOrganizationsParams{
-		Query: &query,
+		Query: "test",
 	})
 	if len(got.Data) != len(want.Data) {
 		t.Errorf("Was expecting %d organizations to be returned, instead got %d", len(want.Data), len(got.Data))
