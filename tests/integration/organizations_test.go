@@ -128,7 +128,7 @@ func TestOrganizations(t *testing.T) {
 		assert.Contains(t, organization.Name, "my-org")
 	}
 
-	// Should return non empty list of users
+	// Should return non empty list
 	organizationMemberships, err := client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
 		OrganizationID: newOrganization.ID,
 	})

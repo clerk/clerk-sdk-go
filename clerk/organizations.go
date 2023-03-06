@@ -19,6 +19,7 @@ type Organization struct {
 	MaxAllowedMemberships int             `json:"max_allowed_memberships"`
 	PublicMetadata        json.RawMessage `json:"public_metadata"`
 	PrivateMetadata       json.RawMessage `json:"private_metadata,omitempty"`
+	CreatedBy             string          `json:"created_by"`
 	CreatedAt             int64           `json:"created_at"`
 	UpdatedAt             int64           `json:"updated_at"`
 }

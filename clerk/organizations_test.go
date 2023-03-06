@@ -200,34 +200,36 @@ func TestOrganizationsService_ListAll_invalidServer(t *testing.T) {
 }
 
 const dummyOrganizationJson = `{
-        "object": "organization",
-        "id": "org_1mebQggrD3xO5JfuHk7clQ94ysA",
-        "name": "test-org",
-        "slug": "org_slug",
-		"members_count": 42,
-        "created_at": 1610783813,
-        "updated_at": 1610783813,
-		"public_metadata": {
-			"address": {
-				"street": "Pennsylvania Avenue",
-				"number": "1600"
-			}
-		},
-		"private_metadata": {
-			"app_id": 5
+	"object": "organization",
+	"id": "org_1mebQggrD3xO5JfuHk7clQ94ysA",
+	"name": "test-org",
+	"slug": "org_slug",
+	"members_count": 42,
+	"created_by": "user_1mebQggrD3xO5JfuHk7clQ94ysA",
+	"created_at": 1610783813,
+	"updated_at": 1610783813,
+	"public_metadata": {
+		"address": {
+			"street": "Pennsylvania Avenue",
+			"number": "1600"
 		}
-    }`
+	},
+	"private_metadata": {
+		"app_id": 5
+	}
+}`
 
 const dummyUpdateOrganizationJson = `{
-        "object": "organization",
-        "id": "org_1mebQggrD3xO5JfuHk7clQ94ysA",
-        "name": "test-org",
-        "slug": "org_slug",
-		"members_count": 42,
-        "created_at": 1610783813,
-        "updated_at": 1610783813,
-		"public_metadata": {},
-		"private_metadata": {
-			"app_id": 8,
-		}
-    }`
+	"object": "organization",
+	"id": "org_1mebQggrD3xO5JfuHk7clQ94ysA",
+	"name": "test-org",
+	"slug": "org_slug",
+	"members_count": 42,
+	"created_by": "user_1mebQggrD3xO5JfuHk7clQ94ysA",
+	"created_at": 1610783813,
+	"updated_at": 1610783813,
+	"public_metadata": {},
+	"private_metadata": {
+		"app_id": 8,
+	}
+}`
