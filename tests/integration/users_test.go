@@ -101,4 +101,25 @@ func TestUsers(t *testing.T) {
 		}
 		assert.False(t, updatedUser.Banned)
 	}
+
+	// Should return all memberships of a user
+	newOrganization, err := client.Organizations().Create(clerk.CreateOrganizationParams{
+		Name:      "my-org",
+		CreatedBy: users[0].ID,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	organizationMemberships, err := client.Users().ListMemberships(clerk.ListMembershipsParams{UserID: users[0].ID})
+	assert.Equal(t, len(organizationMemberships.Data), 2)
+	assert.Equal(t, organizationMemberships.TotalCount, int64(2))
+	assert.Equal(t, newOrganization.ID, organizationMemberships.Data[0].Organization.ID)
+
+	// delete previous created organization to not create conflict with future tests
+	deleteResponse, err := client.Organizations().Delete(newOrganization.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, newOrganization.ID, deleteResponse.ID)
 }
