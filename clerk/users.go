@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
@@ -76,6 +77,20 @@ type CreateUserParams struct {
 	CreatedAt *string `json:"created_at,omitempty"`
 }
 
+type PaginationParams struct {
+	Limit  *int
+	Offset *int
+}
+
+func addPaginationParams(query url.Values, params PaginationParams) {
+	if params.Limit != nil {
+		query.Set("limit", strconv.Itoa(*params.Limit))
+	}
+	if params.Offset != nil {
+		query.Set("offset", strconv.Itoa(*params.Offset))
+	}
+}
+
 func (s *UsersService) Create(params CreateUserParams) (*User, error) {
 	req, _ := s.client.NewRequest("POST", UsersUrl, &params)
 	var user User
@@ -103,13 +118,9 @@ func (s *UsersService) ListAll(params ListAllUsersParams) ([]User, error) {
 
 	s.addUserSearchParamsToRequest(req, params)
 
+	paginationParams := PaginationParams{Limit: params.Limit, Offset: params.Offset}
 	query := req.URL.Query()
-	if params.Limit != nil {
-		query.Set("limit", strconv.Itoa(*params.Limit))
-	}
-	if params.Offset != nil {
-		query.Set("offset", strconv.Itoa(*params.Offset))
-	}
+	addPaginationParams(query, paginationParams)
 	if params.OrderBy != nil {
 		query.Add("order_by", *params.OrderBy)
 	}
@@ -292,6 +303,28 @@ func (s *UsersService) Unban(userID string) (*User, error) {
 	req, _ := s.client.NewRequest(http.MethodPost, url)
 
 	var response User
+	if _, err := s.client.Do(req, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+type ListMembershipsParams struct {
+	Limit  *int
+	Offset *int
+	UserID string
+}
+
+func (s *UsersService) ListMemberships(params ListMembershipsParams) (*ListOrganizationMembershipsResponse, error) {
+	req, _ := s.client.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s/organization_memberships", UsersUrl, params.UserID))
+
+	paginationParams := PaginationParams{Limit: params.Limit, Offset: params.Offset}
+	query := req.URL.Query()
+	addPaginationParams(query, paginationParams)
+	req.URL.RawQuery = query.Encode()
+
+	var response ListOrganizationMembershipsResponse
 	if _, err := s.client.Do(req, &response); err != nil {
 		return nil, err
 	}
