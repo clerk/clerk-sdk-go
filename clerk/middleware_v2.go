@@ -2,12 +2,15 @@ package clerk
 
 import (
 	"context"
+	"errors"
 	"net"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"gopkg.in/square/go-jose.v2/jwt"
 )
 
 var urlSchemeRe = regexp.MustCompile(`(^\w+:|^)\/\/`)
@@ -130,13 +133,26 @@ func WithSessionV2(client Client, verifyTokenOptions ...VerifyTokenOption) func(
 			}
 
 			claims, err := client.VerifyToken(cookieToken.Value, verifyTokenOptions...)
-			if err == nil && claims.IssuedAt != nil && clientUatTs <= int64(*claims.IssuedAt) {
-				ctx := context.WithValue(r.Context(), ActiveSessionClaims, claims)
-				next.ServeHTTP(w, r.WithContext(ctx))
+
+			if err == nil {
+				if claims.IssuedAt != nil && clientUatTs <= int64(*claims.IssuedAt) {
+					ctx := context.WithValue(r.Context(), ActiveSessionClaims, claims)
+					next.ServeHTTP(w, r.WithContext(ctx))
+					return
+				}
+
+				renderInterstitial(client, w)
 				return
 			}
 
-			renderInterstitial(client, w)
+			if errors.Is(err, jwt.ErrExpired) || errors.Is(err, jwt.ErrIssuedInTheFuture) {
+				renderInterstitial(client, w)
+				return
+			}
+
+			// signed out
+			next.ServeHTTP(w, r)
+			return
 		})
 	}
 }
