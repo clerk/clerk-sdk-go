@@ -110,6 +110,7 @@ type ListAllOrganizationsParams struct {
 	Offset              *int
 	IncludeMembersCount bool
 	Query               string
+	UserIDs             []string
 }
 
 func (s *OrganizationsService) ListAll(params ListAllOrganizationsParams) (*OrganizationsResponse, error) {
@@ -127,6 +128,9 @@ func (s *OrganizationsService) ListAll(params ListAllOrganizationsParams) (*Orga
 	}
 	if params.Query != "" {
 		query.Add("query", params.Query)
+	}
+	for _, userID := range params.UserIDs {
+		query.Add("user_id", userID)
 	}
 	req.URL.RawQuery = query.Encode()
 
