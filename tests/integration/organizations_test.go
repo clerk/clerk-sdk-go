@@ -29,6 +29,15 @@ func TestOrganizations(t *testing.T) {
 		t.Fatalf("Users.ListAll returned %d results, expected 2", len(users))
 	}
 
+	// Delete all pre existing org before running the tests.
+	deleteAllOrgs, err := client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
+		IncludeMembersCount: true,
+	})
+	for _, organization := range deleteAllOrgs.Data {
+		_, err := client.Organizations().Delete(organization.ID)
+		assert.NoError(t, err)
+	}
+
 	newOrganization, err := client.Organizations().Create(clerk.CreateOrganizationParams{
 		Name:      "my-org",
 		CreatedBy: users[0].ID,
@@ -127,6 +136,15 @@ func TestOrganizations(t *testing.T) {
 	for _, organization := range organizations.Data {
 		assert.Contains(t, organization.Name, "my-org")
 	}
+
+	// Should return 2 results when using the userID as search param with ('+') prefix.
+	filteredOrganizationByUserID, err := client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
+		UserIDs: []string{"+" + users[0].ID},
+	})
+	assert.NoError(t, err)
+
+	assert.Equal(t, len(filteredOrganizationByUserID.Data), 2)
+	assert.Equal(t, filteredOrganizationByUserID.TotalCount, int64(2))
 
 	// Should return non empty list
 	organizationMemberships, err := client.Organizations().ListMemberships(clerk.ListOrganizationMembershipsParams{
