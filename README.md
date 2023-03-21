@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://www.clerk.dev/?utm_source=github&utm_medium=starter_repos&utm_campaign=sdk_go" target="_blank" align="center">
+  <a href="https://www.clerk.com/?utm_source=github&utm_medium=starter_repos&utm_campaign=sdk_go" target="_blank" align="center">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="./docs/clerk-logo-dark.png">
       <img src="./docs/clerk-logo-light.png" height="64">
@@ -10,13 +10,13 @@
 
 # Clerk Go SDK
 
-Go client library for accessing the [Clerk Backend API](https://clerk.dev/docs/reference/backend-api).
+Go client library for accessing the [Clerk Backend API](https://clerk.com/docs/reference/backend-api).
 
 [![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/clerkinc/clerk-sdk-go/clerk)
 [![Test Status](https://github.com/clerkinc/clerk-sdk-go/workflows/tests/badge.svg)](https://github.com/clerkinc/clerk-sdk-go/actions?query=workflow%3Atests)
 
 [![chat on Discord](https://img.shields.io/discord/856971667393609759.svg?logo=discord)](https://discord.com/invite/b5rXHjAg7A)
-[![documentation](https://img.shields.io/badge/documentation-clerk-green.svg)](https://docs.clerk.dev)
+[![documentation](https://img.shields.io/badge/documentation-clerk-green.svg)](https://clerk.com/docs)
 [![twitter](https://img.shields.io/twitter/follow/ClerkDev?style=social)](https://twitter.com/intent/follow?screen_name=ClerkDev)
 
 ---
@@ -60,7 +60,7 @@ users, err := client.Users().ListAll()
 ```
 
 The services exposed in the `clerk.Client` divide the API into logical chunks and
-follow the same structure that can be found in the [Backend API documentation](https://docs.clerk.dev/backend/backend-api-reference).
+follow the same structure that can be found in the [Backend API documentation](https://clerk.com/docs/reference/backend-api).
 
 For more examples on how to use the client, refer to the [examples](https://github.com/clerkinc/clerk-sdk-go/tree/main/examples/operations)
 
@@ -82,7 +82,7 @@ For a full example of how to use the middleware, refer to
 
 ### Auth v2
 
-If you're using the newly-introduced [Auth v2](https://docs.clerk.dev/main-concepts/auth-v2) scheme, you'll have to use the
+If you're using the newly-introduced [Auth v2](https://clerk.com/docs/upgrade-guides/auth-v2) scheme, you'll have to use the
 `clerk.WithSessionV2()` middleware, instead of `clerk.WithSession()`.
 
 Additionally, there's also `clerk.RequireSessionV2()` that will halt the request
