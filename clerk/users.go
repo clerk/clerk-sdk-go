@@ -241,9 +241,9 @@ func (s *UsersService) Update(userId string, updateRequest *UpdateUser) (*User, 
 }
 
 type UpdateUserMetadata struct {
-	PublicMetadata  interface{} `json:"public_metadata"`
-	PrivateMetadata interface{} `json:"private_metadata"`
-	UnsafeMetadata  interface{} `json:"unsafe_metadata"`
+	PublicMetadata  json.RawMessage `json:"public_metadata"`
+	PrivateMetadata json.RawMessage `json:"private_metadata"`
+	UnsafeMetadata  json.RawMessage `json:"unsafe_metadata"`
 }
 
 func (s *UsersService) UpdateMetadata(userId string, updateMetadataRequest *UpdateUserMetadata) (*User, error) {
