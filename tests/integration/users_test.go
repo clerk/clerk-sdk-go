@@ -4,6 +4,7 @@
 package integration
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/clerkinc/clerk-sdk-go/clerk"
@@ -77,10 +78,11 @@ func TestUsers(t *testing.T) {
 			t.Errorf("Users.Update returned nil")
 		}
 
+		privateMetadata := userAppAndContactID{ContactID: i}
+		privateMetadataJSON, _ := json.Marshal(privateMetadata)
+
 		updatedUser, err = client.Users().UpdateMetadata(userId, &clerk.UpdateUserMetadata{
-			PrivateMetadata: userAppAndContactID{
-				ContactID: i,
-			},
+			PrivateMetadata: privateMetadataJSON,
 		})
 		if err != nil {
 			t.Fatalf("Users.UpdateMetadata returned error: %v", err)
