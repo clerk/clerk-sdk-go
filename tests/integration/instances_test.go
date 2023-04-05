@@ -14,12 +14,14 @@ func TestInstances(t *testing.T) {
 	client := createClient()
 
 	enabled := true
+	developmentOrigin := "http://localhost:3000"
 	supportEmail := "support@example.com"
 	err := client.Instances().Update(clerk.UpdateInstanceParams{
 		TestMode:                    &enabled,
 		HIBP:                        &enabled,
 		EnhancedEmailDeliverability: &enabled,
 		SupportEmail:                &supportEmail,
+		DevelopmentOrigin:           &developmentOrigin,
 	})
 	if err != nil {
 		t.Fatalf("Instances.Update returned error: %v", err)
