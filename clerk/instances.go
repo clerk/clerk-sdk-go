@@ -45,6 +45,10 @@ type UpdateInstanceParams struct {
 	// cookies are used in development instances. Make sure to also enable the
 	// setting in Clerk.js
 	URLBasedSessionSyncing *bool `json:"url_based_session_syncing,omitempty"`
+
+	// URL that is going to be used in development instances in order to create custom redirects
+	// and fix the third-party cookies issues.
+	DevelopmentOrigin *string `json:"development_origin,omitempty"`
 }
 
 func (s *InstanceService) Update(params UpdateInstanceParams) error {
