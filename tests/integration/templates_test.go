@@ -46,6 +46,9 @@ func TestTemplates(t *testing.T) {
 			requiredVariable = "{{otp_code}}"
 		case "password_changed", "password_removed":
 			requiredVariable = "{{primary_email_address}}"
+		case "reset_password_code":
+			requiredVariable = "{{otp_code}}"
+
 		}
 
 		deliveredByClerk := false

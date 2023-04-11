@@ -106,3 +106,17 @@ func (s *InstanceService) UpdateOrganizationSettings(params UpdateOrganizationSe
 	}
 	return &organizationSettingsResponse, nil
 }
+
+type UpdateHomeURLParams struct {
+	HomeURL string `json:"home_url"`
+}
+
+func (s *InstanceService) UpdateHomeURL(params UpdateHomeURLParams) error {
+	req, _ := s.client.NewRequest(http.MethodPost, "instance/change_domain", &params)
+
+	_, err := s.client.Do(req, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
