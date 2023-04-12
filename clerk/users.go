@@ -209,21 +209,23 @@ func (s *UsersService) Delete(userId string) (*DeleteResponse, error) {
 }
 
 type UpdateUser struct {
-	FirstName             *string     `json:"first_name,omitempty"`
-	LastName              *string     `json:"last_name,omitempty"`
-	PrimaryEmailAddressID *string     `json:"primary_email_address_id,omitempty"`
-	PrimaryPhoneNumberID  *string     `json:"primary_phone_number_id,omitempty"`
-	PrimaryWeb3WalletID   *string     `json:"primary_web3_wallet_id,omitempty"`
-	Username              *string     `json:"username,omitempty"`
-	ProfileImageID        *string     `json:"profile_image_id,omitempty"`
-	ProfileImage          *string     `json:"profile_image,omitempty"`
-	Password              *string     `json:"password,omitempty"`
-	ExternalID            *string     `json:"external_id,omitempty"`
-	PublicMetadata        interface{} `json:"public_metadata,omitempty"`
-	PrivateMetadata       interface{} `json:"private_metadata,omitempty"`
-	UnsafeMetadata        interface{} `json:"unsafe_metadata,omitempty"`
-	TOTPSecret            *string     `json:"totp_secret,omitempty"`
-	BackupCodes           []string    `json:"backup_codes,omitempty"`
+	FirstName              *string     `json:"first_name,omitempty"`
+	LastName               *string     `json:"last_name,omitempty"`
+	PrimaryEmailAddressID  *string     `json:"primary_email_address_id,omitempty"`
+	PrimaryPhoneNumberID   *string     `json:"primary_phone_number_id,omitempty"`
+	PrimaryWeb3WalletID    *string     `json:"primary_web3_wallet_id,omitempty"`
+	Username               *string     `json:"username,omitempty"`
+	ProfileImageID         *string     `json:"profile_image_id,omitempty"`
+	ProfileImage           *string     `json:"profile_image,omitempty"`
+	Password               *string     `json:"password,omitempty"`
+	SkipPasswordChecks     *bool       `json:"skip_password_checks,omitempty"`
+	SignOutOfOtherSessions *bool       `json:"sign_out_of_other_sessions,omitempty"`
+	ExternalID             *string     `json:"external_id,omitempty"`
+	PublicMetadata         interface{} `json:"public_metadata,omitempty"`
+	PrivateMetadata        interface{} `json:"private_metadata,omitempty"`
+	UnsafeMetadata         interface{} `json:"unsafe_metadata,omitempty"`
+	TOTPSecret             *string     `json:"totp_secret,omitempty"`
+	BackupCodes            []string    `json:"backup_codes,omitempty"`
 	// Specified in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
 }
