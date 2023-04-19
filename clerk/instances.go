@@ -108,7 +108,10 @@ func (s *InstanceService) UpdateOrganizationSettings(params UpdateOrganizationSe
 }
 
 type UpdateHomeURLParams struct {
-	HomeURL string `json:"home_url"`
+	HomeOrigin        string `json:"-"`
+	HomeURL           string `json:"home_url"`
+	RootDomain        string `json:"-"`
+	RootDomainInvalid bool   `json:"-"`
 }
 
 func (s *InstanceService) UpdateHomeURL(params UpdateHomeURLParams) error {
