@@ -130,7 +130,5 @@ const dummyClientResponseJson = `{
 			"status": "ended",
 			"user_id": "user_1mebQggrD3xO5JfuHk7clQ94ysA"
 		}],
-        "object": "client",
-        "sign_in_attempt_id": null,
-        "sign_up_attempt_id": null
+        "object": "client"
     }`
