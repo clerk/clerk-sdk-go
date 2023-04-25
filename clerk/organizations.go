@@ -111,7 +111,7 @@ type ListAllOrganizationsParams struct {
 	IncludeMembersCount bool
 	Query               string
 	UserIDs             []string
-	OrderBy             string
+	OrderBy             *string
 }
 
 func (s *OrganizationsService) ListAll(params ListAllOrganizationsParams) (*OrganizationsResponse, error) {
@@ -130,8 +130,8 @@ func (s *OrganizationsService) ListAll(params ListAllOrganizationsParams) (*Orga
 	if params.Query != "" {
 		query.Add("query", params.Query)
 	}
-	if params.OrderBy != "" {
-		query.Add("order_by", params.OrderBy)
+	if params.OrderBy != nil {
+		query.Add("order_by", *params.OrderBy)
 	}
 	for _, userID := range params.UserIDs {
 		query.Add("user_id", userID)
