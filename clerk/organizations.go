@@ -15,6 +15,7 @@ type Organization struct {
 	Name                  string          `json:"name"`
 	Slug                  *string         `json:"slug"`
 	LogoURL               *string         `json:"logo_url"`
+	ImageURL              *string         `json:"image_url,omitempty"`
 	MembersCount          *int            `json:"members_count,omitempty"`
 	MaxAllowedMemberships int             `json:"max_allowed_memberships"`
 	PublicMetadata        json.RawMessage `json:"public_metadata"`
