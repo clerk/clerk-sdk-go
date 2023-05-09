@@ -190,6 +190,7 @@ type ΟrganizationMembershipPublicUserData struct {
 	FirstName       *string `json:"first_name"`
 	LastName        *string `json:"last_name"`
 	ProfileImageURL string  `json:"profile_image_url"`
+	ImageURL        *string `json:"image_url,omitempty"`
 	Identifier      string  `json:"identifier"`
 	UserID          string  `json:"user_id"`
 }
