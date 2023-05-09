@@ -18,24 +18,25 @@ const version = "1.38.1"
 const (
 	ProdUrl = "https://api.clerk.dev/v1/"
 
-	ActorTokensUrl    = "actor_tokens"
-	AllowlistsUrl     = "allowlist_identifiers"
-	BlocklistsUrl     = "blocklist_identifiers"
-	ClientsUrl        = "clients"
-	ClientsVerifyUrl  = ClientsUrl + "/verify"
-	EmailAddressesURL = "email_addresses"
-	EmailsUrl         = "emails"
-	InvitationsURL    = "invitations"
-	OrganizationsUrl  = "organizations"
-	PhoneNumbersURL   = "phone_numbers"
-	RedirectURLsUrl   = "redirect_urls"
-	SessionsUrl       = "sessions"
-	SMSUrl            = "sms_messages"
-	TemplatesUrl      = "templates"
-	UsersUrl          = "users"
-	UsersCountUrl     = UsersUrl + "/count"
-	WebhooksUrl       = "webhooks"
-	JWTTemplatesUrl   = "jwt_templates"
+	ActorTokensUrl     = "actor_tokens"
+	AllowlistsUrl      = "allowlist_identifiers"
+	BlocklistsUrl      = "blocklist_identifiers"
+	ClientsUrl         = "clients"
+	ClientsVerifyUrl   = ClientsUrl + "/verify"
+	EmailAddressesURL  = "email_addresses"
+	EmailsUrl          = "emails"
+	InvitationsURL     = "invitations"
+	OrganizationsUrl   = "organizations"
+	PhoneNumbersURL    = "phone_numbers"
+	RedirectURLsUrl    = "redirect_urls"
+	SAMLConnectionsUrl = "saml_connections"
+	SessionsUrl        = "sessions"
+	SMSUrl             = "sms_messages"
+	TemplatesUrl       = "templates"
+	UsersUrl           = "users"
+	UsersCountUrl      = UsersUrl + "/count"
+	WebhooksUrl        = "webhooks"
+	JWTTemplatesUrl    = "jwt_templates"
 )
 
 var defaultHTTPClient = &http.Client{Timeout: time.Second * 5}
@@ -59,6 +60,7 @@ type Client interface {
 	Organizations() *OrganizationsService
 	PhoneNumbers() *PhoneNumbersService
 	RedirectURLs() *RedirectURLsService
+	SAMLConnections() *SAMLConnectionsService
 	Sessions() *SessionsService
 	SMS() *SMSService
 	Templates() *TemplatesService
@@ -80,24 +82,25 @@ type client struct {
 	jwksCache *jwksCache
 	token     string
 
-	allowlists     *AllowlistsService
-	blocklists     *BlocklistsService
-	clients        *ClientsService
-	emailAddresses *EmailAddressesService
-	emails         *EmailService
-	actorTokens    *ActorTokenService
-	instances      *InstanceService
-	jwks           *JWKSService
-	jwtTemplates   *JWTTemplatesService
-	organizations  *OrganizationsService
-	phoneNumbers   *PhoneNumbersService
-	redirectURLs   *RedirectURLsService
-	sessions       *SessionsService
-	sms            *SMSService
-	templates      *TemplatesService
-	users          *UsersService
-	webhooks       *WebhooksService
-	verification   *VerificationService
+	allowlists      *AllowlistsService
+	blocklists      *BlocklistsService
+	clients         *ClientsService
+	emailAddresses  *EmailAddressesService
+	emails          *EmailService
+	actorTokens     *ActorTokenService
+	instances       *InstanceService
+	jwks            *JWKSService
+	jwtTemplates    *JWTTemplatesService
+	organizations   *OrganizationsService
+	phoneNumbers    *PhoneNumbersService
+	redirectURLs    *RedirectURLsService
+	samlConnections *SAMLConnectionsService
+	sessions        *SessionsService
+	sms             *SMSService
+	templates       *TemplatesService
+	users           *UsersService
+	webhooks        *WebhooksService
+	verification    *VerificationService
 }
 
 // NewClient creates a new Clerk client.
@@ -138,6 +141,7 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	client.organizations = (*OrganizationsService)(commonService)
 	client.phoneNumbers = (*PhoneNumbersService)(commonService)
 	client.redirectURLs = (*RedirectURLsService)(commonService)
+	client.samlConnections = (*SAMLConnectionsService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
 	client.sms = (*SMSService)(commonService)
 	client.templates = (*TemplatesService)(commonService)
@@ -298,6 +302,10 @@ func (c *client) PhoneNumbers() *PhoneNumbersService {
 
 func (c *client) RedirectURLs() *RedirectURLsService {
 	return c.redirectURLs
+}
+
+func (c *client) SAMLConnections() *SAMLConnectionsService {
+	return c.samlConnections
 }
 
 func (c *client) Sessions() *SessionsService {
