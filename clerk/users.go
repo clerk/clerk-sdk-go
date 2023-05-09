@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
-	"strconv"
 )
 
 type UsersService service
@@ -75,20 +73,6 @@ type CreateUserParams struct {
 	BackupCodes             []string         `json:"backup_codes,omitempty"`
 	// Specified in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
-}
-
-type PaginationParams struct {
-	Limit  *int
-	Offset *int
-}
-
-func addPaginationParams(query url.Values, params PaginationParams) {
-	if params.Limit != nil {
-		query.Set("limit", strconv.Itoa(*params.Limit))
-	}
-	if params.Offset != nil {
-		query.Set("offset", strconv.Itoa(*params.Offset))
-	}
 }
 
 func (s *UsersService) Create(params CreateUserParams) (*User, error) {

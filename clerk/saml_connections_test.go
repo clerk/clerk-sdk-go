@@ -14,7 +14,10 @@ func TestSAMLConnectionsService_ListAll(t *testing.T) {
 	c, mux, _, teardown := setup("token")
 	defer teardown()
 
-	dummyResponse := "[" + dummySAMLConnectionJSON + "]"
+	dummyResponse := fmt.Sprintf(`{
+		"data": [%s],
+		"total_count": 1
+	}`, dummySAMLConnectionJSON)
 
 	mux.HandleFunc("/saml_connections", func(w http.ResponseWriter, req *http.Request) {
 		testHttpMethod(t, req, http.MethodGet)
@@ -22,11 +25,11 @@ func TestSAMLConnectionsService_ListAll(t *testing.T) {
 		_, _ = fmt.Fprint(w, dummyResponse)
 	})
 
-	got, err := c.SAMLConnections().ListAll()
+	got, err := c.SAMLConnections().ListAll(ListSAMLConnectionsParams{})
 	assert.Nil(t, err)
 
-	expected := make([]SAMLConnection, 0)
-	_ = json.Unmarshal([]byte(dummyResponse), &expected)
+	expected := &ListSAMLConnectionsResponse{}
+	_ = json.Unmarshal([]byte(dummyResponse), expected)
 
 	if !reflect.DeepEqual(got, expected) {
 		t.Errorf("Response = %v, want %v", got, expected)

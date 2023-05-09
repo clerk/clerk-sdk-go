@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -355,4 +356,18 @@ func (c *client) Interstitial() ([]byte, error) {
 	}
 
 	return interstitial, nil
+}
+
+type PaginationParams struct {
+	Limit  *int
+	Offset *int
+}
+
+func addPaginationParams(query url.Values, params PaginationParams) {
+	if params.Limit != nil {
+		query.Set("limit", strconv.Itoa(*params.Limit))
+	}
+	if params.Offset != nil {
+		query.Set("offset", strconv.Itoa(*params.Offset))
+	}
 }
