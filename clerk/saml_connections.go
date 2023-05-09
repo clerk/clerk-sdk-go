@@ -22,14 +22,28 @@ type SAMLConnection struct {
 	UpdatedAt      int64  `json:"updated_at"`
 }
 
-func (s SAMLConnectionsService) ListAll() ([]SAMLConnection, error) {
+type ListSAMLConnectionsResponse struct {
+	Data       []SAMLConnection `json:"data"`
+	TotalCount int64            `json:"total_count"`
+}
+
+type ListSAMLConnectionsParams struct {
+	Limit  *int
+	Offset *int
+}
+
+func (s SAMLConnectionsService) ListAll(params ListSAMLConnectionsParams) (*ListSAMLConnectionsResponse, error) {
 	req, err := s.client.NewRequest(http.MethodGet, SAMLConnectionsUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	samlConnections := make([]SAMLConnection, 0)
-	if _, err = s.client.Do(req, &samlConnections); err != nil {
+	query := req.URL.Query()
+	addPaginationParams(query, PaginationParams{Limit: params.Limit, Offset: params.Offset})
+	req.URL.RawQuery = query.Encode()
+
+	samlConnections := &ListSAMLConnectionsResponse{}
+	if _, err = s.client.Do(req, samlConnections); err != nil {
 		return nil, err
 	}
 
