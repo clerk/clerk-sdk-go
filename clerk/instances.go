@@ -49,11 +49,6 @@ type UpdateInstanceParams struct {
 	// URL that is going to be used in development instances in order to create custom redirects
 	// and fix the third-party cookies issues.
 	DevelopmentOrigin *string `json:"development_origin,omitempty"`
-
-	// DisableSignUps can be used to allow or disable sign ups on the current instance.
-	// If they are disabled, users can no longer sign up on their own, but they need
-	// to be manually added by an administrator.
-	DisableSignUps *bool `json:"disable_sign_ups,omitempty"`
 }
 
 func (s *InstanceService) Update(params UpdateInstanceParams) error {
