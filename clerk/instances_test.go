@@ -23,14 +23,12 @@ func TestInstanceService_Update_happyPath(t *testing.T) {
 	enabled := true
 	supportEmail := "support@clerk.dev"
 	clerkJSVersion := "42"
-	disableSignUps := true
 	err := client.Instances().Update(UpdateInstanceParams{
 		TestMode:                    &enabled,
 		HIBP:                        &enabled,
 		EnhancedEmailDeliverability: &enabled,
 		SupportEmail:                &supportEmail,
 		ClerkJSVersion:              &clerkJSVersion,
-		DisableSignUps:              &disableSignUps,
 	})
 
 	if err != nil {
