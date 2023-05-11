@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestSessionsService_ListAll_happyPath(t *testing.T) {
+func TestSessionsService_ListAll_happyPath_noParams(t *testing.T) {
 	client, mux, _, teardown := setup("token")
 	defer teardown()
 
@@ -23,7 +23,7 @@ func TestSessionsService_ListAll_happyPath(t *testing.T) {
 	var want []Session
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
-	got, _ := client.Sessions().ListAll()
+	got, _ := client.Sessions().ListAll(ListAllSessionsParams{})
 	if len(got) != len(want) {
 		t.Errorf("Was expecting %d sessions to be returned, instead got %d", len(want), len(got))
 	}
@@ -36,7 +36,7 @@ func TestSessionsService_ListAll_happyPath(t *testing.T) {
 func TestSessionsService_ListAll_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
 
-	sessions, err := client.Sessions().ListAll()
+	sessions, err := client.Sessions().ListAll(ListAllSessionsParams{})
 	if err == nil {
 		t.Errorf("Expected error to be returned")
 	}

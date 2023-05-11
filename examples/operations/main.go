@@ -33,7 +33,7 @@ func retrieveUsers(client clerk.Client) {
 }
 
 func retrieveSessions(client clerk.Client) {
-	sessions, err := client.Sessions().ListAll()
+	sessions, err := client.Sessions().ListAll(clerk.ListAllSessionsParams{})
 	if err != nil {
 		panic(err)
 	}
