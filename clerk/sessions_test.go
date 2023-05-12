@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"reflect"
 	"testing"
 )
@@ -23,7 +24,97 @@ func TestSessionsService_ListAll_happyPath_noParams(t *testing.T) {
 	var want []Session
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
-	got, _ := client.Sessions().ListAll(ListAllSessionsParams{})
+	got, _ := client.Sessions().ListAll()
+	if len(got) != len(want) {
+		t.Errorf("Was expecting %d sessions to be returned, instead got %d", len(want), len(got))
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Response = %v, want %v", got, want)
+	}
+}
+
+func TestSessionsService_ListAll_pagination_and_filtering_params(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	expectedResponse := "[" + dummySessionJson + "]"
+
+	mux.HandleFunc("/sessions", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer token")
+
+		queryParams := url.Values{
+			"limit":     {},
+			"offset":    {},
+			"client_id": {},
+			"user_id":   {},
+			"status":    {},
+		}
+
+		testQuery(t, req, queryParams)
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	var want []Session
+	_ = json.Unmarshal([]byte(expectedResponse), &want)
+
+	limit := 2
+	offset := 2
+	status := STATUS_ENDED
+	userId := "user_1mebQggrD3xO5JfuHk7clQ94ysA"
+	clientId := "client_1mebPYz8NFNA17fi7NemNXIwp1p"
+
+	got, _ := client.Sessions().ListAllWithFiltering(ListAllSessionsParams{
+		Limit:    &limit,
+		Offset:   &offset,
+		Status:   &status,
+		UserID:   &userId,
+		ClientID: &clientId,
+	})
+
+	if len(got) != len(want) {
+		t.Errorf("Was expecting %d sessions to be returned, instead got %d", len(want), len(got))
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Response = %v, want %v", got, want)
+	}
+}
+
+func TestSessionsService_ListAll_pagination_and_filtering_empty_params(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	expectedResponse := "[" + dummySessionJson + "]"
+
+	mux.HandleFunc("/sessions", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer token")
+
+		queryParams := url.Values{}
+
+		testQuery(t, req, queryParams)
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	var want []Session
+	_ = json.Unmarshal([]byte(expectedResponse), &want)
+
+	limit := 2
+	offset := 2
+	status := STATUS_ENDED
+	userId := "user_1mebQggrD3xO5JfuHk7clQ94ysA"
+	clientId := "client_1mebPYz8NFNA17fi7NemNXIwp1p"
+
+	got, _ := client.Sessions().ListAllWithFiltering(ListAllSessionsParams{
+		Limit:    &limit,
+		Offset:   &offset,
+		Status:   &status,
+		UserID:   &userId,
+		ClientID: &clientId,
+	})
+
 	if len(got) != len(want) {
 		t.Errorf("Was expecting %d sessions to be returned, instead got %d", len(want), len(got))
 	}
@@ -36,7 +127,7 @@ func TestSessionsService_ListAll_happyPath_noParams(t *testing.T) {
 func TestSessionsService_ListAll_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
 
-	sessions, err := client.Sessions().ListAll(ListAllSessionsParams{})
+	sessions, err := client.Sessions().ListAll()
 	if err == nil {
 		t.Errorf("Expected error to be returned")
 	}

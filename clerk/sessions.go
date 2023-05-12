@@ -35,7 +35,19 @@ const (
 	STATUS_REVOKED   SessionStatus = "revoked"
 )
 
-func (s *SessionsService) ListAll(params ListAllSessionsParams) ([]Session, error) {
+func (s *SessionsService) ListAll() ([]Session, error) {
+	sessionsUrl := "sessions"
+	req, _ := s.client.NewRequest("GET", sessionsUrl)
+
+	var sessions []Session
+	_, err := s.client.Do(req, &sessions)
+	if err != nil {
+		return nil, err
+	}
+	return sessions, nil
+}
+
+func (s *SessionsService) ListAllWithFiltering(params ListAllSessionsParams) ([]Session, error) {
 	sessionsUrl := "sessions"
 	req, _ := s.client.NewRequest("GET", sessionsUrl)
 
