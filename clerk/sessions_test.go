@@ -61,7 +61,7 @@ func TestSessionsService_ListAll_pagination_and_filtering_params(t *testing.T) {
 
 	limit := 2
 	offset := 2
-	status := STATUS_ENDED
+	status := SessionStatusEnded
 	userId := "user_1mebQggrD3xO5JfuHk7clQ94ysA"
 	clientId := "client_1mebPYz8NFNA17fi7NemNXIwp1p"
 
@@ -103,7 +103,7 @@ func TestSessionsService_ListAll_pagination_and_filtering_empty_params(t *testin
 
 	limit := 2
 	offset := 2
-	status := STATUS_ENDED
+	status := SessionStatusEnded
 	userId := "user_1mebQggrD3xO5JfuHk7clQ94ysA"
 	clientId := "client_1mebPYz8NFNA17fi7NemNXIwp1p"
 

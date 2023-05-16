@@ -26,13 +26,13 @@ type ListAllSessionsParams struct {
 type SessionStatus string
 
 const (
-	STATUS_ABANDONED SessionStatus = "abandoned"
-	STATUS_ACTIVE    SessionStatus = "active"
-	STATUS_ENDED     SessionStatus = "ended"
-	STATUS_EXPIRED   SessionStatus = "expired"
-	STATUS_REMOVED   SessionStatus = "removed"
-	STATUS_REPLACED  SessionStatus = "replaced"
-	STATUS_REVOKED   SessionStatus = "revoked"
+	SessionStatusAbandoned SessionStatus = "abandoned"
+	SessionStatusActive    SessionStatus = "active"
+	SessionStatusEnded     SessionStatus = "ended"
+	SessionStatusExpired   SessionStatus = "expired"
+	SessionStatusRemoved   SessionStatus = "removed"
+	SessionStatusReplaced  SessionStatus = "replaced"
+	SessionStatusRevoked   SessionStatus = "revoked"
 )
 
 func (s *SessionsService) ListAll() ([]Session, error) {
