@@ -38,3 +38,16 @@ func testHeader(t *testing.T, r *http.Request, header, want string) {
 		t.Errorf("Header.Get(%q) returned %q, want %q", header, got, want)
 	}
 }
+
+func testQuery(t *testing.T, r *http.Request, want url.Values) {
+	t.Helper()
+
+	query := r.URL.Query()
+
+	for k := range want {
+		if !query.Has(k) {
+			t.Errorf("Request query doesn't match: have %v, want %v", query, want)
+		}
+	}
+
+}

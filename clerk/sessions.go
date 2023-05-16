@@ -15,9 +15,58 @@ type Session struct {
 	AbandonAt    int64  `json:"abandon_at"`
 }
 
+type ListAllSessionsParams struct {
+	Limit    *int
+	Offset   *int
+	ClientID *string
+	UserID   *string
+	Status   *SessionStatus
+}
+
+type SessionStatus string
+
+const (
+	SessionStatusAbandoned SessionStatus = "abandoned"
+	SessionStatusActive    SessionStatus = "active"
+	SessionStatusEnded     SessionStatus = "ended"
+	SessionStatusExpired   SessionStatus = "expired"
+	SessionStatusRemoved   SessionStatus = "removed"
+	SessionStatusReplaced  SessionStatus = "replaced"
+	SessionStatusRevoked   SessionStatus = "revoked"
+)
+
 func (s *SessionsService) ListAll() ([]Session, error) {
 	sessionsUrl := "sessions"
 	req, _ := s.client.NewRequest("GET", sessionsUrl)
+
+	var sessions []Session
+	_, err := s.client.Do(req, &sessions)
+	if err != nil {
+		return nil, err
+	}
+	return sessions, nil
+}
+
+func (s *SessionsService) ListAllWithFiltering(params ListAllSessionsParams) ([]Session, error) {
+	sessionsUrl := "sessions"
+	req, _ := s.client.NewRequest("GET", sessionsUrl)
+
+	paginationParams := PaginationParams{Limit: params.Limit, Offset: params.Offset}
+	query := req.URL.Query()
+	addPaginationParams(query, paginationParams)
+
+	if params.ClientID != nil {
+		query.Add("client_id", *params.ClientID)
+	}
+	if params.UserID != nil {
+		query.Add("user_id", *params.UserID)
+	}
+	if params.Status != nil {
+		status := string(*params.Status)
+		query.Add("status", status)
+	}
+
+	req.URL.RawQuery = query.Encode()
 
 	var sessions []Session
 	_, err := s.client.Do(req, &sessions)
