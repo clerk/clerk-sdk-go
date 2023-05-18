@@ -97,20 +97,16 @@ func TestUsersService_ListAll_happyPathWithParameters(t *testing.T) {
 	var want []User
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
-	limit := 5
-	offset := 6
-	queryString := "my-query"
-	orderBy := "created_at"
 	got, _ := client.Users().ListAll(ListAllUsersParams{
-		Limit:          &limit,
-		Offset:         &offset,
+		Limit:          intToPtr(5),
+		Offset:         intToPtr(6),
 		EmailAddresses: []string{"email1", "email2"},
 		PhoneNumbers:   []string{"phone1", "phone2"},
 		Web3Wallets:    []string{"wallet1", "wallet2"},
 		Usernames:      []string{"username1", "username2"},
 		UserIDs:        []string{"userid1", "userid2"},
-		Query:          &queryString,
-		OrderBy:        &orderBy,
+		Query:          stringToPtr("my-query"),
+		OrderBy:        stringToPtr("created_at"),
 	})
 	if len(got) != len(want) {
 		t.Errorf("Was expecting %d user to be returned, instead got %d", len(want), len(got))
@@ -180,14 +176,13 @@ func TestUsersService_Count_happyPathWithParameters(t *testing.T) {
 	var want UserCount
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
-	queryString := "my-query"
 	got, _ := client.Users().Count(ListAllUsersParams{
 		EmailAddresses: []string{"email1", "email2"},
 		PhoneNumbers:   []string{"phone1", "phone2"},
 		Web3Wallets:    []string{"wallet1", "wallet2"},
 		Usernames:      []string{"username1", "username2"},
 		UserIDs:        []string{"userid1", "userid2"},
-		Query:          &queryString,
+		Query:          stringToPtr("my-query"),
 	})
 	if !reflect.DeepEqual(*got, want) {
 		t.Errorf("Response = %v, want %v", got, want)
