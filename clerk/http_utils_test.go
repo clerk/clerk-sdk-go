@@ -50,3 +50,11 @@ func testQuery(t *testing.T, r *http.Request, want url.Values) {
 		}
 	}
 }
+
+func stringToPtr(input string) *string {
+	return &input
+}
+
+func intToPtr(input int) *int {
+	return &input
+}
