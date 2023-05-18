@@ -45,9 +45,8 @@ func testQuery(t *testing.T, r *http.Request, want url.Values) {
 	query := r.URL.Query()
 
 	for k := range want {
-		if !query.Has(k) {
+		if query.Get(k) == "" {
 			t.Errorf("Request query doesn't match: have %v, want %v", query, want)
 		}
 	}
-
 }
