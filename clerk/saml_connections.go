@@ -18,6 +18,8 @@ type SAMLConnection struct {
 	AcsURL         string `json:"acs_url"`
 	SPEntityID     string `json:"sp_entity_id"`
 	Active         bool   `json:"active"`
+	Provider       string `json:"provider"`
+	UserCount      int64  `json:"user_count"`
 	CreatedAt      int64  `json:"created_at"`
 	UpdatedAt      int64  `json:"updated_at"`
 }
@@ -28,8 +30,10 @@ type ListSAMLConnectionsResponse struct {
 }
 
 type ListSAMLConnectionsParams struct {
-	Limit  *int
-	Offset *int
+	Limit   *int
+	Offset  *int
+	Query   *string
+	OrderBy *string
 }
 
 func (s SAMLConnectionsService) ListAll(params ListSAMLConnectionsParams) (*ListSAMLConnectionsResponse, error) {
@@ -40,6 +44,14 @@ func (s SAMLConnectionsService) ListAll(params ListSAMLConnectionsParams) (*List
 
 	query := req.URL.Query()
 	addPaginationParams(query, PaginationParams{Limit: params.Limit, Offset: params.Offset})
+
+	if params.Query != nil {
+		query.Set("query", *params.Query)
+	}
+	if params.OrderBy != nil {
+		query.Set("order_by", *params.OrderBy)
+	}
+
 	req.URL.RawQuery = query.Encode()
 
 	samlConnections := &ListSAMLConnectionsResponse{}

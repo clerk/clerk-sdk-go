@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"reflect"
 	"testing"
 
@@ -22,10 +23,26 @@ func TestSAMLConnectionsService_ListAll(t *testing.T) {
 	mux.HandleFunc("/saml_connections", func(w http.ResponseWriter, req *http.Request) {
 		testHttpMethod(t, req, http.MethodGet)
 		testHeader(t, req, "Authorization", "Bearer token")
+
+		expectedQuery := url.Values{
+			"limit":    {"5"},
+			"offset":   {"6"},
+			"query":    {"my-query"},
+			"order_by": {"created_at"},
+		}
+		assert.Equal(t, expectedQuery, req.URL.Query())
+
 		_, _ = fmt.Fprint(w, dummyResponse)
 	})
 
-	got, err := c.SAMLConnections().ListAll(ListSAMLConnectionsParams{})
+	listParams := ListSAMLConnectionsParams{
+		Limit:   intToPtr(5),
+		Offset:  intToPtr(6),
+		Query:   stringToPtr("my-query"),
+		OrderBy: stringToPtr("created_at"),
+	}
+
+	got, err := c.SAMLConnections().ListAll(listParams)
 	assert.Nil(t, err)
 
 	expected := &ListSAMLConnectionsResponse{}
@@ -165,7 +182,9 @@ const (
 	"idp_certificate": "` + dummySAMLConnectionCertificate + `",
 	"acs_url": "` + "https://clerk.example.com/v1/saml/acs" + dummySAMLConnectionID + `",
 	"sp_entity_id": "` + "https://clerk.example.com/acs" + dummySAMLConnectionID + `",
-	"active": false
+	"active": false,
+	"provider": "saml_custom",
+	"user_count": 3
 }`
 
 	dummySAMLConnectionUpdatedJSON = `
