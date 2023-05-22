@@ -44,7 +44,7 @@ func TestTemplates(t *testing.T) {
 			requiredVariable = "{{reason}}"
 		case "verification_code":
 			requiredVariable = "{{otp_code}}"
-		case "password_changed", "password_removed":
+		case "password_changed", "password_removed", "primary_email_address_changed":
 			requiredVariable = "{{primary_email_address}}"
 		case "reset_password_code":
 			requiredVariable = "{{otp_code}}"
