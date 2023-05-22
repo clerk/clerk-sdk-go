@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const version = "1.40.0"
+const version = "1.41.0"
 
 const (
 	ProdUrl = "https://api.clerk.dev/v1/"
