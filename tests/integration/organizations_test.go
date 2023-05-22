@@ -103,6 +103,22 @@ func TestOrganizations(t *testing.T) {
 	assert.NotEmpty(t, newOrganization2.ID)
 	assert.Equal(t, "my-org-2", newOrganization2.Name)
 
+	// Should short  Organizations by name DESC
+	orderBy := "-name"
+	organizations, err = client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
+		OrderBy: &orderBy,
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, organizations.Data[0].ID, newOrganization2.ID)
+
+	orderBy = "+name"
+	// Should short  Organizations by name ASC
+	organizations, err = client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
+		OrderBy: &orderBy,
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, organizations.Data[0].ID, newOrganization.ID)
+
 	// Should return 1 organization - exact match on ID
 	organizations, err = client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
 		Query: newOrganization.ID,
