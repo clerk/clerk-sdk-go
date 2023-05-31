@@ -18,6 +18,7 @@ type Organization struct {
 	ImageURL              *string         `json:"image_url,omitempty"`
 	MembersCount          *int            `json:"members_count,omitempty"`
 	MaxAllowedMemberships int             `json:"max_allowed_memberships"`
+	AdminDeleteEnabled    bool            `json:"admin_delete_enabled"`
 	PublicMetadata        json.RawMessage `json:"public_metadata"`
 	PrivateMetadata       json.RawMessage `json:"private_metadata,omitempty"`
 	CreatedBy             string          `json:"created_by"`
@@ -48,6 +49,7 @@ func (s *OrganizationsService) Create(params CreateOrganizationParams) (*Organiz
 type UpdateOrganizationParams struct {
 	Name                  *string         `json:"name,omitempty"`
 	MaxAllowedMemberships *int            `json:"max_allowed_memberships,omitempty"`
+	AdminDeleteEnabled    *bool           `json:"admin_delete_enabled,omitempty"`
 	PublicMetadata        json.RawMessage `json:"public_metadata,omitempty"`
 	PrivateMetadata       json.RawMessage `json:"private_metadata,omitempty"`
 }

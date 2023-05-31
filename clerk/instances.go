@@ -84,11 +84,13 @@ type OrganizationSettingsResponse struct {
 	Object                string `json:"object"`
 	Enabled               bool   `json:"enabled"`
 	MaxAllowedMemberships int    `json:"max_allowed_memberships"`
+	AdminDeleteEnabled    bool   `json:"admin_delete_enabled"`
 }
 
 type UpdateOrganizationSettingsParams struct {
 	Enabled               *bool `json:"enabled,omitempty"`
 	MaxAllowedMemberships *int  `json:"max_allowed_memberships,omitempty"`
+	AdminDeleteEnabled    *bool `json:"admin_delete_enabled,omitempty"`
 }
 
 func (s *InstanceService) UpdateOrganizationSettings(params UpdateOrganizationSettingsParams) (*OrganizationSettingsResponse, error) {
