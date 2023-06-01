@@ -12,9 +12,9 @@ import (
 
 func TestTemplates(t *testing.T) {
 	client := createClient()
-
 	templateType := "email"
 
+	// Get all email templates
 	templates, err := client.Templates().ListAll(templateType)
 	if err != nil {
 		t.Fatalf("Templates.ListAll returned error: %v", err)
@@ -26,6 +26,7 @@ func TestTemplates(t *testing.T) {
 	for _, template := range templates {
 		slug := template.Slug
 
+		// Make sure we can read each template
 		tmpl, err := client.Templates().Read(templateType, slug)
 		if err != nil {
 			t.Fatalf("Templates.Read returned error: %v", err)
@@ -34,55 +35,43 @@ func TestTemplates(t *testing.T) {
 			t.Fatalf("Templates.Read returned nil")
 		}
 
-		var requiredVariable string
-		switch slug {
-		case "invitation", "organization_invitation":
-			requiredVariable = "{{action_url}}"
-		case "magic_link":
-			requiredVariable = "{{magic_link}}"
-		case "suspicious_activity":
-			requiredVariable = "{{reason}}"
-		case "verification_code":
-			requiredVariable = "{{otp_code}}"
-		case "password_changed", "password_removed", "primary_email_address_changed":
-			requiredVariable = "{{primary_email_address}}"
-		case "reset_password_code":
-			requiredVariable = "{{otp_code}}"
-
-		}
-
-		deliveredByClerk := false
+		// Preview each template with sample data
 		fromEmailName := "marketing"
-
-		upsertTemplateRequest := clerk.UpsertTemplateRequest{
-			Name:             "Remarketing email",
-			Subject:          "Unmissable opportunity",
-			Markup:           "",
-			Body:             fmt.Sprintf("Click %s for free unicorns", requiredVariable),
-			FromEmailName:    &fromEmailName,
-			DeliveredByClerk: &deliveredByClerk,
-		}
-
-		upsertedTemplate, err := client.Templates().Upsert(templateType, slug, &upsertTemplateRequest)
-		if err != nil {
-			t.Fatalf("Templates.Update returned error: %v", err)
-		}
-		if upsertedTemplate == nil {
-			t.Errorf("Templates.Upsert returned nil")
-		}
-
-		previewTemplateRequest := clerk.PreviewTemplateRequest{
+		templatePreview, err := client.Templates().Preview(templateType, slug, &clerk.PreviewTemplateRequest{
 			Subject:       "{{AppName}} is da bomb",
 			Body:          "<p><a href=\"{{AppURL}}\">{{AppName}}</a> is the greatest app of all time!</p>",
 			FromEmailName: &fromEmailName,
-		}
-
-		templatePreview, err := client.Templates().Preview(templateType, slug, &previewTemplateRequest)
+		})
 		if err != nil {
 			t.Fatalf("Templates.Preview returned error: %v", err)
 		}
 		if templatePreview == nil {
 			t.Errorf("Templates.Preview returned nil")
 		}
+	}
+}
+
+func TestTemplates_Upsert(t *testing.T) {
+	client := createClient()
+
+	// Update one of the templates, just to make sure that the Upsert method works.
+	templateType := "email"
+	slug := "organization_invitation"
+	requiredVariable := "{{action_url}}"
+	deliveredByClerk := false
+	fromEmailName := "marketing"
+	upsertedTemplate, err := client.Templates().Upsert(templateType, slug, &clerk.UpsertTemplateRequest{
+		Name:             "Remarketing email",
+		Subject:          "Unmissable opportunity",
+		Markup:           "",
+		Body:             fmt.Sprintf("Click %s for free unicorns", requiredVariable),
+		FromEmailName:    &fromEmailName,
+		DeliveredByClerk: &deliveredByClerk,
+	})
+	if err != nil {
+		t.Fatalf("Templates.Update returned error: %v", err)
+	}
+	if upsertedTemplate == nil {
+		t.Errorf("Templates.Upsert returned nil")
 	}
 }
