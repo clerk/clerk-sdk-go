@@ -77,6 +77,15 @@ func TestOrganizations(t *testing.T) {
 	assert.Equal(t, updatedOrganization.PrivateMetadata, json.RawMessage(privateMetadata))
 	assert.Equal(t, updatedOrganization.PublicMetadata, json.RawMessage(publicMetadata))
 
+	slug := "my-org-slug"
+	updatedOrganization, err = client.Organizations().Update(newOrganization.ID, clerk.UpdateOrganizationParams{
+		Slug: &slug,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, slug, *updatedOrganization.Slug)
+
 	organizations, err := client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
 		IncludeMembersCount: true,
 	})
