@@ -48,6 +48,7 @@ func (s *OrganizationsService) Create(params CreateOrganizationParams) (*Organiz
 
 type UpdateOrganizationParams struct {
 	Name                  *string         `json:"name,omitempty"`
+	Slug                  *string         `json:"slug,omitempty"`
 	MaxAllowedMemberships *int            `json:"max_allowed_memberships,omitempty"`
 	AdminDeleteEnabled    *bool           `json:"admin_delete_enabled,omitempty"`
 	PublicMetadata        json.RawMessage `json:"public_metadata,omitempty"`
