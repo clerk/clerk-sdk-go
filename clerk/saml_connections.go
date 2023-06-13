@@ -8,21 +8,21 @@ import (
 type SAMLConnectionsService service
 
 type SAMLConnection struct {
-	ID                 string `json:"id"`
-	Object             string `json:"object"`
-	Name               string `json:"name"`
-	Domain             string `json:"domain"`
-	IdpEntityID        string `json:"idp_entity_id"`
-	IdpSsoURL          string `json:"idp_sso_url"`
-	IdpCertificate     string `json:"idp_certificate"`
-	AcsURL             string `json:"acs_url"`
-	SPEntityID         string `json:"sp_entity_id"`
-	Active             bool   `json:"active"`
-	Provider           string `json:"provider"`
-	UserCount          int64  `json:"user_count"`
-	SyncUserAttributes bool   `json:"sync_user_attributes"`
-	CreatedAt          int64  `json:"created_at"`
-	UpdatedAt          int64  `json:"updated_at"`
+	ID                 string  `json:"id"`
+	Object             string  `json:"object"`
+	Name               string  `json:"name"`
+	Domain             string  `json:"domain"`
+	IdpEntityID        *string `json:"idp_entity_id"`
+	IdpSsoURL          *string `json:"idp_sso_url"`
+	IdpCertificate     *string `json:"idp_certificate"`
+	AcsURL             string  `json:"acs_url"`
+	SPEntityID         string  `json:"sp_entity_id"`
+	Active             bool    `json:"active"`
+	Provider           string  `json:"provider"`
+	UserCount          int64   `json:"user_count"`
+	SyncUserAttributes bool    `json:"sync_user_attributes"`
+	CreatedAt          int64   `json:"created_at"`
+	UpdatedAt          int64   `json:"updated_at"`
 }
 
 type ListSAMLConnectionsResponse struct {
@@ -78,11 +78,11 @@ func (s SAMLConnectionsService) Read(id string) (*SAMLConnection, error) {
 }
 
 type CreateSAMLConnectionParams struct {
-	Name           string `json:"name"`
-	Domain         string `json:"domain"`
-	IdpEntityID    string `json:"idp_entity_id"`
-	IdpSsoURL      string `json:"idp_sso_url"`
-	IdpCertificate string `json:"idp_certificate"`
+	Name           string  `json:"name"`
+	Domain         string  `json:"domain"`
+	IdpEntityID    *string `json:"idp_entity_id,omitempty"`
+	IdpSsoURL      *string `json:"idp_sso_url,omitempty"`
+	IdpCertificate *string `json:"idp_certificate,omitempty"`
 }
 
 func (s SAMLConnectionsService) Create(params *CreateSAMLConnectionParams) (*SAMLConnection, error) {
