@@ -43,7 +43,7 @@ func TestSAMLConnectionsService_ListAll(t *testing.T) {
 	}
 
 	got, err := c.SAMLConnections().ListAll(listParams)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	expected := &ListSAMLConnectionsResponse{}
 	_ = json.Unmarshal([]byte(dummyResponse), expected)
@@ -68,7 +68,7 @@ func TestSAMLConnectionsService_Read(t *testing.T) {
 	})
 
 	got, err := c.SAMLConnections().Read(dummySAMLConnectionID)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	expected := SAMLConnection{}
 	_ = json.Unmarshal([]byte(dummyResponse), &expected)
@@ -93,13 +93,13 @@ func TestSAMLConnectionsService_Create(t *testing.T) {
 	createParams := &CreateSAMLConnectionParams{
 		Name:           "Testing SAML",
 		Domain:         "example.com",
-		IdpEntityID:    "test-idp-entity-id",
-		IdpSsoURL:      "https://example.com/saml/sso",
-		IdpCertificate: dummySAMLConnectionCertificate,
+		IdpEntityID:    stringToPtr("test-idp-entity-id"),
+		IdpSsoURL:      stringToPtr("https://example.com/saml/sso"),
+		IdpCertificate: stringToPtr(dummySAMLConnectionCertificate),
 	}
 
 	got, err := c.SAMLConnections().Create(createParams)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	expected := SAMLConnection{}
 	_ = json.Unmarshal([]byte(dummyResponse), &expected)
@@ -133,7 +133,7 @@ func TestSAMLConnectionsService_Update(t *testing.T) {
 	}
 
 	got, err := c.SAMLConnections().Update(dummySAMLConnectionID, updateParams)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	expected := SAMLConnection{}
 	_ = json.Unmarshal([]byte(dummyResponse), &expected)
@@ -163,7 +163,7 @@ func TestSAMLConnectionsService_Delete(t *testing.T) {
 	}
 
 	got, err := c.SAMLConnections().Delete(dummySAMLConnectionID)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	if !reflect.DeepEqual(*got, expected) {
 		t.Errorf("Response = %v, want %v", *got, expected)
