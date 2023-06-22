@@ -1,11 +1,15 @@
 package clerk
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
+	"path"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -196,6 +200,89 @@ func TestOrganizationsService_ListAll_invalidServer(t *testing.T) {
 	}
 	if organizations != nil {
 		t.Errorf("Was not expecting any organizations to be returned, instead got %v", organizations)
+	}
+}
+
+func TestOrganizationsService_UpdateLogo(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	organizationID := "org_123"
+	uploaderUserID := "user_123"
+	expectedResponse := fmt.Sprintf(`{"id":"%s"}`, organizationID)
+	filename := "200x200-grayscale.jpg"
+	file, err := os.Open(path.Join("..", "testdata", filename))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	mux.HandleFunc(
+		fmt.Sprintf("/organizations/%s/logo", organizationID),
+		func(w http.ResponseWriter, req *http.Request) {
+			testHttpMethod(t, req, http.MethodPut)
+			testHeader(t, req, "Authorization", "Bearer token")
+			// Assert that the request is sent as multipart/form-data
+			if !strings.Contains(req.Header["Content-Type"][0], "multipart/form-data") {
+				t.Errorf("expected content-type to be multipart/form-data, got %s", req.Header["Content-Type"])
+			}
+			defer req.Body.Close()
+
+			// Check that the file is sent correctly
+			fileParam, header, err := req.FormFile("file")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if header.Filename != filename {
+				t.Errorf("expected %s, got %s", filename, header.Filename)
+			}
+			defer fileParam.Close()
+
+			got := make([]byte, header.Size)
+			gotSize, err := fileParam.Read(got)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fileInfo, err := file.Stat()
+			if err != nil {
+				t.Fatal(err)
+			}
+			want := make([]byte, fileInfo.Size())
+			_, err = file.Seek(0, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			wantSize, err := file.Read(want)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if gotSize != wantSize {
+				t.Errorf("read different size of files")
+			}
+			if !bytes.Equal(got, want) {
+				t.Errorf("file was not sent correctly")
+			}
+
+			// Check the uploader user ID
+			if got, ok := req.MultipartForm.Value["uploader_user_id"]; !ok || got[0] != uploaderUserID {
+				t.Errorf("expected %s, got %s", uploaderUserID, got)
+			}
+
+			fmt.Fprint(w, expectedResponse)
+		},
+	)
+
+	// Trigger a request to update the logo with the file
+	org, err := client.Organizations().UpdateLogo(organizationID, UpdateOrganizationLogoParams{
+		File:           file,
+		Filename:       &filename,
+		UploaderUserID: "user_123",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if org.ID != organizationID {
+		t.Errorf("expected %s, got %s", organizationID, org.ID)
 	}
 }
 
