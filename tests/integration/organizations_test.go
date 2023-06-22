@@ -5,6 +5,8 @@ package integration
 
 import (
 	"encoding/json"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/clerkinc/clerk-sdk-go/clerk"
@@ -86,6 +88,21 @@ func TestOrganizations(t *testing.T) {
 	}
 	assert.Equal(t, slug, *updatedOrganization.Slug)
 
+	// Update organization logo
+	assert.Nil(t, updatedOrganization.LogoURL)
+	filename := "200x200-grayscale.jpg"
+	file, err := os.Open(path.Join("..", "..", "testdata", filename))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+	updatedOrganization, err = client.Organizations().UpdateLogo(updatedOrganization.ID, clerk.UpdateOrganizationLogoParams{
+		File:           file,
+		Filename:       &filename,
+		UploaderUserID: users[0].ID,
+	})
+	assert.NotNil(t, updatedOrganization.LogoURL)
+
 	organizations, err := client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
 		IncludeMembersCount: true,
 	})
@@ -112,7 +129,7 @@ func TestOrganizations(t *testing.T) {
 	assert.NotEmpty(t, newOrganization2.ID)
 	assert.Equal(t, "my-org-2", newOrganization2.Name)
 
-	// Should short  Organizations by name DESC
+	// Should sort Organizations by name DESC
 	orderBy := "-name"
 	organizations, err = client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
 		OrderBy: &orderBy,

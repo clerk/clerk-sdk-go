@@ -1,8 +1,11 @@
 package clerk
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 )
@@ -64,6 +67,48 @@ func (s *OrganizationsService) Update(organizationID string, params UpdateOrgani
 		return nil, err
 	}
 	return &organization, nil
+}
+
+type UpdateOrganizationLogoParams struct {
+	File           multipart.File
+	UploaderUserID string
+	Filename       *string
+}
+
+func (s *OrganizationsService) UpdateLogo(organizationID string, params UpdateOrganizationLogoParams) (*Organization, error) {
+	var buf bytes.Buffer
+	w := multipart.NewWriter(&buf)
+	uploaderUserID, err := w.CreateFormField("uploader_user_id")
+	if err != nil {
+		return nil, err
+	}
+	uploaderUserID.Write([]byte(params.UploaderUserID))
+
+	filename := "file"
+	if params.Filename != nil {
+		filename = *params.Filename
+	}
+	file, err := w.CreateFormFile("file", filename)
+	if err != nil {
+		return nil, err
+	}
+	defer params.File.Close()
+	_, err = io.Copy(file, params.File)
+	if err != nil {
+		return nil, err
+	}
+	w.Close()
+
+	req, err := s.client.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s/logo", OrganizationsUrl, organizationID))
+	if err != nil {
+		return nil, err
+	}
+	req.Body = io.NopCloser(&buf)
+	req.Header.Set("content-type", w.FormDataContentType())
+
+	var organization Organization
+	_, err = s.client.Do(req, &organization)
+	return &organization, err
 }
 
 type UpdateOrganizationMetadataParams struct {
