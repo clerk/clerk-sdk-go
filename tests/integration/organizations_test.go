@@ -101,7 +101,13 @@ func TestOrganizations(t *testing.T) {
 		Filename:       &filename,
 		UploaderUserID: users[0].ID,
 	})
+	assert.NoError(t, err)
 	assert.NotNil(t, updatedOrganization.LogoURL)
+
+	// Delete organization logo
+	updatedOrganization, err = client.Organizations().DeleteLogo(updatedOrganization.ID)
+	assert.NoError(t, err)
+	assert.Nil(t, updatedOrganization.LogoURL)
 
 	organizations, err := client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
 		IncludeMembersCount: true,

@@ -111,6 +111,13 @@ func (s *OrganizationsService) UpdateLogo(organizationID string, params UpdateOr
 	return &organization, err
 }
 
+func (s *OrganizationsService) DeleteLogo(organizationID string) (*Organization, error) {
+	req, _ := s.client.NewRequest(http.MethodDelete, fmt.Sprintf("%s/%s/logo", OrganizationsUrl, organizationID))
+	var organization Organization
+	_, err := s.client.Do(req, &organization)
+	return &organization, err
+}
+
 type UpdateOrganizationMetadataParams struct {
 	PublicMetadata  json.RawMessage `json:"public_metadata,omitempty"`
 	PrivateMetadata json.RawMessage `json:"private_metadata,omitempty"`

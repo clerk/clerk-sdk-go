@@ -286,6 +286,27 @@ func TestOrganizationsService_UpdateLogo(t *testing.T) {
 	}
 }
 
+func TestOrganizationsService_DeleteLogo(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	organizationID := "org_123"
+	mux.HandleFunc(
+		fmt.Sprintf("/organizations/%s/logo", organizationID),
+		func(w http.ResponseWriter, req *http.Request) {
+			testHttpMethod(t, req, http.MethodDelete)
+			testHeader(t, req, "Authorization", "Bearer token")
+			fmt.Fprint(w, fmt.Sprintf(`{"id":"%s"}`, organizationID))
+		},
+	)
+
+	// Trigger a request to delete the logo
+	_, err := client.Organizations().DeleteLogo(organizationID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 const dummyOrganizationJson = `{
 	"object": "organization",
 	"id": "org_1mebQggrD3xO5JfuHk7clQ94ysA",
