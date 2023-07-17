@@ -24,6 +24,7 @@ const (
 	BlocklistsUrl      = "blocklist_identifiers"
 	ClientsUrl         = "clients"
 	ClientsVerifyUrl   = ClientsUrl + "/verify"
+	DomainsURL         = "domains"
 	EmailAddressesURL  = "email_addresses"
 	EmailsUrl          = "emails"
 	InvitationsURL     = "invitations"
@@ -52,6 +53,7 @@ type Client interface {
 	Allowlists() *AllowlistsService
 	Blocklists() *BlocklistsService
 	Clients() *ClientsService
+	Domains() *DomainsService
 	EmailAddresses() *EmailAddressesService
 	Emails() *EmailService
 	ActorTokens() *ActorTokenService
@@ -86,6 +88,7 @@ type client struct {
 	allowlists      *AllowlistsService
 	blocklists      *BlocklistsService
 	clients         *ClientsService
+	domains         *DomainsService
 	emailAddresses  *EmailAddressesService
 	emails          *EmailService
 	actorTokens     *ActorTokenService
@@ -133,6 +136,7 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	client.allowlists = (*AllowlistsService)(commonService)
 	client.blocklists = (*BlocklistsService)(commonService)
 	client.clients = (*ClientsService)(commonService)
+	client.domains = (*DomainsService)(commonService)
 	client.emailAddresses = (*EmailAddressesService)(commonService)
 	client.emails = (*EmailService)(commonService)
 	client.actorTokens = (*ActorTokenService)(commonService)
@@ -267,6 +271,10 @@ func (c *client) Blocklists() *BlocklistsService {
 
 func (c *client) Clients() *ClientsService {
 	return c.clients
+}
+
+func (c *client) Domains() *DomainsService {
+	return c.domains
 }
 
 func (c *client) EmailAddresses() *EmailAddressesService {
