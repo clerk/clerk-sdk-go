@@ -17,6 +17,7 @@ type User struct {
 	Gender                *string        `json:"gender"`
 	Birthday              *string        `json:"birthday"`
 	ProfileImageURL       string         `json:"profile_image_url"`
+	HasImage              bool           `json:"has_image"`
 	PrimaryEmailAddressID *string        `json:"primary_email_address_id"`
 	PrimaryPhoneNumberID  *string        `json:"primary_phone_number_id"`
 	PrimaryWeb3WalletID   *string        `json:"primary_web3_wallet_id"`
