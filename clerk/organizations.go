@@ -19,6 +19,7 @@ type Organization struct {
 	Slug                  *string         `json:"slug"`
 	LogoURL               *string         `json:"logo_url"`
 	ImageURL              *string         `json:"image_url,omitempty"`
+	HasImage              bool            `json:"has_image"`
 	MembersCount          *int            `json:"members_count,omitempty"`
 	MaxAllowedMemberships int             `json:"max_allowed_memberships"`
 	AdminDeleteEnabled    bool            `json:"admin_delete_enabled"`
@@ -250,6 +251,7 @@ type ΟrganizationMembershipPublicUserData struct {
 	LastName        *string `json:"last_name"`
 	ProfileImageURL string  `json:"profile_image_url"`
 	ImageURL        *string `json:"image_url,omitempty"`
+	HasImage        bool    `json:"has_image"`
 	Identifier      string  `json:"identifier"`
 	UserID          string  `json:"user_id"`
 }
