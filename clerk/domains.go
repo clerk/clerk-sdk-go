@@ -36,8 +36,8 @@ type CreateDomainParams struct {
 }
 
 type UpdateDomainParams struct {
-	Name     *string `json:"name,omitempty"`
-	ProxyURL *string `json:"proxy_url,omitempty"`
+	Name     String `json:"name"`
+	ProxyURL String `json:"proxy_url"`
 }
 
 func (s *DomainsService) ListAll() (*DomainListResponse, error) {
@@ -68,8 +68,18 @@ func (s *DomainsService) Update(
 	domainID string,
 	params UpdateDomainParams,
 ) (*Domain, error) {
+	// Transform the update params to for bapi. This way we can ensure that
+	// we do not set unset attributes.
+	bapiParams := struct {
+		Name     *String `json:"name,omitempty"`
+		ProxyURL *String `json:"proxy_url,omitempty"`
+	}{
+		Name:     params.Name.Ptr(),
+		ProxyURL: params.ProxyURL.Ptr(),
+	}
+
 	url := fmt.Sprintf("%s/%s", DomainsURL, domainID)
-	req, _ := s.client.NewRequest(http.MethodPatch, url, &params)
+	req, _ := s.client.NewRequest(http.MethodPatch, url, &bapiParams)
 
 	var domain Domain
 	_, err := s.client.Do(req, &domain)

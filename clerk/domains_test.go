@@ -78,7 +78,7 @@ func TestDomainsService_Update_HappyPath(t *testing.T) {
 	name := "foobar.com"
 
 	payload := UpdateDomainParams{
-		Name: &name,
+		Name: NewString(name),
 	}
 
 	client, mux, _, teardown := setup(token)

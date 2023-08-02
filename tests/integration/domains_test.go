@@ -43,7 +43,7 @@ func TestDomains(t *testing.T) {
 
 	name = gofakeit.DomainName()
 	updateDomainParams := clerk.UpdateDomainParams{
-		Name: &name,
+		Name: clerk.NewString(name),
 	}
 
 	domain, err = client.Domains().Update(domain.ID, updateDomainParams)
