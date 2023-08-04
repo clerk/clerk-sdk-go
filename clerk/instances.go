@@ -65,8 +65,9 @@ type InstanceRestrictionsResponse struct {
 }
 
 type UpdateRestrictionsParams struct {
-	Allowlist *bool `json:"allowlist,omitempty"`
-	Blocklist *bool `json:"blocklist,omitempty"`
+	Allowlist              *bool `json:"allowlist,omitempty"`
+	Blocklist              *bool `json:"blocklist,omitempty"`
+	BlockEmailSubaddresses *bool `json:"block_email_subaddresses,omitempty"`
 }
 
 func (s *InstanceService) UpdateRestrictions(params UpdateRestrictionsParams) (*InstanceRestrictionsResponse, error) {
