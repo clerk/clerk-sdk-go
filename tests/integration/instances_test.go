@@ -39,6 +39,7 @@ func TestInstanceRestrictions(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, restrictionsResponse.Allowlist)
 	assert.True(t, restrictionsResponse.Blocklist)
+	assert.False(t, restrictionsResponse.BlockEmailSubaddresses)
 }
 
 func TestInstanceOrganizationSettings(t *testing.T) {
