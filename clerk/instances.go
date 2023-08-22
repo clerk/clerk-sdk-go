@@ -83,16 +83,20 @@ func (s *InstanceService) UpdateRestrictions(params UpdateRestrictionsParams) (*
 }
 
 type OrganizationSettingsResponse struct {
-	Object                string `json:"object"`
-	Enabled               bool   `json:"enabled"`
-	MaxAllowedMemberships int    `json:"max_allowed_memberships"`
-	AdminDeleteEnabled    bool   `json:"admin_delete_enabled"`
+	Object                 string   `json:"object"`
+	Enabled                bool     `json:"enabled"`
+	MaxAllowedMemberships  int      `json:"max_allowed_memberships"`
+	AdminDeleteEnabled     bool     `json:"admin_delete_enabled"`
+	DomainsEnabled         bool     `json:"domains_enabled"`
+	DomainsEnrollmentModes []string `json:"domains_enrollment_modes"`
 }
 
 type UpdateOrganizationSettingsParams struct {
-	Enabled               *bool `json:"enabled,omitempty"`
-	MaxAllowedMemberships *int  `json:"max_allowed_memberships,omitempty"`
-	AdminDeleteEnabled    *bool `json:"admin_delete_enabled,omitempty"`
+	Enabled                *bool    `json:"enabled,omitempty"`
+	MaxAllowedMemberships  *int     `json:"max_allowed_memberships,omitempty"`
+	AdminDeleteEnabled     *bool    `json:"admin_delete_enabled,omitempty"`
+	DomainsEnabled         *bool    `json:"domains_enabled,omitempty"`
+	DomainsEnrollmentModes []string `json:"domains_enrollment_modes"`
 }
 
 func (s *InstanceService) UpdateOrganizationSettings(params UpdateOrganizationSettingsParams) (*OrganizationSettingsResponse, error) {
