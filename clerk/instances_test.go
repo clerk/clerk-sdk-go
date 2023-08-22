@@ -100,7 +100,14 @@ func TestInstanceService_UpdateOrganizationSettings_happyPath(t *testing.T) {
 	token := "token"
 	dummyOrganizationSettingsResponseJSON := `{
 		"enabled": true,
-		"max_allowed_memberships": 2
+		"max_allowed_memberships": 2,
+		"admin_delete_enabled": true,
+		"domains_enabled": true,
+		"domains_enrollment_modes": [
+			"manual_invitation",
+			"automatic_invitation",
+			"automatic_suggestion"
+		]
 	}`
 	var organizationSettingsResponse OrganizationSettingsResponse
 	_ = json.Unmarshal([]byte(dummyOrganizationSettingsResponseJSON), &organizationSettingsResponse)
