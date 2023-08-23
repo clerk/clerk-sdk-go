@@ -96,7 +96,7 @@ type UpdateOrganizationSettingsParams struct {
 	MaxAllowedMemberships  *int     `json:"max_allowed_memberships,omitempty"`
 	AdminDeleteEnabled     *bool    `json:"admin_delete_enabled,omitempty"`
 	DomainsEnabled         *bool    `json:"domains_enabled,omitempty"`
-	DomainsEnrollmentModes []string `json:"domains_enrollment_modes"`
+	DomainsEnrollmentModes []string `json:"domains_enrollment_modes,omitempty"`
 }
 
 func (s *InstanceService) UpdateOrganizationSettings(params UpdateOrganizationSettingsParams) (*OrganizationSettingsResponse, error) {
