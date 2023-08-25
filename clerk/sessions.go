@@ -11,7 +11,7 @@ type Session struct {
 	UserID                   string `json:"user_id"`
 	Status                   string `json:"status"`
 	LastActiveAt             int64  `json:"last_active_at"`
-	LastActiveOrganizationID string `json:"last_active_organization_id"`
+	LastActiveOrganizationID string `json:"last_active_organization_id,omitempty"`
 	ExpireAt                 int64  `json:"expire_at"`
 	AbandonAt                int64  `json:"abandon_at"`
 	CreatedAt                int64  `json:"created_at"`
