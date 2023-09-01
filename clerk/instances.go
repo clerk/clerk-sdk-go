@@ -59,16 +59,18 @@ func (s *InstanceService) Update(params UpdateInstanceParams) error {
 }
 
 type InstanceRestrictionsResponse struct {
-	Object                 string `json:"object"`
-	Allowlist              bool   `json:"allowlist"`
-	Blocklist              bool   `json:"blocklist"`
-	BlockEmailSubaddresses bool   `json:"block_email_subaddresses"`
+	Object                      string `json:"object"`
+	Allowlist                   bool   `json:"allowlist"`
+	Blocklist                   bool   `json:"blocklist"`
+	BlockEmailSubaddresses      bool   `json:"block_email_subaddresses"`
+	BlockDisposableEmailDomains bool   `json:"block_disposable_email_domains"`
 }
 
 type UpdateRestrictionsParams struct {
-	Allowlist              *bool `json:"allowlist,omitempty"`
-	Blocklist              *bool `json:"blocklist,omitempty"`
-	BlockEmailSubaddresses *bool `json:"block_email_subaddresses,omitempty"`
+	Allowlist                   *bool `json:"allowlist,omitempty"`
+	Blocklist                   *bool `json:"blocklist,omitempty"`
+	BlockEmailSubaddresses      *bool `json:"block_email_subaddresses,omitempty"`
+	BlockDisposableEmailDomains *bool `json:"block_disposable_email_domains,omitempty"`
 }
 
 func (s *InstanceService) UpdateRestrictions(params UpdateRestrictionsParams) (*InstanceRestrictionsResponse, error) {
