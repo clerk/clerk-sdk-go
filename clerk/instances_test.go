@@ -59,10 +59,12 @@ func TestInstanceService_UpdateRestrictions_happyPath(t *testing.T) {
 	dummyRestrictionsResponseJSON := `{
 		"allowlist": true,
 		"blocklist": true,
-		"block_email_subaddresses": true
+		"block_email_subaddresses": true,
+		"block_disposable_email_domains": true
 	}`
 	var restrictionsResponse InstanceRestrictionsResponse
-	_ = json.Unmarshal([]byte(dummyRestrictionsResponseJSON), &restrictionsResponse)
+	err := json.Unmarshal([]byte(dummyRestrictionsResponseJSON), &restrictionsResponse)
+	assert.NoError(t, err)
 
 	client, mux, _, teardown := setup(token)
 	defer teardown()
@@ -75,9 +77,10 @@ func TestInstanceService_UpdateRestrictions_happyPath(t *testing.T) {
 
 	enabled := true
 	got, _ := client.Instances().UpdateRestrictions(UpdateRestrictionsParams{
-		Allowlist:              &enabled,
-		Blocklist:              &enabled,
-		BlockEmailSubaddresses: &enabled,
+		Allowlist:                   &enabled,
+		Blocklist:                   &enabled,
+		BlockEmailSubaddresses:      &enabled,
+		BlockDisposableEmailDomains: &enabled,
 	})
 
 	assert.Equal(t, &restrictionsResponse, got)
