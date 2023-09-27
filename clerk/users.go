@@ -91,6 +91,7 @@ type ListAllUsersParams struct {
 	Limit          *int
 	Offset         *int
 	EmailAddresses []string
+	ExternalIDs    []string
 	PhoneNumbers   []string
 	Web3Wallets    []string
 	Usernames      []string
@@ -148,6 +149,11 @@ func (s *UsersService) addUserSearchParamsToRequest(r *http.Request, params List
 	if params.PhoneNumbers != nil {
 		for _, phone := range params.PhoneNumbers {
 			query.Add("phone_number", phone)
+		}
+	}
+	if params.ExternalIDs != nil {
+		for _, externalID := range params.ExternalIDs {
+			query.Add("external_id", externalID)
 		}
 	}
 	if params.Web3Wallets != nil {
