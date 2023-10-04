@@ -78,6 +78,10 @@ type PreviewTemplateRequest struct {
 	FromEmailName *string `json:"from_email_name"`
 }
 
+type ToggleDeliveryTemplateRequest struct {
+	DeliveredByClerk bool `json:"delivered_by_clerk"`
+}
+
 func (s *TemplatesService) Upsert(templateType, slug string, upsertTemplateRequest *UpsertTemplateRequest) (*TemplateExtended, error) {
 	templateURL := fmt.Sprintf("%s/%s/%s", TemplatesUrl, templateType, slug)
 	req, _ := s.client.NewRequest("PUT", templateURL, upsertTemplateRequest)
@@ -133,4 +137,18 @@ func (s *TemplatesService) Preview(templateType, slug string, previewTemplateReq
 	}
 
 	return &templatePreview, nil
+}
+
+func (s *TemplatesService) ToggleDelivery(templateType, slug string, toggleDeliveryTemplateRequest *ToggleDeliveryTemplateRequest) (*TemplateExtended, error) {
+	templateURL := fmt.Sprintf("%s/%s/%s/toggle_delivery", TemplatesUrl, templateType, slug)
+	req, _ := s.client.NewRequest("POST", templateURL, toggleDeliveryTemplateRequest)
+
+	var toggledTemplate TemplateExtended
+
+	_, err := s.client.Do(req, &toggledTemplate)
+	if err != nil {
+		return nil, err
+	}
+
+	return &toggledTemplate, nil
 }
