@@ -51,7 +51,7 @@ func isAuthV2Request(r *http.Request, client Client) (string, bool) {
 
 	claims, err := client.DecodeToken(headerToken)
 	if err == nil {
-		return headerToken, isValidIssuer(claims.Issuer)
+		return headerToken, newIssuer(claims.Issuer).IsValid()
 	}
 
 	// Verification from header token failed, try with token from cookie
@@ -65,5 +65,5 @@ func isAuthV2Request(r *http.Request, client Client) (string, bool) {
 		return "", false
 	}
 
-	return cookieSession.Value, isValidIssuer(claims.Issuer)
+	return cookieSession.Value, newIssuer(claims.Issuer).IsValid()
 }

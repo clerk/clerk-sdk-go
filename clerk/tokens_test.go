@@ -152,6 +152,54 @@ func TestClient_VerifyToken_InvalidIssuer(t *testing.T) {
 	}
 }
 
+func TestClient_VerifyToken_IssuerSatelliteDomain(t *testing.T) {
+	c, _ := NewClient("token")
+
+	token, pubKey := testGenerateTokenJWT(t, dummySessionClaims, "kid")
+
+	client := c.(*client)
+	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
+
+	got, _ := c.VerifyToken(token, WithSatelliteDomain(true))
+	if !reflect.DeepEqual(got, &dummySessionClaims) {
+		t.Errorf("Expected %+v, but got %+v", dummySessionClaims, got)
+	}
+}
+
+func TestClient_VerifyToken_InvalidIssuerProxyURL(t *testing.T) {
+	c, _ := NewClient("token")
+
+	claims := dummySessionClaims
+	claims.Issuer = "invalid"
+
+	token, pubKey := testGenerateTokenJWT(t, claims, "kid")
+
+	client := c.(*client)
+	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
+
+	_, err := c.VerifyToken(token, WithProxyURL("issuer"))
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+}
+
+func TestClient_VerifyToken_ValidIssuerProxyURL(t *testing.T) {
+	c, _ := NewClient("token")
+
+	claims := dummySessionClaims
+	claims.Issuer = "issuer"
+
+	token, pubKey := testGenerateTokenJWT(t, claims, "kid")
+
+	client := c.(*client)
+	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
+
+	got, _ := c.VerifyToken(token, WithProxyURL("issuer"))
+	if !reflect.DeepEqual(got, &claims) {
+		t.Errorf("Expected %+v, but got %+v", claims, got)
+	}
+}
+
 func TestClient_VerifyToken_ExpiredToken(t *testing.T) {
 	c, _ := NewClient("token")
 
