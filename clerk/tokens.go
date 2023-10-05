@@ -2,7 +2,6 @@ package clerk
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
@@ -52,6 +51,8 @@ type verifyTokenOptions struct {
 	leeway            time.Duration
 	jwk               *jose.JSONWebKey
 	customClaims      interface{}
+	isSatellite       bool
+	proxyURL          string
 }
 
 // VerifyToken verifies the session jwt token.
@@ -99,7 +100,11 @@ func (c *client) VerifyToken(token string, opts ...VerifyTokenOption) (*SessionC
 		return nil, err
 	}
 
-	if !isValidIssuer(claims.Issuer) {
+	issuer := newIssuer(claims.Issuer).
+		WithSatelliteDomain(options.isSatellite).
+		WithProxyURL(options.proxyURL)
+
+	if !issuer.IsValid() {
 		return nil, fmt.Errorf("invalid issuer %s", claims.Issuer)
 	}
 
@@ -130,8 +135,4 @@ func verifyTokenParseClaims(parsedToken *jwt.JSONWebToken, key interface{}, sess
 		return parsedToken.Claims(key, sessionClaims)
 	}
 	return parsedToken.Claims(key, sessionClaims, options.customClaims)
-}
-
-func isValidIssuer(issuer string) bool {
-	return strings.HasPrefix(issuer, "https://clerk.") || strings.Contains(issuer, ".clerk.accounts")
 }

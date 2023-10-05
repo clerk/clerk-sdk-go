@@ -76,6 +76,28 @@ BQIDAQAB
 	}
 }
 
+func TestWithSatelliteDomain(t *testing.T) {
+	isSatellite := true
+
+	opts := &verifyTokenOptions{}
+	err := WithSatelliteDomain(isSatellite)(opts)
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, isSatellite, opts.isSatellite)
+	}
+}
+
+func TestWithProxyURL(t *testing.T) {
+	proxyURL := "url"
+
+	opts := &verifyTokenOptions{}
+	err := WithProxyURL(proxyURL)(opts)
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, proxyURL, opts.proxyURL)
+	}
+}
+
 func arrayToMap(t *testing.T, input []string) map[string]struct{} {
 	t.Helper()
 

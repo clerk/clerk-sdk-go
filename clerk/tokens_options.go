@@ -63,6 +63,20 @@ func WithCustomClaims(customClaims interface{}) VerifyTokenOption {
 	}
 }
 
+func WithSatelliteDomain(isSatellite bool) VerifyTokenOption {
+	return func(o *verifyTokenOptions) error {
+		o.isSatellite = isSatellite
+		return nil
+	}
+}
+
+func WithProxyURL(proxyURL string) VerifyTokenOption {
+	return func(o *verifyTokenOptions) error {
+		o.proxyURL = proxyURL
+		return nil
+	}
+}
+
 func pemToJWK(key string) (*jose.JSONWebKey, error) {
 	block, _ := pem.Decode([]byte(key))
 	if block == nil {

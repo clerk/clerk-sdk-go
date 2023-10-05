@@ -99,6 +99,8 @@ The new middlewares (`clerk.WithSessionV2()` & `clerk.RequireSessionV2()`) also 
 - clerk.WithLeeway() to set a custom leeway that gives some extra time to the token to accommodate for clock skew
 - clerk.WithJWTVerificationKey() to set the JWK to use for verifying tokens without the need to fetch or cache any JWKs at runtime
 - clerk.WithCustomClaims() to pass a type (e.g. struct), which will be populated with the token claims based on json tags.
+- clerk.WithSatelliteDomain() to skip the JWT token's "iss" claim verification.
+- clerk.WithProxyURL() to verify the JWT token's "iss" claim against the proxy url.
 
 For example
 
@@ -110,6 +112,8 @@ clerk.WithSessionV2(
 	clerk.WithAuthorizedParty("my-authorized-party"),
 	clerk.WithLeeway(5 * time.Second),
 	clerk.WithCustomClaims(&customClaims),
+	clerk.WithSatelliteDomain(true),
+	clerk.WithProxyURL("https://example.com/__clerk"),
 	)
 ```
 
