@@ -204,7 +204,7 @@ func TestClient_VerifyToken_Success_NewIssuerFormat(t *testing.T) {
 	claims := dummySessionClaims
 	claims.Issuer = "https://foo-bar-13.clerk.accounts.dev"
 
-	token, pubKey := testGenerateTokenJWT(t, dummySessionClaims, "kid")
+	token, pubKey := testGenerateTokenJWT(t, claims, "kid")
 
 	client := c.(*client)
 	client.jwksCache.set(testBuildJWKS(t, pubKey, jose.RS256, "kid"))
@@ -214,8 +214,8 @@ func TestClient_VerifyToken_Success_NewIssuerFormat(t *testing.T) {
 		t.Fatalf("Expected no error but got %v", err)
 	}
 
-	if !reflect.DeepEqual(got, &dummySessionClaims) {
-		t.Errorf("Expected %+v, but got %+v", dummySessionClaims, got)
+	if !reflect.DeepEqual(got, &claims) {
+		t.Errorf("Expected %+v, but got %+v", claims, got)
 	}
 }
 
