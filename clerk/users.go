@@ -35,6 +35,7 @@ type User struct {
 	UnsafeMetadata        interface{}    `json:"unsafe_metadata"`
 	LastSignInAt          *int64         `json:"last_sign_in_at"`
 	Banned                bool           `json:"banned"`
+	Locked                bool           `json:"locked"`
 	ExternalID            *string        `json:"external_id"`
 	CreatedAt             int64          `json:"created_at"`
 	UpdatedAt             int64          `json:"updated_at"`
@@ -294,6 +295,30 @@ func (s *UsersService) Ban(userID string) (*User, error) {
 
 func (s *UsersService) Unban(userID string) (*User, error) {
 	url := fmt.Sprintf("%s/%s/unban", UsersUrl, userID)
+	req, _ := s.client.NewRequest(http.MethodPost, url)
+
+	var response User
+	if _, err := s.client.Do(req, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+func (s *UsersService) Lock(userID string) (*User, error) {
+	url := fmt.Sprintf("%s/%s/lock", UsersUrl, userID)
+	req, _ := s.client.NewRequest(http.MethodPost, url)
+
+	var response User
+	if _, err := s.client.Do(req, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+func (s *UsersService) Unlock(userID string) (*User, error) {
+	url := fmt.Sprintf("%s/%s/unlock", UsersUrl, userID)
 	req, _ := s.client.NewRequest(http.MethodPost, url)
 
 	var response User
