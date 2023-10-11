@@ -425,6 +425,40 @@ func TestUsersService_Unban_happyPath(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUsersService_Lock_happyPath(t *testing.T) {
+	token := "token"
+	userID := "test-user-id"
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/users/"+userID+"/lock", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, http.MethodPost)
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, dummyUserJson)
+	})
+
+	_, err := client.Users().Lock(userID)
+	assert.NoError(t, err)
+}
+
+func TestUsersService_Unlock_happyPath(t *testing.T) {
+	token := "token"
+	userID := "test-user-id"
+
+	client, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc("/users/"+userID+"/unlock", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, http.MethodPost)
+		testHeader(t, req, "Authorization", "Bearer "+token)
+		fmt.Fprint(w, dummyUserJson)
+	})
+
+	_, err := client.Users().Unlock(userID)
+	assert.NoError(t, err)
+}
+
 const dummyUserJson = `{
         "birthday": "",
         "created_at": 1610783813,
@@ -480,7 +514,8 @@ const dummyUserJson = `{
 			"app_id": 5
 		},
 		"last_sign_in_at": 1610783813,
-		"banned": false
+		"banned": false,
+		"locked": false
     }`
 
 const dummyUserOAuthAccessTokensJson = `[

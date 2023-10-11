@@ -102,6 +102,18 @@ func TestUsers(t *testing.T) {
 			t.Fatalf("Users.Unban returned error: %v", err)
 		}
 		assert.False(t, updatedUser.Banned)
+
+		updatedUser, err = client.Users().Lock(userId)
+		if err != nil {
+			t.Fatalf("Users.Lock returned error: %v", err)
+		}
+		assert.True(t, updatedUser.Locked)
+
+		updatedUser, err = client.Users().Unlock(userId)
+		if err != nil {
+			t.Fatalf("Users.Unlock returned error: %v", err)
+		}
+		assert.False(t, updatedUser.Locked)
 	}
 
 	// Should return all memberships of a user
