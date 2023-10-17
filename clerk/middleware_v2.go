@@ -40,9 +40,9 @@ func SessionFromContext(ctx context.Context) (*SessionClaims, bool) {
 	return c, ok
 }
 
-// WithSessionV2 is the new middleware that supports Auth v2. If the session is
-// authenticated, it adds the corresponding session claims found in the JWT to
-// request's context.
+// WithSessionV2 is the de-facto authentication middleware and should be
+// preferred to WithSession. If the session is authenticated, it adds the corresponding
+// session claims found in the JWT to request's context.
 func WithSessionV2(client Client, verifyTokenOptions ...VerifyTokenOption) func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

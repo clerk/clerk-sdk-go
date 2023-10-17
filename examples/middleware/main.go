@@ -10,14 +10,18 @@ import (
 )
 
 func returnActiveSession(w http.ResponseWriter, req *http.Request) {
-	session := req.Context().Value(clerk.ActiveSession)
-	jsonResp, _ := json.Marshal(session)
+	sessionClaims, ok := clerk.SessionFromContext(req.Context())
+	if ok {
+		jsonResp, _ := json.Marshal(sessionClaims)
+		fmt.Fprintf(w, string(jsonResp))
+	} else {
+		// handle non-authenticated user
+	}
 
-	fmt.Fprintf(w, string(jsonResp))
 }
 
 func main() {
-	fmt.Print("Clerk API Key: ")
+	fmt.Print("Clerk secret key: ")
 	var apiKey string
 	fmt.Scanf("%s", &apiKey)
 
@@ -27,7 +31,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	injectActiveSession := clerk.WithSession(client)
+	injectActiveSession := clerk.WithSessionV2(client)
 	mux.Handle("/session", injectActiveSession(http.HandlerFunc(returnActiveSession)))
 
 	err = http.ListenAndServe(":3000", mux)
