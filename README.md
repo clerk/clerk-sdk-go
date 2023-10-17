@@ -66,34 +66,24 @@ For more examples on how to use the client, refer to the [examples](https://gith
 
 ## Middleware
 
-In addition to the API operations, the SDK also provides a middleware that can be used to inject the active session into the request's context.
-The Clerk middleware expects a `clerk.Client` and resolves the active session using the incoming session cookie.
+The SDK provides the [`WithSessionV2`](https://pkg.go.dev/github.com/clerkinc/clerk-sdk-go/v2/clerk#WithSessionV2) middleware that injects the active session into the request's context.
 
-The active session object will be added in the request's context using the key `clerk.ActiveSession`.
+The active session's claims can then be accessed using [`SessionFromContext`](https://pkg.go.dev/github.com/clerkinc/clerk-sdk-go/v2/clerk#SessionFromContext).
 
 ```go
 mux := http.NewServeMux()
-injectActiveSession := clerk.WithSession(client)
+injectActiveSession := clerk.WithSessionV2(client)
 mux.Handle("/your-endpoint", injectActiveSession(yourEndpointHandler))
 ```
 
-For a full example of how to use the middleware, refer to
-[this](https://github.com/clerkinc/clerk-sdk-go/tree/main/examples/middleware).
+Additionally, there's [`RequireSessionV2`](https://pkg.go.dev/github.com/clerkinc/clerk-sdk-go/v2/clerk#RequireSessionV2) that will halt the request and respond with 403 if the user is not authenticated. This can be used to restrict access to certain routes unless the user is authenticated.
 
-### Auth v2
-
-If you're using the newly-introduced [Auth v2](https://clerk.com/docs/upgrade-guides/auth-v2) scheme, you'll have to use the
-`clerk.WithSessionV2()` middleware, instead of `clerk.WithSession()`.
-
-Additionally, there's also `clerk.RequireSessionV2()` that will halt the request
-and respond with 403 if the user is not authenticated.
-
-Finally, to retrieve the authenticated session's claims you can use
-`clerk.SessionFromContext()`.
+For more info on how to use the middleware, refer to the
+[example](https://github.com/clerkinc/clerk-sdk-go/tree/main/examples/middleware).
 
 ### Additional options
 
-The new middlewares (`clerk.WithSessionV2()` & `clerk.RequireSessionV2()`) also support the ability to pass some additional options.
+The middleware supports the following options:
 
 - clerk.WithAuthorizedParty() to set the authorized parties to check against the azp claim of the token
 - clerk.WithLeeway() to set a custom leeway that gives some extra time to the token to accommodate for clock skew
