@@ -30,6 +30,7 @@ const (
 	InvitationsURL     = "invitations"
 	OrganizationsUrl   = "organizations"
 	PhoneNumbersURL    = "phone_numbers"
+	ProxyChecksURL     = "proxy_checks"
 	RedirectURLsUrl    = "redirect_urls"
 	SAMLConnectionsUrl = "saml_connections"
 	SessionsUrl        = "sessions"
@@ -62,6 +63,7 @@ type Client interface {
 	JWTTemplates() *JWTTemplatesService
 	Organizations() *OrganizationsService
 	PhoneNumbers() *PhoneNumbersService
+	ProxyChecks() *ProxyChecksService
 	RedirectURLs() *RedirectURLsService
 	SAMLConnections() *SAMLConnectionsService
 	Sessions() *SessionsService
@@ -97,6 +99,7 @@ type client struct {
 	jwtTemplates    *JWTTemplatesService
 	organizations   *OrganizationsService
 	phoneNumbers    *PhoneNumbersService
+	proxyChecks     *ProxyChecksService
 	redirectURLs    *RedirectURLsService
 	samlConnections *SAMLConnectionsService
 	sessions        *SessionsService
@@ -145,6 +148,7 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	client.jwtTemplates = (*JWTTemplatesService)(commonService)
 	client.organizations = (*OrganizationsService)(commonService)
 	client.phoneNumbers = (*PhoneNumbersService)(commonService)
+	client.proxyChecks = (*ProxyChecksService)(commonService)
 	client.redirectURLs = (*RedirectURLsService)(commonService)
 	client.samlConnections = (*SAMLConnectionsService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
@@ -307,6 +311,10 @@ func (c *client) Organizations() *OrganizationsService {
 
 func (c *client) PhoneNumbers() *PhoneNumbersService {
 	return c.phoneNumbers
+}
+
+func (c *client) ProxyChecks() *ProxyChecksService {
+	return c.proxyChecks
 }
 
 func (c *client) RedirectURLs() *RedirectURLsService {
