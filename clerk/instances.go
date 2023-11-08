@@ -91,6 +91,7 @@ type OrganizationSettingsResponse struct {
 	AdminDeleteEnabled     bool     `json:"admin_delete_enabled"`
 	DomainsEnabled         bool     `json:"domains_enabled"`
 	DomainsEnrollmentModes []string `json:"domains_enrollment_modes"`
+	CreatorRole            string   `json:"creator_role"`
 }
 
 type UpdateOrganizationSettingsParams struct {
@@ -99,6 +100,7 @@ type UpdateOrganizationSettingsParams struct {
 	AdminDeleteEnabled     *bool    `json:"admin_delete_enabled,omitempty"`
 	DomainsEnabled         *bool    `json:"domains_enabled,omitempty"`
 	DomainsEnrollmentModes []string `json:"domains_enrollment_modes,omitempty"`
+	CreatorRole            string   `json:"creator_role,omitempty"`
 }
 
 func (s *InstanceService) UpdateOrganizationSettings(params UpdateOrganizationSettingsParams) (*OrganizationSettingsResponse, error) {
