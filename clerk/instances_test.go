@@ -110,7 +110,8 @@ func TestInstanceService_UpdateOrganizationSettings_happyPath(t *testing.T) {
 			"manual_invitation",
 			"automatic_invitation",
 			"automatic_suggestion"
-		]
+		],
+		"creator_role": "org:custom_admin"
 	}`
 	var organizationSettingsResponse OrganizationSettingsResponse
 	_ = json.Unmarshal([]byte(dummyOrganizationSettingsResponseJSON), &organizationSettingsResponse)
@@ -125,8 +126,10 @@ func TestInstanceService_UpdateOrganizationSettings_happyPath(t *testing.T) {
 	})
 
 	enabled := true
+	defaultCreatorRole := "org:custom_admin"
 	got, _ := client.Instances().UpdateOrganizationSettings(UpdateOrganizationSettingsParams{
-		Enabled: &enabled,
+		Enabled:     &enabled,
+		CreatorRole: defaultCreatorRole,
 	})
 
 	assert.Equal(t, &organizationSettingsResponse, got)
