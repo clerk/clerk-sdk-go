@@ -7,31 +7,19 @@ import (
 )
 
 type InsOrgRole struct {
-	Object      string             `json:"object"`
-	ID          string             `json:"id"`
-	Name        string             `json:"name"`
-	Key         string             `json:"key"`
-	Description string             `json:"description"`
-	Permissions []InsOrgPermission `json:"permissions"`
-	CreatedAt   int64              `json:"created_at"`
-	UpdatedAt   int64              `json:"updated_at"`
+	Object      string                   `json:"object"`
+	ID          string                   `json:"id"`
+	Name        string                   `json:"name"`
+	Key         string                   `json:"key"`
+	Description string                   `json:"description"`
+	Permissions []OrganizationPermission `json:"permissions"`
+	CreatedAt   int64                    `json:"created_at"`
+	UpdatedAt   int64                    `json:"updated_at"`
 }
 
 type InsOrgRolesResponse struct {
 	Data       []InsOrgRole `json:"data"`
 	TotalCount int64        `json:"total_count"`
-}
-
-// TODO: move this to a separate file once custom permissions endpoints are done
-type InsOrgPermission struct {
-	Object      string `json:"object"`
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Key         string `json:"key"`
-	Description string `json:"description"`
-	Type        string `json:"type"`
-	CreatedAt   int64  `json:"created_at"`
-	UpdatedAt   int64  `json:"updated_at"`
 }
 
 type CreateInsOrgRoleParams struct {
