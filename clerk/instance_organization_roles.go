@@ -58,14 +58,14 @@ func (s *InstanceService) ReadOrganizationRole(orgRoleID string) (*Role, error) 
 	return &orgRole, nil
 }
 
-type UpdateInsOrgRoleParams struct {
+type UpdateInstanceOrganizationRoleParams struct {
 	Name        *string   `json:"name,omitempty"`
 	Key         *string   `json:"key,omitempty"`
 	Description *string   `json:"description,omitempty"`
 	Permissions *[]string `json:"permissions,omitempty"`
 }
 
-func (s *InstanceService) UpdateOrganizationRole(orgRoleID string, params UpdateInsOrgRoleParams) (*Role, error) {
+func (s *InstanceService) UpdateOrganizationRole(orgRoleID string, params UpdateInstanceOrganizationRoleParams) (*Role, error) {
 	req, _ := s.client.NewRequest(http.MethodPatch, fmt.Sprintf("%s/%s", OrganizationRolesUrl, orgRoleID), &params)
 
 	var orgRole Role
