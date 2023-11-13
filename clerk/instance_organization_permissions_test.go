@@ -33,7 +33,7 @@ func TestInstanceService_List_happyPathWithParameters(t *testing.T) {
 		fmt.Fprint(w, expectedResponse)
 	})
 
-	want := &OrganizationPermissionsResponse{}
+	want := &PermissionsResponse{}
 	_ = json.Unmarshal([]byte(expectedResponse), want)
 
 	got, _ := client.Instances().ListOrganizationPermissions(ListInstanceOrganizationPermissionsParams{

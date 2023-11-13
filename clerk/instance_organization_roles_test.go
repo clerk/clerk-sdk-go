@@ -23,7 +23,7 @@ func TestInstanceService_CreateOrgRole(t *testing.T) {
 		_, _ = fmt.Fprint(w, expectedResponse)
 	})
 
-	createParams := CreateInsOrgRoleParams{
+	createParams := CreateInstanceOrganizationRoleParams{
 		Name:        "custom role",
 		Key:         "org:custom_role",
 		Description: "my org custom role",
@@ -33,7 +33,7 @@ func TestInstanceService_CreateOrgRole(t *testing.T) {
 	got, err := client.Instances().CreateOrganizationRole(createParams)
 	assert.NoError(t, err)
 
-	var want InsOrgRole
+	var want Role
 	err = json.Unmarshal([]byte(expectedResponse), &want)
 	if err != nil {
 		t.Fatal(err)
@@ -61,7 +61,7 @@ func TestOrganizationRolesService_Read(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var want InsOrgRole
+	var want Role
 	err = json.Unmarshal([]byte(expectedResponse), &want)
 	if err != nil {
 		t.Fatal(err)
@@ -90,7 +90,7 @@ func TestOrganizationRolesService_Update(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var want InsOrgRole
+	var want Role
 	err = json.Unmarshal([]byte(expectedResponse), &want)
 	if err != nil {
 		t.Fatal(err)
@@ -127,10 +127,10 @@ func TestOrganizationsService_List_happyPath(t *testing.T) {
 		fmt.Fprint(w, expectedResponse)
 	})
 
-	var want *InsOrgRolesResponse
+	var want *RolesResponse
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
-	got, _ := client.Instances().ListOrganizationRole(ListInsOrgRoleParams{})
+	got, _ := client.Instances().ListOrganizationRole(ListInstanceOrganizationRoleParams{})
 	if len(got.Data) != len(want.Data) {
 		t.Errorf("Was expecting %d organization roles to be returned, instead got %d", len(want.Data), len(got.Data))
 	}
@@ -162,14 +162,12 @@ func TestOrganizationsService_List_happyPathWithParameters(t *testing.T) {
 		fmt.Fprint(w, expectedResponse)
 	})
 
-	var want *InsOrgRolesResponse
+	var want *RolesResponse
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
-	limit := 5
-	offset := 6
-	got, _ := client.Instances().ListOrganizationRole(ListInsOrgRoleParams{
-		Limit:  &limit,
-		Offset: &offset,
+	got, _ := client.Instances().ListOrganizationRole(ListInstanceOrganizationRoleParams{
+		Limit:  intToPtr(5),
+		Offset: intToPtr(6),
 	})
 	if len(got.Data) != len(want.Data) {
 		t.Errorf("Was expecting %d organization roles to be returned, instead got %d", len(want.Data), len(got.Data))
@@ -183,7 +181,7 @@ func TestOrganizationsService_List_happyPathWithParameters(t *testing.T) {
 func TestOrganizationsService_List_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
 
-	orgRoles, err := client.Instances().ListOrganizationRole(ListInsOrgRoleParams{})
+	orgRoles, err := client.Instances().ListOrganizationRole(ListInstanceOrganizationRoleParams{})
 	if err == nil {
 		t.Errorf("Expected error to be returned")
 	}

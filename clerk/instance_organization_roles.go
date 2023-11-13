@@ -3,36 +3,19 @@ package clerk
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 )
 
-type InsOrgRole struct {
-	Object      string                   `json:"object"`
-	ID          string                   `json:"id"`
-	Name        string                   `json:"name"`
-	Key         string                   `json:"key"`
-	Description string                   `json:"description"`
-	Permissions []OrganizationPermission `json:"permissions"`
-	CreatedAt   int64                    `json:"created_at"`
-	UpdatedAt   int64                    `json:"updated_at"`
-}
-
-type InsOrgRolesResponse struct {
-	Data       []InsOrgRole `json:"data"`
-	TotalCount int64        `json:"total_count"`
-}
-
-type CreateInsOrgRoleParams struct {
+type CreateInstanceOrganizationRoleParams struct {
 	Name        string   `json:"name"`
 	Key         string   `json:"key"`
 	Description string   `json:"description"`
 	Permissions []string `json:"permissions,omitempty"`
 }
 
-func (s *InstanceService) CreateOrganizationRole(params CreateInsOrgRoleParams) (*InsOrgRole, error) {
+func (s *InstanceService) CreateOrganizationRole(params CreateInstanceOrganizationRoleParams) (*Role, error) {
 	req, _ := s.client.NewRequest(http.MethodPost, OrganizationRolesUrl, &params)
 
-	var orgRole InsOrgRole
+	var orgRole Role
 	_, err := s.client.Do(req, &orgRole)
 	if err != nil {
 		return nil, err
@@ -40,24 +23,20 @@ func (s *InstanceService) CreateOrganizationRole(params CreateInsOrgRoleParams) 
 	return &orgRole, nil
 }
 
-type ListInsOrgRoleParams struct {
+type ListInstanceOrganizationRoleParams struct {
 	Limit  *int `json:"limit,omitempty"`
 	Offset *int `json:"offset,omitempty"`
 }
 
-func (s *InstanceService) ListOrganizationRole(params ListInsOrgRoleParams) (*InsOrgRolesResponse, error) {
+func (s *InstanceService) ListOrganizationRole(params ListInstanceOrganizationRoleParams) (*RolesResponse, error) {
 	req, _ := s.client.NewRequest(http.MethodGet, OrganizationRolesUrl)
 
+	paginationParams := PaginationParams{Limit: params.Limit, Offset: params.Offset}
 	query := req.URL.Query()
-	if params.Limit != nil {
-		query.Set("limit", strconv.Itoa(*params.Limit))
-	}
-	if params.Offset != nil {
-		query.Set("offset", strconv.Itoa(*params.Offset))
-	}
+	addPaginationParams(query, paginationParams)
 	req.URL.RawQuery = query.Encode()
 
-	var orgRolesResponse *InsOrgRolesResponse
+	var orgRolesResponse *RolesResponse
 	_, err := s.client.Do(req, &orgRolesResponse)
 	if err != nil {
 		return nil, err
@@ -65,13 +44,13 @@ func (s *InstanceService) ListOrganizationRole(params ListInsOrgRoleParams) (*In
 	return orgRolesResponse, nil
 }
 
-func (s *InstanceService) ReadOrganizationRole(orgRoleID string) (*InsOrgRole, error) {
+func (s *InstanceService) ReadOrganizationRole(orgRoleID string) (*Role, error) {
 	req, err := s.client.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", OrganizationRolesUrl, orgRoleID))
 	if err != nil {
 		return nil, err
 	}
 
-	var orgRole InsOrgRole
+	var orgRole Role
 	_, err = s.client.Do(req, &orgRole)
 	if err != nil {
 		return nil, err
@@ -86,10 +65,10 @@ type UpdateInsOrgRoleParams struct {
 	Permissions *[]string `json:"permissions,omitempty"`
 }
 
-func (s *InstanceService) UpdateOrganizationRole(orgRoleID string, params UpdateInsOrgRoleParams) (*InsOrgRole, error) {
+func (s *InstanceService) UpdateOrganizationRole(orgRoleID string, params UpdateInsOrgRoleParams) (*Role, error) {
 	req, _ := s.client.NewRequest(http.MethodPatch, fmt.Sprintf("%s/%s", OrganizationRolesUrl, orgRoleID), &params)
 
-	var orgRole InsOrgRole
+	var orgRole Role
 	_, err := s.client.Do(req, &orgRole)
 	if err != nil {
 		return nil, err
