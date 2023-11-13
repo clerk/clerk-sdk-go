@@ -75,7 +75,7 @@ func TestOrganizationRolesService_Read(t *testing.T) {
 func TestOrganizationRolesService_Update(t *testing.T) {
 	client, mux, _, teardown := setup("token")
 	defer teardown()
-	var payload UpdateInsOrgRoleParams
+	var payload UpdateInstanceOrganizationRoleParams
 	_ = json.Unmarshal([]byte(dummyUpdateOrgRoleJson), &payload)
 
 	expectedResponse := dummyOrgRoleJson
@@ -103,7 +103,7 @@ func TestOrganizationRolesService_Update(t *testing.T) {
 
 func TestOrganizationRolesService_Update_invalidServer(t *testing.T) {
 	client, _ := NewClient("token")
-	var payload UpdateInsOrgRoleParams
+	var payload UpdateInstanceOrganizationRoleParams
 	_ = json.Unmarshal([]byte(dummyUpdateOrgRoleJson), &payload)
 
 	_, err := client.Instances().UpdateOrganizationRole("someOrgRoleId", payload)
