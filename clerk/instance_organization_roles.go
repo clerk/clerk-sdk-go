@@ -86,3 +86,25 @@ func (s *InstanceService) DeleteOrganizationRole(orgRoleID string) (*DeleteRespo
 	}
 	return &deleteResponse, nil
 }
+
+func (s *InstanceService) AssignOrganizationRolePermission(orgRoleID, orgPermissionID string) (*Role, error) {
+	req, _ := s.client.NewRequest(http.MethodPost, fmt.Sprintf("%s/%s/permissions/%s", OrganizationRolesUrl, orgRoleID, orgPermissionID))
+
+	var orgRole Role
+	_, err := s.client.Do(req, &orgRole)
+	if err != nil {
+		return nil, err
+	}
+	return &orgRole, nil
+}
+
+func (s *InstanceService) RemoveOrganizationRolePermission(orgRoleID, orgPermissionID string) (*Role, error) {
+	req, _ := s.client.NewRequest(http.MethodDelete, fmt.Sprintf("%s/%s/permissions/%s", OrganizationRolesUrl, orgRoleID, orgPermissionID))
+
+	var orgRole Role
+	_, err := s.client.Do(req, &orgRole)
+	if err != nil {
+		return nil, err
+	}
+	return &orgRole, nil
+}
