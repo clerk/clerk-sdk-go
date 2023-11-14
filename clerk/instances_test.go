@@ -126,10 +126,9 @@ func TestInstanceService_UpdateOrganizationSettings_happyPath(t *testing.T) {
 	})
 
 	enabled := true
-	defaultCreatorRole := "org:custom_admin"
 	got, _ := client.Instances().UpdateOrganizationSettings(UpdateOrganizationSettingsParams{
-		Enabled:     &enabled,
-		CreatorRole: &defaultCreatorRole,
+		Enabled:       &enabled,
+		CreatorRoleID: stringToPtr("role_2XcSZn6swGCjX59Nk0XbGer22jb"),
 	})
 
 	assert.Equal(t, &organizationSettingsResponse, got)
