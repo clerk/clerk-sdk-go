@@ -209,7 +209,61 @@ func TestOrganizationRolesService_Delete(t *testing.T) {
 	}
 }
 
+func TestOrganizationRolesService_AssignPermission(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	expectedResponse := dummyOrgRoleJson
+	mux.HandleFunc(fmt.Sprintf("/organization_roles/%s/permissions/%s", dummyOrgRoleID, dummyOrgPermissionID), func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "POST")
+		testHeader(t, req, "Authorization", "Bearer token")
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	got, err := client.Instances().AssignOrganizationRolePermission(dummyOrgRoleID, dummyOrgPermissionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var want Role
+	err = json.Unmarshal([]byte(expectedResponse), &want)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(got, &want) {
+		t.Errorf("Response = %v, want %v", got, &want)
+	}
+}
+
+func TestOrganizationRolesService_RemovePermission(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	expectedResponse := dummyOrgRoleJson
+	mux.HandleFunc(fmt.Sprintf("/organization_roles/%s/permissions/%s", dummyOrgRoleID, dummyOrgPermissionID), func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "DELETE")
+		testHeader(t, req, "Authorization", "Bearer token")
+		fmt.Fprint(w, expectedResponse)
+	})
+	got, err := client.Instances().RemoveOrganizationRolePermission(dummyOrgRoleID, dummyOrgPermissionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var want Role
+	err = json.Unmarshal([]byte(expectedResponse), &want)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(got, &want) {
+		t.Errorf("Response = %v, want %v", got, &want)
+	}
+}
+
 const dummyOrgRoleID = "role_1mebQggrD3xO5JfuHk7clQ94ysA"
+const dummyOrgPermissionID = "perm_1mebQggrD3xO5JfuHk7clQ94ysA"
 
 const dummyOrgRoleJson = `{
 	"object": "role",
