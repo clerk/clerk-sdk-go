@@ -6,8 +6,10 @@ import (
 )
 
 type ListInstanceOrganizationPermissionsParams struct {
-	Limit  *int `json:"limit,omitempty"`
-	Offset *int `json:"offset,omitempty"`
+	Limit   *int
+	Offset  *int
+	Query   *string
+	OrderBy *string
 }
 
 func (s *InstanceService) ListOrganizationPermissions(params ListInstanceOrganizationPermissionsParams) (*PermissionsResponse, error) {
@@ -16,6 +18,14 @@ func (s *InstanceService) ListOrganizationPermissions(params ListInstanceOrganiz
 	paginationParams := PaginationParams{Limit: params.Limit, Offset: params.Offset}
 	query := req.URL.Query()
 	addPaginationParams(query, paginationParams)
+
+	if params.Query != nil {
+		query.Set("query", *params.Query)
+	}
+	if params.OrderBy != nil {
+		query.Set("order_by", *params.OrderBy)
+	}
+
 	req.URL.RawQuery = query.Encode()
 
 	response := &PermissionsResponse{}

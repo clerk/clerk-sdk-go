@@ -124,13 +124,27 @@ func TestOrganizationsService_List_happyPath(t *testing.T) {
 	mux.HandleFunc("/organization_roles", func(w http.ResponseWriter, req *http.Request) {
 		testHttpMethod(t, req, "GET")
 		testHeader(t, req, "Authorization", "Bearer token")
+
+		expectedQuery := url.Values{
+			"limit":    {"5"},
+			"offset":   {"6"},
+			"query":    {"my-query"},
+			"order_by": {"created_at"},
+		}
+		assert.Equal(t, expectedQuery, req.URL.Query())
+
 		fmt.Fprint(w, expectedResponse)
 	})
 
 	var want *RolesResponse
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
-	got, _ := client.Instances().ListOrganizationRole(ListInstanceOrganizationRoleParams{})
+	got, _ := client.Instances().ListOrganizationRole(ListInstanceOrganizationRoleParams{
+		Limit:   intToPtr(5),
+		Offset:  intToPtr(6),
+		Query:   stringToPtr("my-query"),
+		OrderBy: stringToPtr("created_at"),
+	})
 	if len(got.Data) != len(want.Data) {
 		t.Errorf("Was expecting %d organization roles to be returned, instead got %d", len(want.Data), len(got.Data))
 	}
