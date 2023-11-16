@@ -61,6 +61,125 @@ func TestInstanceService_List_invalidServer(t *testing.T) {
 	}
 }
 
+func TestInstanceService_CreateOrgPermission(t *testing.T) {
+	expectedResponse := dummyOrganizationPermissionsJson
+
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	mux.HandleFunc("/organization_permissions", func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, http.MethodPost)
+		testHeader(t, req, "Authorization", "Bearer token")
+		_, _ = fmt.Fprint(w, expectedResponse)
+	})
+
+	createParams := CreateInstanceOrganizationPermissionParams{
+		Name:        "custom permission",
+		Key:         "org:custom:permission",
+		Description: "my org custom permission",
+	}
+
+	got, err := client.Instances().CreateOrganizationPermission(createParams)
+	assert.NoError(t, err)
+
+	var want Permission
+	err = json.Unmarshal([]byte(expectedResponse), &want)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(got, &want) {
+		t.Errorf("Response = %v, want %v", got, &want)
+	}
+}
+
+func TestInstanceService_ReadOrganizationPermission(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	expectedResponse := dummyOrganizationPermissionsJson
+
+	mux.HandleFunc(fmt.Sprintf("/organization_permissions/%s", dummyOrganizationPermissionID), func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer token")
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	got, err := client.Instances().ReadOrganizationPermission(dummyOrganizationPermissionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var want Permission
+	err = json.Unmarshal([]byte(expectedResponse), &want)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(got, &want) {
+		t.Errorf("Response = %v, want %v", got, &want)
+	}
+}
+
+func TestInstanceService_UpdateOrganizationPermission(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+	var payload UpdateInstanceOrganizationPermissionParams
+	_ = json.Unmarshal([]byte(dummyOrganizationPermissionsJson), &payload)
+
+	expectedResponse := dummyOrganizationPermissionsJson
+	mux.HandleFunc(fmt.Sprintf("/organization_permissions/%s", dummyOrganizationPermissionID), func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "PATCH")
+		testHeader(t, req, "Authorization", "Bearer token")
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	got, err := client.Instances().UpdateOrganizationPermission(dummyOrganizationPermissionID, payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var want Permission
+	err = json.Unmarshal([]byte(expectedResponse), &want)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(got, &want) {
+		t.Errorf("Response = %v, want %v", got, &want)
+	}
+}
+
+func TestInstanceService_UpdateOrganizationPermission_InvalidServer(t *testing.T) {
+	client, _ := NewClient("token")
+	var payload UpdateInstanceOrganizationPermissionParams
+	_ = json.Unmarshal([]byte(dummyOrganizationPermissionsJson), &payload)
+
+	_, err := client.Instances().UpdateOrganizationPermission("someOrgPermissionId", payload)
+	if err == nil {
+		t.Errorf("Expected error to be returned")
+	}
+}
+
+func TestInstanceService_DeleteOrganizationPermission(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	mux.HandleFunc(
+		fmt.Sprintf("/organization_permissions/%s", dummyOrganizationPermissionID),
+		func(w http.ResponseWriter, req *http.Request) {
+			testHttpMethod(t, req, http.MethodDelete)
+			testHeader(t, req, "Authorization", "Bearer token")
+			fmt.Fprint(w, fmt.Sprintf(`{"id":"%s"}`, dummyOrganizationPermissionID))
+		},
+	)
+
+	_, err := client.Instances().DeleteOrganizationPermission(dummyOrganizationPermissionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 const dummyOrganizationPermissionID = "perm_1mebQggrD3xO5JfuHk7clQ94ysA"
 
 const dummyOrganizationPermissionsJson = `{
