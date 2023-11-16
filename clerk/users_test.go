@@ -516,7 +516,8 @@ const dummyUserJson = `{
 		"last_sign_in_at": 1610783813,
 		"banned": false,
 		"locked": false,
-		"remaining_lockout_duration_in_seconds": null
+		"lockout_expires_in_seconds": null,
+		"verification_attempts_remaining": null
     }`
 
 const dummyUserOAuthAccessTokensJson = `[
