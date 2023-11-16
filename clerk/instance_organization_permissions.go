@@ -33,7 +33,7 @@ type CreateInstanceOrganizationPermissionParams struct {
 }
 
 func (s *InstanceService) CreateOrganizationPermission(params CreateInstanceOrganizationPermissionParams) (*Permission, error) {
-	req, _ := s.client.NewRequest(http.MethodPost, OrganizationPermissionsUrl)
+	req, _ := s.client.NewRequest(http.MethodPost, OrganizationPermissionsUrl, &params)
 
 	var orgPermission Permission
 	_, err := s.client.Do(req, &orgPermission)
