@@ -26,8 +26,10 @@ func TestInstanceService_List_happyPathWithParameters(t *testing.T) {
 
 		actualQuery := req.URL.Query()
 		expectedQuery := url.Values(map[string][]string{
-			"limit":  {"3"},
-			"offset": {"2"},
+			"limit":    {"3"},
+			"offset":   {"2"},
+			"query":    {"my-query"},
+			"order_by": {"created_at"},
 		})
 		assert.Equal(t, expectedQuery, actualQuery)
 		fmt.Fprint(w, expectedResponse)
@@ -37,8 +39,10 @@ func TestInstanceService_List_happyPathWithParameters(t *testing.T) {
 	_ = json.Unmarshal([]byte(expectedResponse), want)
 
 	got, _ := client.Instances().ListOrganizationPermissions(ListInstanceOrganizationPermissionsParams{
-		Limit:  intToPtr(3),
-		Offset: intToPtr(2),
+		Limit:   intToPtr(3),
+		Offset:  intToPtr(2),
+		Query:   stringToPtr("my-query"),
+		OrderBy: stringToPtr("created_at"),
 	})
 	if len(got.Data) != len(want.Data) {
 		t.Errorf("Was expecting %d organization permissions to be returned, instead got %d", len(want.Data), len(got.Data))
