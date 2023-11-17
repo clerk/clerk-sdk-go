@@ -285,7 +285,49 @@ const dummyOrgRoleJson = `{
 	"name": "custom role",
 	"key": "org:custom_role",
 	"description": "my org custom role",
-	"permissions": [],
+	"permissions": [
+		{
+			"object": "permission",
+			"id": "perm_2YDDmdVaAyCjmQq6RhrvNsyuUbC",
+			"name": "Read members",
+			"key": "org:sys_memberships:read",
+			"description": "Permission to read the members of an organization.",
+			"type": "system",
+			"created_at": 1700051416222,
+			"updated_at": 1700051416222
+		},
+		{
+			"object": "permission",
+			"id": "perm_2YDDmcGvIxBiLyPB8mUhLbWhWqG",
+			"name": "Manage members",
+			"key": "org:sys_memberships:manage",
+			"description": "Permission to manage the members of an organization.",
+			"type": "system",
+			"created_at": 1700051416224,
+			"updated_at": 1700051416224
+		},
+		{
+			"object": "permission",
+			"id": "perm_2YDDmbh2v71OSrvPK5WtUrh8FyX",
+			"name": "Delete organization",
+			"key": "org:sys_profile:delete",
+			"description": "Permission to delete an organization.",
+			"type": "system",
+			"created_at": 1700051416221,
+			"updated_at": 1700051416221
+		},
+		{
+			"object": "permission",
+			"id": "perm_2YDDmeXfQl3rdJr0FgkIclA1v5I",
+			"name": "View reports",
+			"key": "org:report:view",
+			"description": "Permission to have the ability to view reports.",
+			"type": "user",
+			"created_at": 1700051416227,
+			"updated_at": 1700051416227
+		}
+	],
+	"is_creator_eligible": true,
 	"created_at": 1610783813,
 	"updated_at": 1610783813
 }`
@@ -296,7 +338,29 @@ const dummyUpdateOrgRoleJson = `{
 	"name": "custom org 2",
 	"key": "org:custom_role_2",
 	"description": "my org custom role",
-	"permissions": [],
+	"permissions": [
+		{
+			"object": "permission",
+			"id": "perm_2YDDmdVaAyCjmQq6RhrvNsyuUbC",
+			"name": "Read members",
+			"key": "org:sys_memberships:read",
+			"description": "Permission to read the members of an organization.",
+			"type": "system",
+			"created_at": 1700051416222,
+			"updated_at": 1700051416222
+		},
+		{
+			"object": "permission",
+			"id": "perm_2YDDmeXfQl3rdJr0FgkIclA1v5I",
+			"name": "View reports",
+			"key": "org:report:view",
+			"description": "Permission to have the ability to view reports.",
+			"type": "user",
+			"created_at": 1700051416227,
+			"updated_at": 1700051416227
+		}
+	],
+	"is_creator_eligible": false,
 	"created_at": 1610783813,
 	"updated_at": 1610783813
 }`
