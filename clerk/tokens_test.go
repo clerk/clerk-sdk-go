@@ -48,11 +48,12 @@ var (
 			Expiry:   nil,
 			IssuedAt: nil,
 		},
-		SessionID:              "session_id",
-		AuthorizedParty:        "authorized_party",
-		ActiveOrganizationID:   "org_id",
-		ActiveOrganizationSlug: "org_slug",
-		ActiveOrganizationRole: "org_role",
+		SessionID:                     "session_id",
+		AuthorizedParty:               "authorized_party",
+		ActiveOrganizationID:          "org_id",
+		ActiveOrganizationSlug:        "org_slug",
+		ActiveOrganizationRole:        "org_role",
+		ActiveOrganizationPermissions: []string{"org:billing:manage", "org:report:view"},
 	}
 )
 
