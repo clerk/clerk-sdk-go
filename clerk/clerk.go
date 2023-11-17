@@ -36,7 +36,6 @@ const (
 	RedirectURLsUrl            = "redirect_urls"
 	SAMLConnectionsUrl         = "saml_connections"
 	SessionsUrl                = "sessions"
-	SMSUrl                     = "sms_messages"
 	TemplatesUrl               = "templates"
 	UsersUrl                   = "users"
 	UsersCountUrl              = UsersUrl + "/count"
@@ -69,7 +68,6 @@ type Client interface {
 	RedirectURLs() *RedirectURLsService
 	SAMLConnections() *SAMLConnectionsService
 	Sessions() *SessionsService
-	SMS() *SMSService
 	Templates() *TemplatesService
 	Users() *UsersService
 	Webhooks() *WebhooksService
@@ -105,7 +103,6 @@ type client struct {
 	redirectURLs    *RedirectURLsService
 	samlConnections *SAMLConnectionsService
 	sessions        *SessionsService
-	sms             *SMSService
 	templates       *TemplatesService
 	users           *UsersService
 	webhooks        *WebhooksService
@@ -154,7 +151,6 @@ func NewClient(token string, options ...ClerkOption) (Client, error) {
 	client.redirectURLs = (*RedirectURLsService)(commonService)
 	client.samlConnections = (*SAMLConnectionsService)(commonService)
 	client.sessions = (*SessionsService)(commonService)
-	client.sms = (*SMSService)(commonService)
 	client.templates = (*TemplatesService)(commonService)
 	client.users = (*UsersService)(commonService)
 	client.webhooks = (*WebhooksService)(commonService)
@@ -329,10 +325,6 @@ func (c *client) SAMLConnections() *SAMLConnectionsService {
 
 func (c *client) Sessions() *SessionsService {
 	return c.sessions
-}
-
-func (c *client) SMS() *SMSService {
-	return c.sms
 }
 
 func (c *client) Templates() *TemplatesService {
