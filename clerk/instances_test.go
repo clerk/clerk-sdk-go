@@ -104,6 +104,7 @@ func TestInstanceService_UpdateOrganizationSettings_happyPath(t *testing.T) {
 	dummyOrganizationSettingsResponseJSON := `{
 		"enabled": true,
 		"max_allowed_memberships": 2,
+		"creator_role": "org:custom_admin",
 		"admin_delete_enabled": true,
 		"domains_enabled": true,
 		"domains_enrollment_modes": [
@@ -111,7 +112,7 @@ func TestInstanceService_UpdateOrganizationSettings_happyPath(t *testing.T) {
 			"automatic_invitation",
 			"automatic_suggestion"
 		],
-		"creator_role": "org:custom_admin"
+		"domains_default_role": "org:custom_domains"
 	}`
 	var organizationSettingsResponse OrganizationSettingsResponse
 	_ = json.Unmarshal([]byte(dummyOrganizationSettingsResponseJSON), &organizationSettingsResponse)
@@ -127,8 +128,9 @@ func TestInstanceService_UpdateOrganizationSettings_happyPath(t *testing.T) {
 
 	enabled := true
 	got, _ := client.Instances().UpdateOrganizationSettings(UpdateOrganizationSettingsParams{
-		Enabled:       &enabled,
-		CreatorRoleID: stringToPtr("role_2XcSZn6swGCjX59Nk0XbGer22jb"),
+		Enabled:              &enabled,
+		CreatorRoleID:        stringToPtr("role_2XcSZn6swGCjX59Nk0XbGer22jb"),
+		DomainsDefaultRoleID: stringToPtr("role_2XZCQwxfLbXOz2hoBXKFVRjwmGc"),
 	})
 
 	assert.Equal(t, &organizationSettingsResponse, got)
