@@ -56,7 +56,7 @@ if err != nil {
 }
 
 // List all users for current application
-users, err := client.Users().ListAll()
+users, err := client.Users().ListAll(clerk.ListAllUsersParams{})
 ```
 
 The services exposed in the `clerk.Client` divide the API into logical chunks and
