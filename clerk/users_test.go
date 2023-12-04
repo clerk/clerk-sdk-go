@@ -80,15 +80,16 @@ func TestUsersService_ListAll_happyPathWithParameters(t *testing.T) {
 
 		actualQuery := req.URL.Query()
 		expectedQuery := url.Values(map[string][]string{
-			"limit":         {"5"},
-			"offset":        {"6"},
-			"email_address": {"email1", "email2"},
-			"phone_number":  {"phone1", "phone2"},
-			"web3_wallet":   {"wallet1", "wallet2"},
-			"username":      {"username1", "username2"},
-			"user_id":       {"userid1", "userid2"},
-			"query":         {"my-query"},
-			"order_by":      {"created_at"},
+			"limit":                {"5"},
+			"offset":               {"6"},
+			"email_address":        {"email1", "email2"},
+			"phone_number":         {"phone1", "phone2"},
+			"web3_wallet":          {"wallet1", "wallet2"},
+			"username":             {"username1", "username2"},
+			"user_id":              {"userid1", "userid2"},
+			"query":                {"my-query"},
+			"last_active_at_since": {"1700690400000"},
+			"order_by":             {"created_at"},
 		})
 		assert.Equal(t, expectedQuery, actualQuery)
 		fmt.Fprint(w, expectedResponse)
@@ -98,15 +99,16 @@ func TestUsersService_ListAll_happyPathWithParameters(t *testing.T) {
 	_ = json.Unmarshal([]byte(expectedResponse), &want)
 
 	got, _ := client.Users().ListAll(ListAllUsersParams{
-		Limit:          intToPtr(5),
-		Offset:         intToPtr(6),
-		EmailAddresses: []string{"email1", "email2"},
-		PhoneNumbers:   []string{"phone1", "phone2"},
-		Web3Wallets:    []string{"wallet1", "wallet2"},
-		Usernames:      []string{"username1", "username2"},
-		UserIDs:        []string{"userid1", "userid2"},
-		Query:          stringToPtr("my-query"),
-		OrderBy:        stringToPtr("created_at"),
+		Limit:             intToPtr(5),
+		Offset:            intToPtr(6),
+		EmailAddresses:    []string{"email1", "email2"},
+		PhoneNumbers:      []string{"phone1", "phone2"},
+		Web3Wallets:       []string{"wallet1", "wallet2"},
+		Usernames:         []string{"username1", "username2"},
+		UserIDs:           []string{"userid1", "userid2"},
+		Query:             stringToPtr("my-query"),
+		LastActiveAtSince: int64ToPtr(int64(1700690400000)),
+		OrderBy:           stringToPtr("created_at"),
 	})
 	if len(got) != len(want) {
 		t.Errorf("Was expecting %d user to be returned, instead got %d", len(want), len(got))
@@ -513,11 +515,12 @@ const dummyUserJson = `{
 		"private_metadata": {
 			"app_id": 5
 		},
-		"last_sign_in_at": 1610783813,
+		"last_sign_in_at": 1610783813000,
 		"banned": false,
 		"locked": false,
 		"lockout_expires_in_seconds": null,
-		"verification_attempts_remaining": null
+		"verification_attempts_remaining": null,
+		"last_active_at": 1700690400000
     }`
 
 const dummyUserOAuthAccessTokensJson = `[

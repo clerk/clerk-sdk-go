@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 type UsersService service
@@ -41,6 +42,7 @@ type User struct {
 	ExternalID                    *string        `json:"external_id"`
 	CreatedAt                     int64          `json:"created_at"`
 	UpdatedAt                     int64          `json:"updated_at"`
+	LastActiveAt                  *int64         `json:"last_active_at"`
 }
 
 type UserOAuthAccessToken struct {
@@ -91,16 +93,17 @@ func (s *UsersService) Create(params CreateUserParams) (*User, error) {
 }
 
 type ListAllUsersParams struct {
-	Limit          *int
-	Offset         *int
-	EmailAddresses []string
-	ExternalIDs    []string
-	PhoneNumbers   []string
-	Web3Wallets    []string
-	Usernames      []string
-	UserIDs        []string
-	Query          *string
-	OrderBy        *string
+	Limit             *int
+	Offset            *int
+	EmailAddresses    []string
+	ExternalIDs       []string
+	PhoneNumbers      []string
+	Web3Wallets       []string
+	Usernames         []string
+	UserIDs           []string
+	Query             *string
+	LastActiveAtSince *int64
+	OrderBy           *string
 }
 
 func (s *UsersService) ListAll(params ListAllUsersParams) ([]User, error) {
@@ -176,6 +179,9 @@ func (s *UsersService) addUserSearchParamsToRequest(r *http.Request, params List
 	}
 	if params.Query != nil {
 		query.Add("query", *params.Query)
+	}
+	if params.LastActiveAtSince != nil {
+		query.Add("last_active_at_since", strconv.Itoa(int(*params.LastActiveAtSince)))
 	}
 	r.URL.RawQuery = query.Encode()
 }

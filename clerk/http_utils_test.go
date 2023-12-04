@@ -58,3 +58,7 @@ func stringToPtr(input string) *string {
 func intToPtr(input int) *int {
 	return &input
 }
+
+func int64ToPtr(input int64) *int64 {
+	return &input
+}
