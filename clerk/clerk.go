@@ -29,7 +29,6 @@ const (
 	EmailsUrl                  = "emails"
 	InvitationsURL             = "invitations"
 	OrganizationsUrl           = "organizations"
-	OrganizationRolesUrl       = "organization_roles"
 	OrganizationPermissionsUrl = "organization_permissions"
 	PhoneNumbersURL            = "phone_numbers"
 	ProxyChecksURL             = "proxy_checks"
