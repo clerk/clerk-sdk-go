@@ -64,6 +64,21 @@ follow the same structure that can be found in the [Backend API documentation](h
 
 For more examples on how to use the client, refer to the [examples](https://github.com/clerkinc/clerk-sdk-go/tree/main/examples/operations)
 
+### Options
+
+The SDK `Client` constructor can also accept additional options defined [here](https://github.com/clerk/clerk-sdk-go/blob/main/clerk/clerk_options.go).
+
+A common use case is injecting your own [`http.Client` object](https://pkg.go.dev/net/http#Client) for testing or automatically retrying requests.
+An example using [go-retryablehttp](https://github.com/hashicorp/go-retryablehttp/#getting-a-stdlib-httpclient-with-retries) is shown below:
+
+```go
+retryClient := retryablehttp.NewClient()
+retryClient.RetryMax = 5
+standardClient := retryClient.StandardClient() // *http.Client
+
+clerkSDKClient := clerk.NewClient(token, clerk.WithHTTPClient(standardClient))
+```
+
 ## Middleware
 
 The SDK provides the [`WithSessionV2`](https://pkg.go.dev/github.com/clerkinc/clerk-sdk-go/v2/clerk#WithSessionV2) middleware that injects the active session into the request's context.
