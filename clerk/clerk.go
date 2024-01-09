@@ -49,6 +49,7 @@ type Client interface {
 
 	DecodeToken(token string) (*TokenClaims, error)
 	VerifyToken(token string, opts ...VerifyTokenOption) (*SessionClaims, error)
+	CheckAuthorization(token string, params CheckAuthorizationParams) (bool, error)
 
 	Allowlists() *AllowlistsService
 	Blocklists() *BlocklistsService
