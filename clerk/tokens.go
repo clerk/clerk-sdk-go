@@ -1,7 +1,6 @@
 package clerk
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -14,17 +13,6 @@ var standardClaimsKeys = []string{"iss", "sub", "aud", "exp", "nbf", "iat", "jti
 type TokenClaims struct {
 	jwt.Claims
 	Extra map[string]interface{}
-}
-
-type SessionClaims struct {
-	jwt.Claims
-	SessionID                     string          `json:"sid"`
-	AuthorizedParty               string          `json:"azp"`
-	ActiveOrganizationID          string          `json:"org_id"`
-	ActiveOrganizationSlug        string          `json:"org_slug"`
-	ActiveOrganizationRole        string          `json:"org_role"`
-	ActiveOrganizationPermissions []string        `json:"org_permissions"`
-	Actor                         json.RawMessage `json:"act,omitempty"`
 }
 
 // DecodeToken decodes a jwt token without verifying it.
