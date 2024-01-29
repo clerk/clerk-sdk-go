@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - $default-branch
+      - v2
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+      - name: Format
+        run: diff -u <(echo -n) <(gofmt -d -s .)
+      - name: Vet
+        run: go vet ./...
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v3
+  test:
+    name: "Test: go v${{ matrix.go-version }}"
+    strategy:
+      matrix:
+        go-version:
+          - "1.19"
+          - "1.20"
+          - "1.21"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Run tests
+        run: go test -v -race ./...
