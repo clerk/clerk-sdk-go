@@ -17,6 +17,7 @@ type SAMLConnection struct {
 	IdpCertificate     *string `json:"idp_certificate"`
 	AcsURL             string  `json:"acs_url"`
 	SPEntityID         string  `json:"sp_entity_id"`
+	SPMetadataURL      string  `json:"sp_metadata_url"`
 	Active             bool    `json:"active"`
 	Provider           string  `json:"provider"`
 	UserCount          int64   `json:"user_count"`
