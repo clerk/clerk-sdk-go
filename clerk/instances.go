@@ -88,6 +88,8 @@ type OrganizationSettingsResponse struct {
 	Object                 string   `json:"object"`
 	Enabled                bool     `json:"enabled"`
 	MaxAllowedMemberships  int      `json:"max_allowed_memberships"`
+	MaxAllowedRoles        int      `json:"max_allowed_roles"`
+	MaxAllowedPermissions  int      `json:"max_allowed_permissions"`
 	CreatorRole            string   `json:"creator_role"`
 	AdminDeleteEnabled     bool     `json:"admin_delete_enabled"`
 	DomainsEnabled         bool     `json:"domains_enabled"`

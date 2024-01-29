@@ -104,6 +104,8 @@ func TestInstanceService_UpdateOrganizationSettings_happyPath(t *testing.T) {
 	dummyOrganizationSettingsResponseJSON := `{
 		"enabled": true,
 		"max_allowed_memberships": 2,
+		"max_allowed_roles": 10,
+		"max_allowed_permissions": 50,
 		"creator_role": "org:custom_admin",
 		"admin_delete_enabled": true,
 		"domains_enabled": true,
