@@ -93,6 +93,7 @@ func TestSAMLConnectionsService_Create(t *testing.T) {
 	createParams := &CreateSAMLConnectionParams{
 		Name:           "Testing SAML",
 		Domain:         "example.com",
+		Provider:       "saml_custom",
 		IdpEntityID:    stringToPtr("test-idp-entity-id"),
 		IdpSsoURL:      stringToPtr("https://example.com/saml/sso"),
 		IdpCertificate: stringToPtr(dummySAMLConnectionCertificate),
