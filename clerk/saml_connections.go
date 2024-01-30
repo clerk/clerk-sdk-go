@@ -81,6 +81,7 @@ func (s SAMLConnectionsService) Read(id string) (*SAMLConnection, error) {
 type CreateSAMLConnectionParams struct {
 	Name           string  `json:"name"`
 	Domain         string  `json:"domain"`
+	Provider       string  `json:"provider"`
 	IdpEntityID    *string `json:"idp_entity_id,omitempty"`
 	IdpSsoURL      *string `json:"idp_sso_url,omitempty"`
 	IdpCertificate *string `json:"idp_certificate,omitempty"`
