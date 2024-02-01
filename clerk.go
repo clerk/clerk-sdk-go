@@ -258,7 +258,7 @@ func (b *defaultBackend) do(req *http.Request, params Queryable, setter Response
 func setRequestBody(req *http.Request, params Queryable) error {
 	// GET requests don't have a body, but we will pass the params
 	// in the query string.
-	if req.Method == http.MethodGet {
+	if req.Method == http.MethodGet && params != nil {
 		q := req.URL.Query()
 		params.Add(q)
 		req.URL.RawQuery = q.Encode()
