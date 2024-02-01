@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/url"
 
 	"github.com/clerk/clerk-sdk-go/v2"
 )
@@ -32,7 +31,7 @@ func Create(ctx context.Context, params *CreateParams) (*clerk.ActorToken, error
 // Revoke revokes a pending actor token.
 func Revoke(ctx context.Context, id string) (*clerk.ActorToken, error) {
 	token := &clerk.ActorToken{}
-	path, err := url.JoinPath(path, id, "revoke")
+	path, err := clerk.JoinPath(path, id, "revoke")
 	if err != nil {
 		return token, err
 	}
