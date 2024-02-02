@@ -12,7 +12,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -53,11 +55,13 @@ func (r *APIResource) Read(response *APIResponse) {
 type APIParams struct {
 }
 
-// Add can be used to set parameters to url.Values. The method
-// is currently a no-op, but is defined so that all types that
-// describe API operation parameters implement the Queryable
+// ToQuery can be used to transform the params to querystring
+// values.
+// It is currently a no-op, but is defined so that all types
+// that describe API operation parameters implement the Params
 // interface.
-func (params *APIParams) Add(q url.Values) {
+func (params *APIParams) ToQuery() url.Values {
+	return nil
 }
 
 // APIResponse describes responses coming from the Clerk API.
@@ -98,11 +102,11 @@ func NewAPIResponse(resp *http.Response, body json.RawMessage) *APIResponse {
 type APIRequest struct {
 	Method string
 	Path   string
-	Params Queryable
+	Params Params
 }
 
 // SetParams sets the APIRequest.Params.
-func (req *APIRequest) SetParams(params Queryable) {
+func (req *APIRequest) SetParams(params Params) {
 	req.Params = params
 }
 
@@ -127,10 +131,10 @@ type ResponseReader interface {
 	Read(*APIResponse)
 }
 
-// Queryable can add parameters to url.Values.
+// Params can add parameters to url.Values.
 // Useful for constructing a request query string.
-type Queryable interface {
-	Add(url.Values)
+type Params interface {
+	ToQuery() url.Values
 }
 
 // BackendConfig is used to configure a new Clerk Backend.
@@ -205,7 +209,7 @@ func (b *defaultBackend) Call(ctx context.Context, apiReq *APIRequest, setter Re
 }
 
 func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*http.Request, error) {
-	path, err := url.JoinPath(b.URL, clerkAPIVersion, apiReq.Path)
+	path, err := JoinPath(b.URL, clerkAPIVersion, apiReq.Path)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +226,7 @@ func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*h
 	return req, nil
 }
 
-func (b *defaultBackend) do(req *http.Request, params Queryable, setter ResponseReader) error {
+func (b *defaultBackend) do(req *http.Request, params Params, setter ResponseReader) error {
 	err := setRequestBody(req, params)
 	if err != nil {
 		return err
@@ -255,13 +259,11 @@ func (b *defaultBackend) do(req *http.Request, params Queryable, setter Response
 
 // Sets the params in either the request body, or the querystring
 // for GET requests.
-func setRequestBody(req *http.Request, params Queryable) error {
+func setRequestBody(req *http.Request, params Params) error {
 	// GET requests don't have a body, but we will pass the params
 	// in the query string.
-	if req.Method == http.MethodGet && params != nil {
-		q := req.URL.Query()
-		params.Add(q)
-		req.URL.RawQuery = q.Encode()
+	if req.Method == http.MethodGet {
+		setRequestQuery(req, params)
 		return nil
 	}
 
@@ -277,7 +279,24 @@ func setRequestBody(req *http.Request, params Queryable) error {
 	return nil
 }
 
-// Error response handling
+// Sets the params in the request querystring. Any existing values
+// will be preserved, unless overriden. Keys in the params querystring
+// always win.
+func setRequestQuery(req *http.Request, params Params) {
+	if params == nil {
+		return
+	}
+	q := req.URL.Query()
+	paramsQuery := params.ToQuery()
+	for k, values := range paramsQuery {
+		for _, v := range values {
+			q.Set(k, v)
+		}
+	}
+	req.URL.RawQuery = q.Encode()
+}
+
+// Error API response handling.
 func handleError(resp *APIResponse, body []byte) error {
 	apiError := &APIErrorResponse{
 		HTTPStatusCode: resp.StatusCode,
@@ -347,14 +366,44 @@ type ListParams struct {
 	Offset *int64 `json:"offset,omitempty"`
 }
 
-// Add sets list params to the passed in url.Values.
-func (params ListParams) Add(q url.Values) {
+// ToQuery returns url.Values with the ListParams values in the
+// querystring.
+func (params ListParams) ToQuery() url.Values {
+	q := url.Values{}
 	if params.Limit != nil {
 		q.Set("limit", strconv.FormatInt(*params.Limit, 10))
 	}
 	if params.Offset != nil {
 		q.Set("offset", strconv.FormatInt(*params.Offset, 10))
 	}
+	return q
+}
+
+// Regular expression that matches multiple backslashes in a row.
+var extraBackslashesRE = regexp.MustCompile("([^:])//+")
+
+// JoinPath returns a URL string with the provided path elements joined
+// with the base path.
+func JoinPath(base string, elem ...string) (string, error) {
+	// Concatenate all paths.
+	var sb strings.Builder
+	sb.WriteString(base)
+	for _, el := range elem {
+		sb.WriteString("/")
+		sb.WriteString(el)
+	}
+	// Trim leading and trailing backslashes, replace all occurrences of
+	// multiple backslashes in a row with one backslash, preserve the
+	// protocol's two backslashes.
+	// e.g. http://foo.com//bar/ will become http://foo.com/bar
+	res := extraBackslashesRE.ReplaceAllString(strings.Trim(sb.String(), "/"), "$1/")
+
+	// Make sure we have a valid URL.
+	u, err := url.Parse(res)
+	if err != nil {
+		return "", err
+	}
+	return u.String(), nil
 }
 
 // String returns a pointer to the provided string value.

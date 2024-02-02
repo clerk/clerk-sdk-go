@@ -4,7 +4,6 @@ package domain
 import (
 	"context"
 	"net/http"
-	"net/url"
 
 	"github.com/clerk/clerk-sdk-go/v2"
 )
@@ -36,7 +35,7 @@ type UpdateParams struct {
 
 // Update updates a domain's properties.
 func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Domain, error) {
-	path, err := url.JoinPath(path, id)
+	path, err := clerk.JoinPath(path, id)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +49,7 @@ func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Domain
 
 // Delete removes a domain.
 func Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
-	path, err := url.JoinPath(path, id)
+	path, err := clerk.JoinPath(path, id)
 	if err != nil {
 		return nil, err
 	}
