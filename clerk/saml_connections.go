@@ -15,6 +15,7 @@ type SAMLConnection struct {
 	IdpEntityID        *string `json:"idp_entity_id"`
 	IdpSsoURL          *string `json:"idp_sso_url"`
 	IdpCertificate     *string `json:"idp_certificate"`
+	IdpMetadataURL     *string `json:"idp_metadata_url"`
 	AcsURL             string  `json:"acs_url"`
 	SPEntityID         string  `json:"sp_entity_id"`
 	SPMetadataURL      string  `json:"sp_metadata_url"`
@@ -85,6 +86,7 @@ type CreateSAMLConnectionParams struct {
 	IdpEntityID    *string `json:"idp_entity_id,omitempty"`
 	IdpSsoURL      *string `json:"idp_sso_url,omitempty"`
 	IdpCertificate *string `json:"idp_certificate,omitempty"`
+	IdpMetadataURL *string `json:"idp_metadata_url,omitempty"`
 }
 
 func (s SAMLConnectionsService) Create(params *CreateSAMLConnectionParams) (*SAMLConnection, error) {
@@ -107,6 +109,7 @@ type UpdateSAMLConnectionParams struct {
 	IdpEntityID        *string `json:"idp_entity_id,omitempty"`
 	IdpSsoURL          *string `json:"idp_sso_url,omitempty"`
 	IdpCertificate     *string `json:"idp_certificate,omitempty"`
+	IdpMetadataURL     *string `json:"idp_metadata_url,omitempty"`
 	Active             *bool   `json:"active,omitempty"`
 	SyncUserAttributes *bool   `json:"sync_user_attributes,omitempty"`
 }

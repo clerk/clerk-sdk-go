@@ -131,6 +131,7 @@ func TestSAMLConnectionsService_Update(t *testing.T) {
 		Name:               &expectedName,
 		Active:             &expectedActive,
 		SyncUserAttributes: &expectedSyncUserAttributes,
+		IdpMetadataURL:     stringToPtr("https://example.com/saml/metadata"),
 	}
 
 	got, err := c.SAMLConnections().Update(dummySAMLConnectionID, updateParams)
@@ -183,6 +184,7 @@ const (
 	"idp_entity_id": "test-idp-entity-id",
 	"idp_sso_url": "https://example.com/saml/sso",
 	"idp_certificate": "` + dummySAMLConnectionCertificate + `",
+	"idp_metadata_url": "https://example.com/saml/metadata",
 	"acs_url": "` + "https://clerk.example.com/v1/saml/acs/" + dummySAMLConnectionID + `",
 	"sp_entity_id": "` + "https://clerk.example.com/saml/" + dummySAMLConnectionID + `",
 	"sp_metadata_url": "` + "https://clerk.example.com/v1/saml/metadata/" + dummySAMLConnectionID + `",
@@ -201,6 +203,7 @@ const (
 	"idp_entity_id": "test-idp-entity-id",
 	"idp_sso_url": "https://example.com/saml/sso",
 	"idp_certificate": "` + dummySAMLConnectionCertificate + `",
+	"idp_metadata_url": "https://example.com/saml/metadata",
 	"acs_url": "` + "https://clerk.example.com/v1/saml/acs/" + dummySAMLConnectionID + `",
 	"sp_entity_id": "` + "https://clerk.example.com/saml/" + dummySAMLConnectionID + `",
 	"sp_metadata_url": "` + "https://clerk.example.com/v1/saml/metadata/" + dummySAMLConnectionID + `",
