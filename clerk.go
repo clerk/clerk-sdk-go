@@ -146,6 +146,8 @@ type BackendConfig struct {
 	// URL is the base URL to use for API endpoints.
 	// If it's not set, the default value for the Backend will be used.
 	URL *string
+	// Key TODO
+	Key *string
 }
 
 // NewBackend returns a default backend implementation with the
@@ -159,9 +161,13 @@ func NewBackend(config *BackendConfig) Backend {
 	if config.URL == nil {
 		config.URL = String(APIURL)
 	}
+	if config.Key == nil {
+		config.Key = String(secretKey)
+	}
 	return &defaultBackend{
 		HTTPClient: config.HTTPClient,
 		URL:        *config.URL,
+		Key:        *config.Key,
 	}
 }
 
@@ -196,6 +202,7 @@ func SetBackend(b Backend) {
 type defaultBackend struct {
 	HTTPClient *http.Client
 	URL        string
+	Key        string
 }
 
 // Call sends requests to the Clerk API and handles the responses.
@@ -217,7 +224,7 @@ func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*h
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secretKey))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", b.Key))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("User-Agent", fmt.Sprintf("Clerk/%s SDK-Go/%s", clerkAPIVersion, sdkVersion))
 	req.Header.Add("X-Clerk-SDK", fmt.Sprintf("go/%s", sdkVersion))

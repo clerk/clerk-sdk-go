@@ -36,22 +36,28 @@ func TestNewAPIResponse(t *testing.T) {
 }
 
 func TestNewBackend(t *testing.T) {
+	defaultSecretKey := "sk_test_123"
+	SetKey(defaultSecretKey)
 	withDefaults, ok := NewBackend(&BackendConfig{}).(*defaultBackend)
 	require.True(t, ok)
 	require.NotNil(t, withDefaults.HTTPClient)
 	assert.Equal(t, defaultHTTPTimeout, withDefaults.HTTPClient.Timeout)
 	assert.Equal(t, APIURL, withDefaults.URL)
+	assert.Equal(t, defaultSecretKey, withDefaults.Key)
 
 	u := "https://some.other.url"
 	httpClient := &http.Client{}
+	secretKey := defaultSecretKey + "diff"
 	config := &BackendConfig{
 		URL:        &u,
 		HTTPClient: httpClient,
+		Key:        &secretKey,
 	}
 	withOverrides, ok := NewBackend(config).(*defaultBackend)
 	require.True(t, ok)
 	assert.Equal(t, u, withOverrides.URL)
 	assert.Equal(t, httpClient, withOverrides.HTTPClient)
+	assert.Equal(t, secretKey, withOverrides.Key)
 }
 
 func TestGetBackend_DataRace(t *testing.T) {

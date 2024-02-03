@@ -8,7 +8,24 @@ import (
 	"github.com/clerk/clerk-sdk-go/v2"
 )
 
+//go:generate go run ../cmd/gen/main.go
+
 const path = "/domains"
+
+// Client is used to invoke the Domains API.
+type Client struct {
+	Backend clerk.Backend
+}
+
+type ClientConfig struct {
+	clerk.BackendConfig
+}
+
+func NewClient(config *ClientConfig) *Client {
+	return &Client{
+		Backend: clerk.NewBackend(&config.BackendConfig),
+	}
+}
 
 type CreateParams struct {
 	clerk.APIParams
@@ -18,12 +35,12 @@ type CreateParams struct {
 }
 
 // Create creates a new domain.
-func Create(ctx context.Context, params *CreateParams) (*clerk.Domain, error) {
+func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Domain, error) {
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
 
 	domain := &clerk.Domain{}
-	err := clerk.GetBackend().Call(ctx, req, domain)
+	err := c.Backend.Call(ctx, req, domain)
 	return domain, err
 }
 
@@ -34,7 +51,7 @@ type UpdateParams struct {
 }
 
 // Update updates a domain's properties.
-func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Domain, error) {
+func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Domain, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
 		return nil, err
@@ -43,19 +60,19 @@ func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Domain
 	req.SetParams(params)
 
 	domain := &clerk.Domain{}
-	err = clerk.GetBackend().Call(ctx, req, domain)
+	err = c.Backend.Call(ctx, req, domain)
 	return domain, err
 }
 
 // Delete removes a domain.
-func Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
+func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodDelete, path)
 	domain := &clerk.DeletedResource{}
-	err = clerk.GetBackend().Call(ctx, req, domain)
+	err = c.Backend.Call(ctx, req, domain)
 	return domain, err
 }
 
@@ -63,10 +80,10 @@ type ListParams struct {
 	clerk.APIParams
 }
 
-// List returns a list of domains
-func List(ctx context.Context, params *ListParams) (*clerk.DomainList, error) {
+// List returns a list of domains.
+func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.DomainList, error) {
 	req := clerk.NewAPIRequest(http.MethodGet, path)
 	list := &clerk.DomainList{}
-	err := clerk.GetBackend().Call(ctx, req, list)
+	err := c.Backend.Call(ctx, req, list)
 	return list, err
 }
