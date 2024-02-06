@@ -146,6 +146,9 @@ type BackendConfig struct {
 	// URL is the base URL to use for API endpoints.
 	// If it's not set, the default value for the Backend will be used.
 	URL *string
+	// UserAgentSuffix is appended to the User-Agent string on every
+	// request. Useful for support or debugging purposes.
+	UserAgentSuffix *string
 }
 
 // NewBackend returns a default backend implementation with the
@@ -160,8 +163,9 @@ func NewBackend(config *BackendConfig) Backend {
 		config.URL = String(APIURL)
 	}
 	return &defaultBackend{
-		HTTPClient: config.HTTPClient,
-		URL:        *config.URL,
+		HTTPClient:      config.HTTPClient,
+		URL:             *config.URL,
+		UserAgentSuffix: config.UserAgentSuffix,
 	}
 }
 
@@ -194,8 +198,9 @@ func SetBackend(b Backend) {
 }
 
 type defaultBackend struct {
-	HTTPClient *http.Client
-	URL        string
+	HTTPClient      *http.Client
+	URL             string
+	UserAgentSuffix *string
 }
 
 // Call sends requests to the Clerk API and handles the responses.
@@ -219,7 +224,11 @@ func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*h
 	}
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secretKey))
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("User-Agent", fmt.Sprintf("Clerk/%s SDK-Go/%s", clerkAPIVersion, sdkVersion))
+	userAgent := fmt.Sprintf("Clerk/%s SDK-Go/%s", clerkAPIVersion, sdkVersion)
+	if b.UserAgentSuffix != nil {
+		userAgent = fmt.Sprintf("%s (%s)", userAgent, *b.UserAgentSuffix)
+	}
+	req.Header.Add("User-Agent", userAgent)
 	req.Header.Add("X-Clerk-SDK", fmt.Sprintf("go/%s", sdkVersion))
 	req = req.WithContext(ctx)
 

@@ -43,15 +43,18 @@ func TestNewBackend(t *testing.T) {
 	assert.Equal(t, APIURL, withDefaults.URL)
 
 	u := "https://some.other.url"
+	uaSuffix := "clerk.com"
 	httpClient := &http.Client{}
 	config := &BackendConfig{
-		URL:        &u,
-		HTTPClient: httpClient,
+		URL:             &u,
+		HTTPClient:      httpClient,
+		UserAgentSuffix: &uaSuffix,
 	}
 	withOverrides, ok := NewBackend(config).(*defaultBackend)
 	require.True(t, ok)
 	assert.Equal(t, u, withOverrides.URL)
 	assert.Equal(t, httpClient, withOverrides.HTTPClient)
+	assert.Equal(t, uaSuffix, *withOverrides.UserAgentSuffix)
 }
 
 func TestGetBackend_DataRace(t *testing.T) {
@@ -155,10 +158,10 @@ func TestBackendCall_RequestHeaders(t *testing.T) {
 		// The client sets the Authorization header correctly.
 		assert.Equal(t, fmt.Sprintf("Bearer %s", secretKey), r.Header.Get("Authorization"))
 		// The client sets the User-Agent header.
-		assert.Equal(t, "Clerk/v1 SDK-Go/v2.0.0", r.Header.Get("User-Agent"))
+		assert.Equal(t, fmt.Sprintf("Clerk/v1 SDK-Go/%s (clerk.com)", sdkVersion), r.Header.Get("User-Agent"))
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 		// The client includes a custom header with the SDK version.
-		assert.Equal(t, "go/v2.0.0", r.Header.Get("X-Clerk-SDK"))
+		assert.Equal(t, fmt.Sprintf("go/%s", sdkVersion), r.Header.Get("X-Clerk-SDK"))
 
 		_, err := w.Write([]byte(`{}`))
 		require.NoError(t, err)
@@ -167,8 +170,9 @@ func TestBackendCall_RequestHeaders(t *testing.T) {
 
 	// Set up a mock backend which triggers requests to our test server above.
 	SetBackend(NewBackend(&BackendConfig{
-		HTTPClient: ts.Client(),
-		URL:        &ts.URL,
+		HTTPClient:      ts.Client(),
+		URL:             &ts.URL,
+		UserAgentSuffix: String("clerk.com"),
 	}))
 
 	// Simulate usage for an API operation on a testResource.
