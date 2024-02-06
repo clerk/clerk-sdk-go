@@ -41,7 +41,7 @@ const (
 	JWTTemplatesUrl    = "jwt_templates"
 )
 
-var defaultHTTPClient = &http.Client{Timeout: time.Second * 5}
+var defaultHTTPClient = &http.Client{Timeout: time.Second * 6}
 
 type Client interface {
 	NewRequest(method, url string, body ...interface{}) (*http.Request, error)
