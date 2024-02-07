@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -24,6 +25,8 @@ type RoundTripper struct {
 	Method string
 	// Set this field to assert that the request path matches.
 	Path string
+	// Set this field to assert that the request URL querystring matches.
+	Query *url.Values
 	// Set this field to assert that the request body matches.
 	In json.RawMessage
 }
@@ -34,11 +37,14 @@ func (rt *RoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 	if rt.Status == 0 {
 		rt.Status = http.StatusOK
 	}
+	if rt.Method != "" {
+		require.Equal(rt.T, rt.Method, r.Method)
+	}
 	if rt.Path != "" {
 		require.Equal(rt.T, rt.Path, r.URL.Path)
 	}
-	if rt.Method != "" {
-		require.Equal(rt.T, rt.Method, r.Method)
+	if rt.Query != nil {
+		require.Equal(rt.T, rt.Query.Encode(), r.URL.Query().Encode())
 	}
 	if rt.In != nil {
 		body, err := io.ReadAll(r.Body)
