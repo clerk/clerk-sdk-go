@@ -422,3 +422,8 @@ func String(v string) *string {
 func Int64(v int64) *int64 {
 	return &v
 }
+
+// Bool returns a pointer to the provided bool value.
+func Bool(v bool) *bool {
+	return &v
+}
