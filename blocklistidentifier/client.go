@@ -1,5 +1,5 @@
-// Package allowlistidentifier provides the Allowlist Identifiers API.
-package allowlistidentifier
+// Package blocklistidentifier provides the Blocklist Identifiers API.
+package blocklistidentifier
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 
 //go:generate go run ../cmd/gen/main.go
 
-const path = "/allowlist_identifiers"
+const path = "/blocklist_identifiers"
 
-// Client is used to invoke the Allowlist Identifiers API.
+// Client is used to invoke the Blocklist Identifiers API.
 type Client struct {
 	Backend clerk.Backend
 }
@@ -31,19 +31,18 @@ func NewClient(config *ClientConfig) *Client {
 type CreateParams struct {
 	clerk.APIParams
 	Identifier *string `json:"identifier,omitempty"`
-	Notify     *bool   `json:"notify,omitempty"`
 }
 
-// Create adds a new identifier to the allowlist.
-func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.AllowlistIdentifier, error) {
+// Create adds a new identifier to the blocklist.
+func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.BlocklistIdentifier, error) {
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
-	identifier := &clerk.AllowlistIdentifier{}
+	identifier := &clerk.BlocklistIdentifier{}
 	err := c.Backend.Call(ctx, req, identifier)
 	return identifier, err
 }
 
-// Delete removes an identifier from the allowlist.
+// Delete removes an identifier from the blocklist.
 func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
@@ -59,10 +58,10 @@ type ListParams struct {
 	clerk.APIParams
 }
 
-// List returns all the identifiers in the allowlist.
-func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.AllowlistIdentifierList, error) {
+// List returns all the identifiers in the blocklist.
+func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.BlocklistIdentifierList, error) {
 	req := clerk.NewAPIRequest(http.MethodGet, fmt.Sprintf("%s?paginated=true", path))
-	list := &clerk.AllowlistIdentifierList{}
+	list := &clerk.BlocklistIdentifierList{}
 	err := c.Backend.Call(ctx, req, list)
 	return list, err
 }
