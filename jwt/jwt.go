@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/clerk/clerk-sdk-go/v2"
@@ -103,10 +104,9 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 	return claims, nil
 }
 
+// Retrieve the JSON web key for the provided id from the set.
 func getJWK(ctx context.Context, kid string) (*clerk.JSONWebKey, error) {
-	// TODO Avoid multiple requests by caching results for the same
-	// instance.
-	jwks, err := jwks.Get(ctx, &jwks.GetParams{})
+	jwks, err := getJWKSWithCache(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -116,6 +116,44 @@ func getJWK(ctx context.Context, kid string) (*clerk.JSONWebKey, error) {
 		}
 	}
 	return nil, fmt.Errorf("no jwk key found for kid %s", kid)
+}
+
+// Returns the JSON web key set. Tries a cached value first, but if
+// there's no value or the entry has expired, it will fetch the set
+// from the API and cache the value.
+func getJWKSWithCache(ctx context.Context) (*clerk.JSONWebKeySet, error) {
+	const cacheKey = "/v1/jwks"
+	var jwks *clerk.JSONWebKeySet
+	var err error
+
+	// Try the cache first. Make sure we have a non-expired entry and
+	// that the value is a valid JWKS.
+	entry, ok := getCache().Get(cacheKey)
+	if ok && !entry.HasExpired() {
+		jwks, ok = entry.GetValue().(*clerk.JSONWebKeySet)
+		if !ok || jwks == nil || len(jwks.Keys) == 0 {
+			jwks, err = forceGetJWKS(ctx, cacheKey)
+			if err != nil {
+				return nil, err
+			}
+		}
+	} else {
+		jwks, err = forceGetJWKS(ctx, cacheKey)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return jwks, err
+}
+
+// Fetches the JSON web key set from the API and caches it.
+func forceGetJWKS(ctx context.Context, cacheKey string) (*clerk.JSONWebKeySet, error) {
+	jwks, err := jwks.Get(ctx, &jwks.GetParams{})
+	if err != nil {
+		return nil, err
+	}
+	getCache().Set(cacheKey, jwks, time.Now().UTC().Add(time.Hour))
+	return jwks, nil
 }
 
 func isValidIssuer(iss string) bool {
@@ -153,4 +191,67 @@ func Decode(_ context.Context, params *DecodeParams) (*clerk.Claims, error) {
 		Claims: standardClaims,
 		Extra:  extraClaims,
 	}, nil
+}
+
+// Caching store.
+type cache struct {
+	mu      sync.RWMutex
+	entries map[string]*cacheEntry
+}
+
+// Get returns the cache entry for the provided key, if one exists.
+func (c *cache) Get(key string) (*cacheEntry, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	entry, ok := c.entries[key]
+	return entry, ok
+}
+
+// Set adds a new entry with the provided value in the cache under
+// the provided key. An expiration date will be set for the entry.
+func (c *cache) Set(key string, value any, expiresAt time.Time) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.entries[key] = &cacheEntry{
+		value:     value,
+		expiresAt: expiresAt,
+	}
+}
+
+// A cache entry has a value and an expiration date.
+type cacheEntry struct {
+	value     any
+	expiresAt time.Time
+}
+
+// HasExpired returns true if the cache entry's expiration date
+// has passed.
+func (entry *cacheEntry) HasExpired() bool {
+	if entry == nil {
+		return true
+	}
+	return entry.expiresAt.Before(time.Now())
+}
+
+// GetValue returns the cache entry's value.
+func (entry *cacheEntry) GetValue() any {
+	if entry == nil {
+		return nil
+	}
+	return entry.value
+}
+
+var cacheInit sync.Once
+
+// A "singleton" cache for the package.
+var defaultCache *cache
+
+// Lazy initialize and return the default cache singleton.
+func getCache() *cache {
+	cacheInit.Do(func() {
+		defaultCache = &cache{
+			entries: map[string]*cacheEntry{},
+		}
+	})
+	return defaultCache
 }
