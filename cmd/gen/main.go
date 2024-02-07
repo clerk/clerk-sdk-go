@@ -129,8 +129,8 @@ func main() {
 const lineStartsWith = "func (c *Client) "
 
 var nameRE = regexp.MustCompile("^\\w+\\(")
-var argsRE = regexp.MustCompile("^.+\\)\\s\\(")
-var returnRE = regexp.MustCompile("^.+\\)")
+var argsRE = regexp.MustCompile("^.+\\)\\s[\\(e]")
+var returnRE = regexp.MustCompile("^.+\\s{")
 
 // Parse a method definition line and get the name, arguments and
 // return types.
@@ -144,9 +144,11 @@ func getFuncVars(line string) funcVars {
 	line = strings.TrimPrefix(line, name)
 
 	args := argsRE.FindString(line)
+	args = strings.TrimSuffix(args, ") e")
 	line = strings.TrimPrefix(line, args)
 
 	returnV := returnRE.FindString(line)
+	returnV = strings.TrimSuffix(returnV, " {")
 
 	name = strings.Trim(name, "(")
 	args = strings.Trim(args, ") (")

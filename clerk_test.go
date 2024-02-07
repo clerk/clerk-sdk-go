@@ -279,6 +279,35 @@ func TestBackendCall_SuccessfulResponse_GetRequest(t *testing.T) {
 	assert.JSONEq(t, rawJSON, string(resource.Response.RawJSON))
 }
 
+// TestBackendCall_SuccessfulResponse_EmptyResponse tests successful
+// responses with no response body.
+func TestBackendCall_SuccessfulResponse_EmptyResponse(t *testing.T) {
+	ctx := context.Background()
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Don't write a response body
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer ts.Close()
+
+	// Set up a mock backend which triggers requests to our test server above.
+	SetBackend(NewBackend(&BackendConfig{
+		HTTPClient: ts.Client(),
+		URL:        &ts.URL,
+	}))
+
+	// Simulate usage for an API operation on a testResource.
+	// We need to initialize a request and use the Backend to send it.
+	resource := &testResource{}
+	req := NewAPIRequest(http.MethodPost, "/resources")
+	err := GetBackend().Call(ctx, req, resource)
+	require.NoError(t, err)
+
+	// The API response on the resource is empty.
+	require.NotNil(t, resource.Response)
+	assert.Empty(t, resource.Response.RawJSON)
+}
+
 // TestBackendCall_ParseableError tests responses with a non-successful
 // status code and a body that can be deserialized to an "expected"
 // error response. These errors usually happen due to a client error
