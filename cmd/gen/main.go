@@ -59,7 +59,7 @@ func main() {
 		// Gather all comments, they might be a method's
 		// godoc.
 		if strings.HasPrefix(line, "//") {
-			comments.WriteString(line)
+			comments.WriteString("\n" + line)
 		}
 		if line == "" {
 			comments.Reset()
