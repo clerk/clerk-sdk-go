@@ -130,21 +130,15 @@ type testResourceList struct {
 type testResourceListParams struct {
 	APIParams
 	ListParams
-	Name      string
-	Overriden string
+	Name     string
+	Appended string
 }
 
 // We need to implement the Params interface.
 func (params testResourceListParams) ToQuery() url.Values {
-	q := url.Values{}
+	q := params.ListParams.ToQuery()
 	q.Set("name", params.Name)
-	q.Set("overriden", params.Overriden)
-	listQ := params.ListParams.ToQuery()
-	for k, values := range listQ {
-		for _, v := range values {
-			q.Add(k, v)
-		}
-	}
+	q.Set("appended", params.Appended)
 	return q
 }
 
@@ -234,7 +228,6 @@ func TestBackendCall_SuccessfulResponse_PostRequest(t *testing.T) {
 func TestBackendCall_SuccessfulResponse_GetRequest(t *testing.T) {
 	ctx := context.Background()
 	name := "the-name"
-	overriden := "true"
 	limit := 1
 	rawJSON := `{"data": [{"id":"res_123","object":"resource"}], "total_count": 1}`
 
@@ -249,8 +242,8 @@ func TestBackendCall_SuccessfulResponse_GetRequest(t *testing.T) {
 		assert.False(t, ok)
 		// Existing query parameters are preserved
 		assert.Equal(t, "still-here", q.Get("existing"))
-		// Existing query parameters can be overriden
-		assert.Equal(t, overriden, q.Get("overriden"))
+		// Existing query parameters will be appended, not overriden
+		assert.Equal(t, []string{"false", "true"}, q["appended"])
 
 		_, err := w.Write([]byte(rawJSON))
 		require.NoError(t, err)
@@ -266,13 +259,13 @@ func TestBackendCall_SuccessfulResponse_GetRequest(t *testing.T) {
 	// Simulate usage for an API operation on a testResourceList.
 	// We need to initialize a request and use the Backend to send it.
 	resource := &testResourceList{}
-	req := NewAPIRequest(http.MethodGet, "/resources?existing=still-here&overriden=false")
+	req := NewAPIRequest(http.MethodGet, "/resources?existing=still-here&appended=false")
 	req.SetParams(&testResourceListParams{
 		ListParams: ListParams{
 			Limit: Int64(int64(limit)),
 		},
-		Name:      name,
-		Overriden: overriden,
+		Name:     name,
+		Appended: "true",
 	})
 	err := GetBackend().Call(ctx, req, resource)
 	require.NoError(t, err)

@@ -132,11 +132,10 @@ func (c *Client) DeleteLogo(ctx context.Context, id string) (*clerk.Organization
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	IncludeMembersCount *bool   `json:"include_members_count,omitempty"`
-	OrderBy             *string `json:"order_by,omitempty"`
-	Query               *string `json:"query,omitempty"`
-	// TODO do we need a pointer here? Probably not.
-	UserIDs []string `json:"user_id,omitempty"`
+	IncludeMembersCount *bool    `json:"include_members_count,omitempty"`
+	OrderBy             *string  `json:"order_by,omitempty"`
+	Query               *string  `json:"query,omitempty"`
+	UserIDs             []string `json:"user_id,omitempty"`
 }
 
 // ToQuery returns query string values from the params.
