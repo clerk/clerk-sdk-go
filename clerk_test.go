@@ -339,7 +339,7 @@ func TestBackendCall_ParseableError(t *testing.T) {
 	assert.JSONEq(t, errorJSON, string(apiErr.Response.RawJSON))
 }
 
-// TestBackendCall_ParseableError tests responses with a non-successful
+// TestBackendCall_NonParseableError tests responses with a non-successful
 // status code and a body that can be deserialized to an unexpected
 // error response. This might happen when the Clerk API encounters an
 // unexpected server error and usually results in 5xx status codes.
