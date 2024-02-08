@@ -256,9 +256,11 @@ func (b *defaultBackend) do(req *http.Request, params Params, setter ResponseRea
 	}
 
 	setter.Read(apiResponse)
-	err = json.Unmarshal(resBody, setter)
-	if err != nil {
-		return err
+	if len(resBody) > 0 {
+		err := json.Unmarshal(resBody, setter)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
