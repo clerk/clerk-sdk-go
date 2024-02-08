@@ -165,6 +165,7 @@ func TestOrganizationClientList(t *testing.T) {
 				"offset":   []string{"2"},
 				"order_by": []string{"-created_at"},
 				"query":    []string{"Acme"},
+				"user_id":  []string{"user_123", "user_456"},
 			},
 		},
 	}
@@ -172,6 +173,7 @@ func TestOrganizationClientList(t *testing.T) {
 	params := &ListParams{
 		OrderBy: clerk.String("-created_at"),
 		Query:   clerk.String("Acme"),
+		UserIDs: []string{"user_123", "user_456"},
 	}
 	params.Limit = clerk.Int64(1)
 	params.Offset = clerk.Int64(2)

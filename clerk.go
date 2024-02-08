@@ -297,7 +297,7 @@ func setRequestQuery(req *http.Request, params Params) {
 	paramsQuery := params.ToQuery()
 	for k, values := range paramsQuery {
 		for _, v := range values {
-			q.Set(k, v)
+			q.Add(k, v)
 		}
 	}
 	req.URL.RawQuery = q.Encode()
