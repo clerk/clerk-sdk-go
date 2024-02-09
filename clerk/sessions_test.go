@@ -3,6 +3,8 @@ package clerk
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -240,6 +242,34 @@ func TestSessionsService_Verify_invalidServer(t *testing.T) {
 	if session != nil {
 		t.Errorf("Was not expecting any session to be returned, instead got %v", session)
 	}
+}
+
+func TestSessionsService_CreateTokenFromTemplate_Success(t *testing.T) {
+	const dummySessionTokenJSONTemplate = `{"object": "token", "jwt": "%s"}`
+
+	token := "token"
+	sessionID := "sess_2bp7pawkvFUR3m3QPBm6Cwx5ghZ"
+	templateSlug := "someTemplateSlug"
+	sessionToken := "someSessionToken"
+	expectedResponse := fmt.Sprintf(dummySessionTokenJSONTemplate, sessionToken)
+
+	clerkClient, mux, _, teardown := setup(token)
+	defer teardown()
+
+	mux.HandleFunc(fmt.Sprintf("/%s/%s/token/%s", SessionsUrl, sessionID, templateSlug), func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "POST")
+		testHeader(t, req, "Authorization", fmt.Sprintf("Bearer %s", token))
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(expectedResponse))
+	})
+
+	var expectedSessionToken SessionToken
+	err := json.Unmarshal([]byte(expectedResponse), &expectedSessionToken)
+	assert.NoError(t, err)
+
+	received, err := clerkClient.Sessions().CreateTokenFromTemplate(sessionID, templateSlug)
+	require.NoError(t, err)
+	require.EqualValues(t, expectedSessionToken, *received)
 }
 
 const dummySessionJson = `{

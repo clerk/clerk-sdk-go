@@ -18,6 +18,11 @@ type Session struct {
 	UpdatedAt                int64  `json:"updated_at"`
 }
 
+type SessionToken struct {
+	Object string `json:"object"`
+	JWT    string `json:"jwt"`
+}
+
 type ListAllSessionsParams struct {
 	Limit    *int
 	Offset   *int
@@ -112,4 +117,16 @@ func (s *SessionsService) Verify(sessionId, token string) (*Session, error) {
 		return nil, err
 	}
 	return &sessionResponse, nil
+}
+
+func (s *SessionsService) CreateTokenFromTemplate(sessionID, templateSlug string) (*SessionToken, error) {
+	sessionURL := fmt.Sprintf("%s/%s/token/%s", SessionsUrl, sessionID, templateSlug)
+	req, _ := s.client.NewRequest("POST", sessionURL)
+
+	var sessionToken SessionToken
+	_, err := s.client.Do(req, &sessionToken)
+	if err != nil {
+		return nil, err
+	}
+	return &sessionToken, nil
 }
