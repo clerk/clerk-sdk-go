@@ -1,4 +1,7 @@
 // Package proxycheck provides the Proxy Checks API.
+//
+// Deprecated: The Proxy Checks API is deprecated and will be
+// removed in future versions.
 package proxycheck
 
 import (
@@ -34,6 +37,9 @@ type CreateParams struct {
 }
 
 // Create creates a proxy check.
+//
+// Deprecated: The operation is deprecated and will be removed in
+// future versions.
 func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.ProxyCheck, error) {
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
