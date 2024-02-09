@@ -132,6 +132,12 @@ func TestSAMLConnectionsService_Update(t *testing.T) {
 		Active:             &expectedActive,
 		SyncUserAttributes: &expectedSyncUserAttributes,
 		IdpMetadataURL:     stringToPtr("https://example.com/saml/metadata"),
+		AttributeMapping: &SAMLConnectionAttributeMapping{
+			UserID:       "custom_user_id",
+			EmailAddress: "custom_email",
+			FirstName:    "custom_first",
+			LastName:     "custom_last",
+		},
 	}
 
 	got, err := c.SAMLConnections().Update(dummySAMLConnectionID, updateParams)
@@ -188,6 +194,12 @@ const (
 	"acs_url": "` + "https://clerk.example.com/v1/saml/acs/" + dummySAMLConnectionID + `",
 	"sp_entity_id": "` + "https://clerk.example.com/saml/" + dummySAMLConnectionID + `",
 	"sp_metadata_url": "` + "https://clerk.example.com/v1/saml/metadata/" + dummySAMLConnectionID + `",
+	"attribute_mapping": {
+		"user_id": "id",
+		"email_address": "mail",
+		"first_name": "firstName",
+		"last_name": "lastName"
+	},
 	"active": false,
 	"provider": "saml_custom",
 	"user_count": 3,
@@ -207,6 +219,12 @@ const (
 	"acs_url": "` + "https://clerk.example.com/v1/saml/acs/" + dummySAMLConnectionID + `",
 	"sp_entity_id": "` + "https://clerk.example.com/saml/" + dummySAMLConnectionID + `",
 	"sp_metadata_url": "` + "https://clerk.example.com/v1/saml/metadata/" + dummySAMLConnectionID + `",
+	"attribute_mapping": {
+		"user_id": "custom_id",
+		"email_address": "custom_email",
+		"first_name": "custom_first",
+		"last_name": "custom_last"
+	},
 	"active": true,
 	"provider": "saml_custom",
 	"user_count": 3,
