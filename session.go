@@ -17,3 +17,9 @@ type Session struct {
 	CreatedAt                int64           `json:"created_at"`
 	UpdatedAt                int64           `json:"updated_at"`
 }
+
+type SessionList struct {
+	APIResource
+	Sessions   []*Session `json:"data"`
+	TotalCount int64      `json:"total_count"`
+}
