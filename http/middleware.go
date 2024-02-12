@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/clerk/clerk-sdk-go/v2"
+	"github.com/clerk/clerk-sdk-go/v2/jwks"
 	"github.com/clerk/clerk-sdk-go/v2/jwt"
 )
 
@@ -149,6 +150,26 @@ func JSONWebKey(key string) AuthorizationOption {
 			return err
 		}
 		params.JWK = jwk
+		return nil
+	}
+}
+
+// JWKSClient allows to provide a custom jwks.Client that will be
+// used when fetching the JSON Web Key Set with which the JWT
+// will be verified.
+// It is recommended to use a jwks.Client with caching capabilities.
+//
+//	client := jwks.NewClient(&jwks.Config{
+//		EnableCache: true,
+//	})
+//	http.WithHeaderAuthorization(http.JWKSClient(client))
+//
+// The JSONWebKey option takes precedence. If a web key is already
+// provided through the JSONWebKey option, the JWKS client will
+// not be used at all.
+func JWKSClient(client *jwks.Client) AuthorizationOption {
+	return func(params *AuthorizationParams) error {
+		params.JWKSClient = client
 		return nil
 	}
 }

@@ -146,7 +146,8 @@ type BackendConfig struct {
 	// URL is the base URL to use for API endpoints.
 	// If it's not set, the default value for the Backend will be used.
 	URL *string
-	// Key TODO
+	// Key is the Clerk secret key. If it's not set, the package level
+	// secretKey will be used.
 	Key *string
 }
 
@@ -388,12 +389,12 @@ func (params ListParams) ToQuery() url.Values {
 	return q
 }
 
-// Regular expression that matches multiple backslashes in a row.
-var extraBackslashesRE = regexp.MustCompile("([^:])//+")
-
 // JoinPath returns a URL string with the provided path elements joined
 // with the base path.
 func JoinPath(base string, elem ...string) (string, error) {
+	// Regular expression that matches multiple backslashes in a row.
+	var extraBackslashesRE = regexp.MustCompile("([^:])//+")
+
 	// Concatenate all paths.
 	var sb strings.Builder
 	sb.WriteString(base)
