@@ -63,5 +63,7 @@ func (s *SessionClaims) HasRole(role string) bool {
 // Claims holds generic JWT claims.
 type Claims struct {
 	jwt.Claims
+	// Any headers not recognized get unmarshalled
+	// from JSON in a generic manner and placed in this map.
 	Extra map[string]any
 }
