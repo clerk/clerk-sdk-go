@@ -62,3 +62,36 @@ func TestRequireHeaderAuthorization_InvalidAuthorization(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusForbidden, res.StatusCode)
 }
+
+func TestAuthorizedPartyFunc(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		azp     string
+		parties []string
+		want    bool
+	}{
+		{
+			azp:     "clerk.com",
+			parties: []string{"clerk.com", "clerk.dev"},
+			want:    true,
+		},
+		{
+			azp:     "clerk.com",
+			parties: []string{"clerk.dev"},
+			want:    false,
+		},
+		{
+			azp:     "",
+			parties: []string{"clerk.com"},
+			want:    true,
+		},
+		{
+			azp:     "clerk.com",
+			parties: []string{},
+			want:    true,
+		},
+	} {
+		fn := AuthorizedPartyMatches(tc.parties...)
+		require.Equal(t, tc.want, fn(tc.azp))
+	}
+}

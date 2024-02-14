@@ -12,6 +12,8 @@ import (
 	"github.com/go-jose/go-jose/v3/jwt"
 )
 
+type AuthorizedPartyHandler func(string) bool
+
 type VerifyParams struct {
 	// Token is the JWT that will be verified. Required.
 	Token string
@@ -26,19 +28,9 @@ type VerifyParams struct {
 	IsSatellite bool
 	// ProxyURL is the URL of the server that proxies the Clerk Frontend API.
 	ProxyURL *string
-	// List of values that should match the azp claim.
-	// Use SetAuthorizedParties to set the value.
-	authorizedParties map[string]struct{}
-}
-
-// SetAuthorizedParties accepts a list of authorized parties to be
-// set on the params.
-func (params *VerifyParams) SetAuthorizedParties(parties ...string) {
-	azp := make(map[string]struct{})
-	for _, p := range parties {
-		azp[p] = struct{}{}
-	}
-	params.authorizedParties = azp
+	// AuthorizedPartyHandler can be used to perform validations on the
+	// 'azp' claim.
+	AuthorizedPartyHandler AuthorizedPartyHandler
 }
 
 // Verify verifies a Clerk session JWT and returns the parsed
@@ -81,10 +73,8 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 		return nil, fmt.Errorf("invalid issuer %s", iss)
 	}
 
-	if claims.AuthorizedParty != "" && len(params.authorizedParties) > 0 {
-		if _, ok := params.authorizedParties[claims.AuthorizedParty]; !ok {
-			return nil, fmt.Errorf("invalid authorized party %s", claims.AuthorizedParty)
-		}
+	if params.AuthorizedPartyHandler != nil && !params.AuthorizedPartyHandler(claims.AuthorizedParty) {
+		return nil, fmt.Errorf("invalid authorized party %s", claims.AuthorizedParty)
 	}
 
 	return claims, nil
