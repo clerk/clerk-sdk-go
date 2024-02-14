@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -140,6 +141,32 @@ func (params testResourceListParams) ToQuery() url.Values {
 	q.Set("name", params.Name)
 	q.Set("appended", params.Appended)
 	return q
+}
+
+// This is how you define a type which can be used as parameters
+// to a Clerk API operation that accepts multipart requests.
+type testResourceMultipartParams struct {
+	APIParams
+	Name string
+}
+
+// We need to implement the Params interface.
+func (params testResourceMultipartParams) ToMultipart() ([]byte, string, error) {
+	var buf bytes.Buffer
+	w := multipart.NewWriter(&buf)
+	name, err := w.CreateFormField("name")
+	if err != nil {
+		return nil, "", err
+	}
+	_, err = name.Write([]byte(params.Name))
+	if err != nil {
+		return nil, "", err
+	}
+	err = w.Close()
+	if err != nil {
+		return nil, "", err
+	}
+	return buf.Bytes(), w.FormDataContentType(), nil
 }
 
 func TestBackendCall_RequestHeaders(t *testing.T) {
@@ -384,4 +411,39 @@ func TestBackendCall_NonParseableError(t *testing.T) {
 	// The raw error is returned since we cannot unmarshal it to a
 	// familiar API error response.
 	assert.Equal(t, errorResponse, err.Error())
+}
+
+// TestBackendCall_Multipart tests multipart/form-data requests.
+func TestBackendCall_Multipart(t *testing.T) {
+	ctx := context.Background()
+	name := "the-name"
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// The content type will be multipart/form-data
+		assert.Contains(t, r.Header.Get("Content-Type"), "multipart/form-data")
+		// The body contains the "name" field
+		err := r.ParseMultipartForm(1024)
+		require.NoError(t, err)
+		assert.Equal(t, name, r.Form.Get("name"))
+
+		_, err = w.Write([]byte(`{}`))
+		require.NoError(t, err)
+	}))
+	defer ts.Close()
+
+	// Set up a mock backend which triggers requests to our test server above.
+	SetBackend(NewBackend(&BackendConfig{
+		HTTPClient: ts.Client(),
+		URL:        &ts.URL,
+	}))
+
+	// Simulate usage for an API operation on a testResource.
+	// We need to initialize a multipart request and use the Backend
+	// to send it.
+	req := NewMultipartAPIRequest(http.MethodPost, "/resources")
+	req.SetParams(&testResourceMultipartParams{
+		Name: name,
+	})
+	err := GetBackend().Call(ctx, req, &testResource{})
+	require.NoError(t, err)
 }

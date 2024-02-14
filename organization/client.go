@@ -2,8 +2,11 @@
 package organization
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -113,6 +116,60 @@ func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource,
 	}
 	req := clerk.NewAPIRequest(http.MethodDelete, path)
 	organization := &clerk.DeletedResource{}
+	err = c.Backend.Call(ctx, req, organization)
+	return organization, err
+}
+
+type UpdateLogoParams struct {
+	clerk.APIParams
+	File           multipart.File `json:"-"`
+	UploaderUserID *string        `json:"-"`
+}
+
+// ToMultipart transforms the UpdateLogoParams to a multipart message
+// that can be used as the request body.
+// For multipart/form-data requests the Content-Type header needs to
+// include each part's boundaries. ToMultipart returns the
+// Content-Type after all parameters are added to the multipart.Writer.
+func (params *UpdateLogoParams) ToMultipart() ([]byte, string, error) {
+	var buf bytes.Buffer
+	w := multipart.NewWriter(&buf)
+	if params.UploaderUserID != nil {
+		uploaderUserID, err := w.CreateFormField("uploader_user_id")
+		if err != nil {
+			return nil, "", err
+		}
+		_, err = uploaderUserID.Write([]byte(*params.UploaderUserID))
+		if err != nil {
+			return nil, "", err
+		}
+	}
+
+	file, err := w.CreateFormFile("file", "logo")
+	if err != nil {
+		return nil, "", err
+	}
+	defer params.File.Close()
+	_, err = io.Copy(file, params.File)
+	if err != nil {
+		return nil, "", err
+	}
+	err = w.Close()
+	if err != nil {
+		return nil, "", err
+	}
+	return buf.Bytes(), w.FormDataContentType(), nil
+}
+
+// UpdateLogo sets or replaces the organization's logo.
+func (c *Client) UpdateLogo(ctx context.Context, id string, params *UpdateLogoParams) (*clerk.Organization, error) {
+	path, err := clerk.JoinPath(path, id, "/logo")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewMultipartAPIRequest(http.MethodPut, path)
+	req.SetParams(params)
+	organization := &clerk.Organization{}
 	err = c.Backend.Call(ctx, req, organization)
 	return organization, err
 }

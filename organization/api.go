@@ -35,6 +35,11 @@ func Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	return getClient().Delete(ctx, id)
 }
 
+// UpdateLogo sets or replaces the organization's logo.
+func UpdateLogo(ctx context.Context, id string, params *UpdateLogoParams) (*clerk.Organization, error) {
+	return getClient().UpdateLogo(ctx, id, params)
+}
+
 // DeleteLogo removes the organization's logo.
 func DeleteLogo(ctx context.Context, id string) (*clerk.Organization, error) {
 	return getClient().DeleteLogo(ctx, id)
