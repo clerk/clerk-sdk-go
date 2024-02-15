@@ -64,6 +64,14 @@ func (params *APIParams) ToQuery() url.Values {
 	return nil
 }
 
+// ToMultipart can transform the params to a multipart entity.
+// It is currently a no-op, but is defined so that all types
+// that describe API operation parameters implement the Params
+// interface.
+func (params *APIParams) ToMultipart() ([]byte, string, error) {
+	return nil, "", nil
+}
+
 // APIResponse describes responses coming from the Clerk API.
 // Exposes some commonly used HTTP response fields along with
 // the raw data in the response body.
@@ -100,9 +108,10 @@ func NewAPIResponse(resp *http.Response, body json.RawMessage) *APIResponse {
 
 // APIRequest describes requests to the Clerk API.
 type APIRequest struct {
-	Method string
-	Path   string
-	Params Params
+	Method      string
+	Path        string
+	Params      Params
+	isMultipart bool
 }
 
 // SetParams sets the APIRequest.Params.
@@ -119,6 +128,15 @@ func NewAPIRequest(method, path string) *APIRequest {
 	}
 }
 
+// NewMultipartAPIRequest creates an APIRequest with the provided HTTP
+// method and path and marks it as multipart. Multipart requests handle
+// their params differently.
+func NewMultipartAPIRequest(method, path string) *APIRequest {
+	req := NewAPIRequest(method, path)
+	req.isMultipart = true
+	return req
+}
+
 // Backend is the primary interface for communicating with the Clerk
 // API.
 type Backend interface {
@@ -131,10 +149,12 @@ type ResponseReader interface {
 	Read(*APIResponse)
 }
 
-// Params can add parameters to url.Values.
-// Useful for constructing a request query string.
+// Params can transform themselves to types that can be used as
+// request parameters, like query string values or multipart
+// data.
 type Params interface {
 	ToQuery() url.Values
+	ToMultipart() ([]byte, string, error)
 }
 
 // BackendConfig is used to configure a new Clerk Backend.
@@ -212,8 +232,12 @@ func (b *defaultBackend) Call(ctx context.Context, apiReq *APIRequest, setter Re
 	if err != nil {
 		return err
 	}
+	err = setRequestBody(req, apiReq)
+	if err != nil {
+		return err
+	}
 
-	return b.do(req, apiReq.Params, setter)
+	return b.do(req, setter)
 }
 
 func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*http.Request, error) {
@@ -234,12 +258,7 @@ func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*h
 	return req, nil
 }
 
-func (b *defaultBackend) do(req *http.Request, params Params, setter ResponseReader) error {
-	err := setRequestBody(req, params)
-	if err != nil {
-		return err
-	}
-
+func (b *defaultBackend) do(req *http.Request, setter ResponseReader) error {
 	resp, err := b.HTTPClient.Do(req)
 	if err != nil {
 		return err
@@ -267,19 +286,32 @@ func (b *defaultBackend) do(req *http.Request, params Params, setter ResponseRea
 	return nil
 }
 
-// Sets the params in either the request body, or the querystring
-// for GET requests.
-func setRequestBody(req *http.Request, params Params) error {
+// Sets the APIRequest params in either the request body, or the
+// querystring for GET requests.
+// If the APIRequest is multipart, the http.Request Content-Type
+// is overwritten and the body will be sent as a multipart message.
+func setRequestBody(req *http.Request, apiReq *APIRequest) error {
 	// GET requests don't have a body, but we will pass the params
 	// in the query string.
 	if req.Method == http.MethodGet {
-		setRequestQuery(req, params)
+		setRequestQuery(req, apiReq.Params)
 		return nil
 	}
 
-	body, err := json.Marshal(params)
-	if err != nil {
-		return err
+	var body []byte
+	var err error
+	if apiReq.isMultipart {
+		var contentType string
+		body, contentType, err = apiReq.Params.ToMultipart()
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Content-Type", contentType)
+	} else {
+		body, err = json.Marshal(apiReq.Params)
+		if err != nil {
+			return err
+		}
 	}
 	req.Body = io.NopCloser(bytes.NewReader(body))
 	req.GetBody = func() (io.ReadCloser, error) {

@@ -1,6 +1,7 @@
 package organization
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -183,6 +184,36 @@ func TestOrganizationClientList(t *testing.T) {
 	require.Equal(t, 1, len(list.Organizations))
 	require.Equal(t, "org_123", list.Organizations[0].ID)
 	require.Equal(t, "Acme Inc", list.Organizations[0].Name)
+}
+
+type testFile struct {
+	bytes.Reader
+}
+
+func (_ *testFile) Close() error {
+	return nil
+}
+
+func TestOrganizationClientUpdateLogo(t *testing.T) {
+	t.Parallel()
+	id := "org_123"
+	userID := "user_123"
+	config := &ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, id)),
+			Method: http.MethodPut,
+			Path:   "/v1/organizations/" + id + "/logo",
+		},
+	}
+	client := NewClient(config)
+	organization, err := client.UpdateLogo(context.Background(), id, &UpdateLogoParams{
+		UploaderUserID: &userID,
+		File:           &testFile{Reader: *bytes.NewReader([]byte{})},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, organization.ID)
 }
 
 func TestOrganizationClientDeleteLogo(t *testing.T) {
