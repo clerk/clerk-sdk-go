@@ -71,7 +71,7 @@ type ListParams struct {
 }
 
 // List returns a list of redirect urls.
-func (c *Client) List(ctx context.Context, _ *ListParams) (*clerk.RedirectURLList, error) {
+func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.RedirectURLList, error) {
 	req := clerk.NewAPIRequest(http.MethodGet, fmt.Sprintf("%s?paginated=true", path))
 	list := &clerk.RedirectURLList{}
 	err := c.Backend.Call(ctx, req, list)
