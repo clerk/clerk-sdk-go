@@ -160,12 +160,31 @@ type AuthorizationParams struct {
 // authorization options.
 type AuthorizationOption func(*AuthorizationParams) error
 
-// AuthorizedParty sets the authorized parties that will be checked
-// against the azp JWT claim.
-func AuthorizedParty(parties ...string) AuthorizationOption {
+// AuthorizedParty allows to provide a handler that accepts the
+// 'azp' claim.
+// The handler can be used to perform validations on the azp claim
+// and should return false to indicate that something is wrong.
+func AuthorizedParty(handler func(string) bool) AuthorizationOption {
 	return func(params *AuthorizationParams) error {
-		params.SetAuthorizedParties(parties...)
+		params.AuthorizedPartyHandler = handler
 		return nil
+	}
+}
+
+// AuthorizedPartyMatches registers a handler that checks that the
+// 'azp' claim's value is included in the provided parties.
+func AuthorizedPartyMatches(parties ...string) func(string) bool {
+	authorizedParties := make(map[string]struct{})
+	for _, p := range parties {
+		authorizedParties[p] = struct{}{}
+	}
+
+	return func(azp string) bool {
+		if azp == "" || len(authorizedParties) == 0 {
+			return true
+		}
+		_, ok := authorizedParties[azp]
+		return ok
 	}
 }
 
