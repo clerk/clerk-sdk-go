@@ -174,6 +174,9 @@ func TestBackendCall_RequestHeaders(t *testing.T) {
 	method := http.MethodPost
 	path := "/resources"
 	secretKey := "sk_test_123"
+	customHeaders := CustomRequestHeaders{
+		Application: "custom-application",
+	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, method, r.Method)
@@ -186,6 +189,8 @@ func TestBackendCall_RequestHeaders(t *testing.T) {
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 		// The client includes a custom header with the SDK version.
 		assert.Equal(t, fmt.Sprintf("go/%s", sdkVersion), r.Header.Get("X-Clerk-SDK"))
+		// Custom headers are added correctly.
+		assert.Equal(t, customHeaders.Application, r.Header.Get("X-Clerk-Application"))
 
 		_, err := w.Write([]byte(`{}`))
 		require.NoError(t, err)
@@ -194,8 +199,9 @@ func TestBackendCall_RequestHeaders(t *testing.T) {
 
 	// Set up a mock backend which triggers requests to our test server above.
 	SetBackend(NewBackend(&BackendConfig{
-		HTTPClient: ts.Client(),
-		URL:        &ts.URL,
+		HTTPClient:           ts.Client(),
+		URL:                  &ts.URL,
+		CustomRequestHeaders: &customHeaders,
 	}))
 
 	// Simulate usage for an API operation on a testResource.
