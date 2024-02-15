@@ -251,7 +251,7 @@ func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*h
 	}
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", b.Key))
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("User-Agent", fmt.Sprintf("Clerk/%s SDK-Go/%s", clerkAPIVersion, sdkVersion))
+	req.Header.Add("User-Agent", fmt.Sprintf("clerk/clerk-sdk-go@%s", sdkVersion))
 	req.Header.Add("X-Clerk-SDK", fmt.Sprintf("go/%s", sdkVersion))
 	req = req.WithContext(ctx)
 

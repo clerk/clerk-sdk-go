@@ -182,10 +182,10 @@ func TestBackendCall_RequestHeaders(t *testing.T) {
 		// The client sets the Authorization header correctly.
 		assert.Equal(t, fmt.Sprintf("Bearer %s", secretKey), r.Header.Get("Authorization"))
 		// The client sets the User-Agent header.
-		assert.Equal(t, "Clerk/v1 SDK-Go/v2.0.0", r.Header.Get("User-Agent"))
+		assert.Equal(t, fmt.Sprintf("clerk/clerk-sdk-go@%s", sdkVersion), r.Header.Get("User-Agent"))
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 		// The client includes a custom header with the SDK version.
-		assert.Equal(t, "go/v2.0.0", r.Header.Get("X-Clerk-SDK"))
+		assert.Equal(t, fmt.Sprintf("go/%s", sdkVersion), r.Header.Get("X-Clerk-SDK"))
 
 		_, err := w.Write([]byte(`{}`))
 		require.NoError(t, err)
