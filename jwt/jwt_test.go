@@ -5,12 +5,16 @@ import (
 	"testing"
 
 	"github.com/clerk/clerk-sdk-go/v2"
+	"github.com/clerk/clerk-sdk-go/v2/clerktest"
+	"github.com/go-jose/go-jose/v3"
 	"github.com/stretchr/testify/require"
 )
 
 func TestVerify_InvalidParams(t *testing.T) {
+	t.Parallel()
 	ctx := context.Background()
-	token := "eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDExMUFBQSIsImtpZCI6Imluc18yOWR6bUdmQ3JydzdSMDRaVFFZRDNKSTB5dkYiLCJ0eXAiOiJKV1QifQ.eyJhenAiOiJodHRwczovL2Rhc2hib2FyZC5wcm9kLmxjbGNsZXJrLmNvbSIsImV4cCI6MTcwNzMwMDMyMiwiaWF0IjoxNzA3MzAwMjYyLCJpc3MiOiJodHRwczovL2NsZXJrLnByb2QubGNsY2xlcmsuY29tIiwibmJmIjoxNzA3MzAwMjUyLCJvcmdzIjp7Im9yZ18ySUlwcVIxenFNeHJQQkhSazNzTDJOSnJUQkQiOiJvcmc6YWRtaW4iLCJvcmdfMllHMlNwd0IzWEJoNUo0ZXF5elFVb0dXMjVhIjoib3JnOmFkbWluIiwib3JnXzJhZzJ6bmgxWGFjTXI0dGRXYjZRbEZSQ2RuaiI6Im9yZzphZG1pbiIsIm9yZ18yYWlldHlXa3VFSEhaRmRSUTFvVjYzMnZWaFciOiJvcmc6YWRtaW4ifSwic2lkIjoic2Vzc18yYm84b2gyRnIyeTNueVoyRVZQYktBd2ZvaU0iLCJzdWIiOiJ1c2VyXzI5ZTBXTnp6M245V1Q5S001WlpJYTBVVjNDNyJ9.6GtQafMBYY3Ij3pKHOyBYKt76LoLeBC71QUY_ho3k5nb0FBSvV0upKFLPBvIXNuF7hH0FK2QqDcAmrhbzAI-2qF_Ynve8Xl4VZCRpbTuZI7uL-tVjCvMffEIH-BHtrZ-QcXhEmNFQNIPyZTu21242he7U6o4S8st_aLmukWQzj_4qir7o5_fmVhm7YkLa0gYG5SLjkr2czwem1VGFHEVEOrHjun-g6eMnDNMMMysIOkZFxeqiCnqpc4u1V7Z7jfoK0r_-Unp8mGGln5KWYMCQyp1l1SkGwugtxeWfSbE4eklKRmItGOdVftvTyG16kDGpzsb22AQGtg65Iygni4PHg"
+	kid := "kid"
+	token, pubKey := clerktest.GenerateJWT(t, map[string]any{"iss": "https://clerk.com"}, kid)
 
 	// Verifying without providing a key returns an error.
 	_, err := Verify(ctx, &VerifyParams{
@@ -19,19 +23,149 @@ func TestVerify_InvalidParams(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "missing json web key")
 
-	// Verify needs a key.
+	// Verifying with wrong public key for the key.
 	_, err = Verify(ctx, &VerifyParams{
 		Token: token,
-		JWK:   &clerk.JSONWebKey{},
+		JWK: &clerk.JSONWebKey{
+			Key:       nil,
+			KeyID:     kid,
+			Algorithm: string(jose.EdDSA),
+			Use:       "sig",
+		},
 	})
-	if err != nil {
-		require.NotContains(t, err.Error(), "missing json web key")
+	require.Error(t, err)
+
+	// Verifying with wrong algorithm for the key.
+	_, err = Verify(ctx, &VerifyParams{
+		Token: token,
+		JWK: &clerk.JSONWebKey{
+			Key:       pubKey,
+			KeyID:     kid,
+			Algorithm: string(jose.EdDSA),
+			Use:       "sig",
+		},
+	})
+	require.Error(t, err)
+
+	// Verify with correct JSON web key.
+	validKey := &clerk.JSONWebKey{
+		Key:       pubKey,
+		KeyID:     kid,
+		Algorithm: string(jose.RS256),
+		Use:       "sig",
 	}
+	_, err = Verify(ctx, &VerifyParams{
+		Token: token,
+		JWK:   validKey,
+	})
+	require.NoError(t, err)
 
 	// Try an invalid token.
 	_, err = Verify(ctx, &VerifyParams{
 		Token: "this-is-not-a-token",
-		JWK:   &clerk.JSONWebKey{},
+		JWK:   validKey,
 	})
 	require.Error(t, err)
+
+	// Generate a token with an invalid issuer
+	token, pubKey = clerktest.GenerateJWT(t, map[string]any{"iss": "https://whatever.com"}, kid)
+	// Cannot verify if token has invalid issuer
+	validKey = &clerk.JSONWebKey{
+		Key:       pubKey,
+		KeyID:     kid,
+		Algorithm: string(jose.RS256),
+		Use:       "sig",
+	}
+	_, err = Verify(ctx, &VerifyParams{
+		Token: token,
+		JWK:   validKey,
+	})
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "issuer")
+	// Satellite domains don't validate the issuer
+	_, err = Verify(ctx, &VerifyParams{
+		Token:       token,
+		JWK:         validKey,
+		IsSatellite: true,
+	})
+	require.NoError(t, err)
+	// Issuer must match the proxy
+	_, err = Verify(ctx, &VerifyParams{
+		Token:    token,
+		JWK:      validKey,
+		ProxyURL: clerk.String("https://whatever.com"),
+	})
+	require.NoError(t, err)
+	_, err = Verify(ctx, &VerifyParams{
+		Token:    token,
+		JWK:      validKey,
+		ProxyURL: clerk.String("https://another.com/proxy"),
+	})
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "issuer")
+
+	// Generate a token with the 'azp' claim.
+	token, pubKey = clerktest.GenerateJWT(
+		t,
+		map[string]any{
+			"iss": "https://clerk.com",
+			"azp": "whatever.com",
+		},
+		kid,
+	)
+	// Cannot verify if 'azp' does not match
+	validKey = &clerk.JSONWebKey{
+		Key:       pubKey,
+		KeyID:     kid,
+		Algorithm: string(jose.RS256),
+		Use:       "sig",
+	}
+	_, err = Verify(ctx, &VerifyParams{
+		Token: token,
+		JWK:   validKey,
+		AuthorizedPartyHandler: func(azp string) bool {
+			return azp == "clerk.com"
+		},
+	})
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "authorized party")
+}
+
+type testCustomClaims struct {
+	Domain      string `json:"domain"`
+	Environment string `json:"environment"`
+}
+
+func TestVerify_CustomClaims(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	kid := "kid"
+	// Generate a JWT for the following custom claims.
+	tokenClaims := map[string]any{
+		"domain":      "clerk.com",
+		"environment": "production",
+		"sub":         "user_123",
+		"iss":         "https://clerk.com",
+	}
+	token, pubKey := clerktest.GenerateJWT(t, tokenClaims, kid)
+
+	customClaimsConstructor := func(_ context.Context) any {
+		return &testCustomClaims{}
+	}
+	claims, err := Verify(ctx, &VerifyParams{
+		Token: token,
+		JWK: &clerk.JSONWebKey{
+			Key:       pubKey,
+			KeyID:     kid,
+			Algorithm: string(jose.RS256),
+			Use:       "sig",
+		},
+		CustomClaimsConstructor: customClaimsConstructor,
+	})
+	require.NoError(t, err)
+	customClaims, ok := claims.Custom.(*testCustomClaims)
+	require.True(t, ok)
+	require.Equal(t, "user_123", claims.Subject)
+	require.Equal(t, "clerk.com", customClaims.Domain)
+	require.Equal(t, "production", customClaims.Environment)
 }

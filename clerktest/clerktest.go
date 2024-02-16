@@ -3,12 +3,17 @@ package clerktest
 
 import (
 	"bytes"
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/url"
 	"testing"
 
+	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/stretchr/testify/require"
 )
 
@@ -58,4 +63,28 @@ func (rt *RoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 		StatusCode: rt.Status,
 		Body:       io.NopCloser(bytes.NewReader(rt.Out)),
 	}, nil
+}
+
+// GenerateJWT creates a JSON web token with the provided claims
+// and key ID.
+func GenerateJWT(t *testing.T, claims any, kid string) (string, crypto.PublicKey) {
+	t.Helper()
+
+	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+
+	signerOpts := &jose.SignerOptions{}
+	signerOpts.WithType("JWT")
+	if kid != "" {
+		signerOpts.WithHeader("kid", kid)
+	}
+	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.RS256, Key: privKey}, signerOpts)
+	require.NoError(t, err)
+
+	builder := jwt.Signed(signer)
+	builder = builder.Claims(claims)
+	token, err := builder.CompactSerialize()
+	require.NoError(t, err)
+
+	return token, privKey.Public()
 }
