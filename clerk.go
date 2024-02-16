@@ -157,6 +157,20 @@ type Params interface {
 	ToMultipart() ([]byte, string, error)
 }
 
+// CustomRequestHeaders contains predefined values that can be
+// used as custom headers in Backend API requests.
+type CustomRequestHeaders struct {
+	Application string
+}
+
+// Apply the custom headers to the HTTP request.
+func (h *CustomRequestHeaders) apply(req *http.Request) {
+	if h == nil {
+		return
+	}
+	req.Header.Add("X-Clerk-Application", h.Application)
+}
+
 // BackendConfig is used to configure a new Clerk Backend.
 type BackendConfig struct {
 	// HTTPClient is an HTTP client instance that will be used for
@@ -169,6 +183,10 @@ type BackendConfig struct {
 	// Key is the Clerk secret key. If it's not set, the package level
 	// secretKey will be used.
 	Key *string
+	// CustomRequestHeaders allows you to provide predefined custom
+	// headers that will be added to every HTTP request that the Backend
+	// does.
+	CustomRequestHeaders *CustomRequestHeaders
 }
 
 // NewBackend returns a default backend implementation with the
@@ -186,9 +204,10 @@ func NewBackend(config *BackendConfig) Backend {
 		config.Key = String(secretKey)
 	}
 	return &defaultBackend{
-		HTTPClient: config.HTTPClient,
-		URL:        *config.URL,
-		Key:        *config.Key,
+		HTTPClient:           config.HTTPClient,
+		URL:                  *config.URL,
+		Key:                  *config.Key,
+		CustomRequestHeaders: config.CustomRequestHeaders,
 	}
 }
 
@@ -221,9 +240,10 @@ func SetBackend(b Backend) {
 }
 
 type defaultBackend struct {
-	HTTPClient *http.Client
-	URL        string
-	Key        string
+	HTTPClient           *http.Client
+	URL                  string
+	Key                  string
+	CustomRequestHeaders *CustomRequestHeaders
 }
 
 // Call sends requests to the Clerk API and handles the responses.
@@ -253,6 +273,7 @@ func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*h
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("User-Agent", fmt.Sprintf("clerk/clerk-sdk-go@%s", sdkVersion))
 	req.Header.Add("X-Clerk-SDK", fmt.Sprintf("go/%s", sdkVersion))
+	b.CustomRequestHeaders.apply(req)
 	req = req.WithContext(ctx)
 
 	return req, nil
