@@ -34,6 +34,8 @@ type SessionClaims struct {
 	ActiveOrganizationRole        string          `json:"org_role"`
 	ActiveOrganizationPermissions []string        `json:"org_permissions"`
 	Actor                         json.RawMessage `json:"act,omitempty"`
+	// Custom can hold any custom claims that might be found in a JWT.
+	Custom any `json:"-"`
 }
 
 // HasPermission checks if the session claims contain the provided

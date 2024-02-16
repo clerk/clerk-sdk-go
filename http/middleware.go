@@ -188,11 +188,30 @@ func AuthorizedPartyMatches(parties ...string) func(string) bool {
 	}
 }
 
-// CustomClaims allows to pass a type (e.g. struct), which will be populated with the token claims based on json tags.
-// You must pass a pointer for this option to work.
-func CustomClaims(claims any) AuthorizationOption {
+// CustomClaimsConstructor allows to pass a constructor function
+// which returns a pointer to a type (struct) to hold custom token
+// claims.
+// The instance of the custom claims type will be then made available
+// through the clerk.SessionClaims struct.
+//
+//	// Define a type to describe the custom claims.
+//	type MyCustomClaims struct {
+//		ACustomClaim string `json:"a_custom_claim"`
+//	}
+//
+//	// In your HTTP server mux, configure the middleware with
+//	// the custom claims constructor.
+//	WithHeaderAuthorization(CustomClaimsConstructor(func(_ context.Context) any {
+//		return &MyCustomClaims{}
+//	})
+//
+//	// In the HTTP handler, access the active session claims. The
+//	// custom claims are available in the SessionClaims.Custom field.
+//	sessionClaims, ok := clerk.SessionClaimsFromContext(r.Context())
+//	customClaims, ok := sessionClaims.Custom.(*MyCustomClaims)
+func CustomClaimsConstructor(constructor func(context.Context) any) AuthorizationOption {
 	return func(params *AuthorizationParams) error {
-		params.CustomClaims = claims
+		params.CustomClaimsConstructor = constructor
 		return nil
 	}
 }

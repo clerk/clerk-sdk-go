@@ -12,15 +12,32 @@ import (
 	"github.com/go-jose/go-jose/v3/jwt"
 )
 
+// AuthorizedPartyHandler is a type that can be used to perform checks
+// on the 'azp' claim.
 type AuthorizedPartyHandler func(string) bool
+
+// CustomClaimsConstructor can initialize structs for holding custom
+// JWT claims.
+type CustomClaimsConstructor func(context.Context) any
 
 type VerifyParams struct {
 	// Token is the JWT that will be verified. Required.
 	Token string
 	// JWK the custom JSON Web Key that will be used to verify the
 	// Token with. Required.
-	JWK          *clerk.JSONWebKey
-	CustomClaims any
+	JWK *clerk.JSONWebKey
+	// CustomClaimsConstructor will be called when parsing the Token's
+	// claims. It's useful for parsing custom claims into user-defined
+	// types.
+	// Make sure it returns a pointer to a type (struct) that describes
+	// any custom claims schema with the correct JSON tags.
+	//	type MyCustomClaims struct {}
+	//	VerifyParams{
+	//		CustomClaimsConstructor: func(_ context.Context) any {
+	//			return &MyCustomClaims{}
+	//		},
+	//	}
+	CustomClaimsConstructor CustomClaimsConstructor
 	// Leeway is the duration which the JWT is considered valid after
 	// it's expired. Useful for defending against server clock skews.
 	Leeway time.Duration
@@ -51,8 +68,9 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 
 	claims := &clerk.SessionClaims{}
 	allClaims := []any{claims}
-	if params.CustomClaims != nil {
-		allClaims = append(allClaims, params.CustomClaims)
+	if params.CustomClaimsConstructor != nil {
+		claims.Custom = params.CustomClaimsConstructor(ctx)
+		allClaims = append(allClaims, claims.Custom)
 	}
 	err = parsedToken.Claims(jwk.Key, allClaims...)
 	if err != nil {
@@ -64,13 +82,9 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 		return nil, err
 	}
 
-	iss := claims.Issuer
-	if params.ProxyURL != nil && *params.ProxyURL != "" {
-		iss = *params.ProxyURL
-	}
 	// Non-satellite domains must validate the issuer.
-	if !params.IsSatellite && !isValidIssuer(iss) {
-		return nil, fmt.Errorf("invalid issuer %s", iss)
+	if !params.IsSatellite && !isValidIssuer(claims.Issuer, params.ProxyURL) {
+		return nil, fmt.Errorf("invalid issuer %s", claims.Issuer)
 	}
 
 	if params.AuthorizedPartyHandler != nil && !params.AuthorizedPartyHandler(claims.AuthorizedParty) {
@@ -80,7 +94,10 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 	return claims, nil
 }
 
-func isValidIssuer(iss string) bool {
+func isValidIssuer(iss string, proxyURL *string) bool {
+	if proxyURL != nil {
+		return iss == *proxyURL
+	}
 	return strings.HasPrefix(iss, "https://clerk.") ||
 		strings.Contains(iss, ".clerk.accounts")
 }
