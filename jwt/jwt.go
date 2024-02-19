@@ -77,7 +77,7 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 		return nil, err
 	}
 
-	err = claims.Claims.ValidateWithLeeway(jwt.Expected{Time: time.Now().UTC()}, params.Leeway)
+	err = claims.ValidateWithLeeway(time.Now().UTC(), params.Leeway)
 	if err != nil {
 		return nil, err
 	}
@@ -109,13 +109,13 @@ type DecodeParams struct {
 // Decode decodes a JWT without verifying it.
 // WARNING: The token is not validated, therefore the returned Claims
 // should NOT be trusted.
-func Decode(_ context.Context, params *DecodeParams) (*clerk.Claims, error) {
+func Decode(_ context.Context, params *DecodeParams) (*clerk.UnverifiedToken, error) {
 	parsedToken, err := jwt.ParseSigned(params.Token)
 	if err != nil {
 		return nil, err
 	}
 
-	standardClaims := jwt.Claims{}
+	standardClaims := clerk.RegisteredClaims{}
 	extraClaims := make(map[string]any)
 	err = parsedToken.UnsafeClaimsWithoutVerification(&standardClaims, &extraClaims)
 	if err != nil {
@@ -128,8 +128,12 @@ func Decode(_ context.Context, params *DecodeParams) (*clerk.Claims, error) {
 		delete(extraClaims, key)
 	}
 
-	return &clerk.Claims{
-		Claims: standardClaims,
-		Extra:  extraClaims,
-	}, nil
+	claims := &clerk.UnverifiedToken{
+		RegisteredClaims: standardClaims,
+		Extra:            extraClaims,
+	}
+	if len(parsedToken.Headers) > 0 {
+		claims.KeyID = parsedToken.Headers[0].KeyID
+	}
+	return claims, nil
 }

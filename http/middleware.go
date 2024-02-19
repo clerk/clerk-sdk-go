@@ -12,7 +12,6 @@ import (
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/clerk/clerk-sdk-go/v2/jwks"
 	"github.com/clerk/clerk-sdk-go/v2/jwt"
-	jose "github.com/go-jose/go-jose/v3/jwt"
 )
 
 // RequireHeaderAuthorization will respond with HTTP 403 Forbidden if
@@ -60,13 +59,13 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 			}
 
 			token := strings.TrimPrefix(authorization, "Bearer ")
-			_, err := jwt.Decode(r.Context(), &jwt.DecodeParams{Token: token})
+			decoded, err := jwt.Decode(r.Context(), &jwt.DecodeParams{Token: token})
 			if err != nil {
 				next.ServeHTTP(w, r)
 				return
 			}
 			if params.JWK == nil {
-				params.JWK, err = getJWK(r.Context(), params.JWKSClient, token)
+				params.JWK, err = getJWK(r.Context(), params.JWKSClient, decoded.KeyID)
 				if err != nil {
 					w.WriteHeader(http.StatusUnauthorized)
 					return
@@ -90,14 +89,14 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 // Tries a cached value first, but if there's no value or the entry
 // has expired, it will fetch the JWK set from the API and cache the
 // value.
-func getJWK(ctx context.Context, jwksClient *jwks.Client, token string) (*clerk.JSONWebKey, error) {
-	kid, err := getKID(token)
-	if err != nil {
-		return nil, err
+func getJWK(ctx context.Context, jwksClient *jwks.Client, kid string) (*clerk.JSONWebKey, error) {
+	if kid == "" {
+		return nil, fmt.Errorf("missing jwt kid header claim")
 	}
 
 	jwk := getCache().Get(kid)
 	if jwk == nil {
+		var err error
 		jwk, err = forceGetJWK(ctx, jwksClient, kid)
 		if err != nil {
 			return nil, err
@@ -121,31 +120,15 @@ func forceGetJWK(ctx context.Context, jwksClient *jwks.Client, kid string) (*cle
 	if err != nil {
 		return nil, err
 	}
-	if jwks == nil || len(jwks.Keys) == 0 {
+	if jwks == nil {
 		return nil, fmt.Errorf("no jwks found")
 	}
 	for _, k := range jwks.Keys {
-		if k.KeyID == kid {
-			return &k, nil
+		if k != nil && k.KeyID == kid {
+			return k, nil
 		}
 	}
 	return nil, fmt.Errorf("no jwk key found for kid %s", kid)
-}
-
-// Extract the KeyID claim from the token.
-func getKID(token string) (string, error) {
-	parsedToken, err := jose.ParseSigned(token)
-	if err != nil {
-		return "", err
-	}
-	if len(parsedToken.Headers) == 0 {
-		return "", fmt.Errorf("missing jwt headers")
-	}
-	kid := parsedToken.Headers[0].KeyID
-	if kid == "" {
-		return "", fmt.Errorf("missing jwt kid header claim")
-	}
-	return kid, nil
 }
 
 type AuthorizationParams struct {

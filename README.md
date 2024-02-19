@@ -139,33 +139,35 @@ import (
     "github.com/clerk/clerk-sdk-go/v2/user"
 )
 
-// Each operation requires a context.Context as the first argument.
-ctx := context.Background()
+func main() {
+    // Each operation requires a context.Context as the first argument.
+    ctx := context.Background()
 
-// Set the API key
-clerk.SetKey("sk_live_XXX")
+    // Set the API key
+    clerk.SetKey("sk_live_XXX")
 
-// Create an organization
-org, err := organization.Create(ctx, &organization.CreateParams{
-    Name: clerk.String("Clerk Inc"),
-})
+    // Create an organization
+    org, err := organization.Create(ctx, &organization.CreateParams{
+        Name: clerk.String("Clerk Inc"),
+    })
 
-// Update the organization
-org, err = organization.Update(ctx, org.ID, &organization.UpdateParams{
-    Slug: clerk.String("clerk"),
-})
+    // Update the organization
+    org, err = organization.Update(ctx, org.ID, &organization.UpdateParams{
+        Slug: clerk.String("clerk"),
+    })
 
-// List organization memberships
-listParams := organizationmembership.ListParams{}
-listParams.Limit = clerk.Int64(10)
-memberships, err := organizationmembership.List(ctx, params)
-if memberships.TotalCount < 0 {
-    return
+    // List organization memberships
+    listParams := organizationmembership.ListParams{}
+    listParams.Limit = clerk.Int64(10)
+    memberships, err := organizationmembership.List(ctx, params)
+    if memberships.TotalCount < 0 {
+        return
+    }
+    membership := memberships[0]
+
+    // Get a user
+    usr, err := user.Get(ctx, membership.UserID)
 }
-membership := memberships[0]
-
-// Get a user
-usr, err := user.Get(ctx, membership.UserID)
 ```
 
 ### Accessing API responses
