@@ -156,18 +156,21 @@ func AuthorizedParty(handler func(string) bool) AuthorizationOption {
 
 // AuthorizedPartyMatches registers a handler that checks that the
 // 'azp' claim's value is included in the provided parties.
-func AuthorizedPartyMatches(parties ...string) func(string) bool {
+func AuthorizedPartyMatches(parties ...string) AuthorizationOption {
 	authorizedParties := make(map[string]struct{})
 	for _, p := range parties {
 		authorizedParties[p] = struct{}{}
 	}
 
-	return func(azp string) bool {
-		if azp == "" || len(authorizedParties) == 0 {
-			return true
+	return func(params *AuthorizationParams) error {
+		params.AuthorizedPartyHandler = func(azp string) bool {
+			if azp == "" || len(authorizedParties) == 0 {
+				return true
+			}
+			_, ok := authorizedParties[azp]
+			return ok
 		}
-		_, ok := authorizedParties[azp]
-		return ok
+		return nil
 	}
 }
 

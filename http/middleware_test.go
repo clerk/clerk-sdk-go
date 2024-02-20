@@ -91,7 +91,9 @@ func TestAuthorizedPartyFunc(t *testing.T) {
 			want:    true,
 		},
 	} {
-		fn := AuthorizedPartyMatches(tc.parties...)
-		require.Equal(t, tc.want, fn(tc.azp))
+		options := &AuthorizationParams{}
+		err := AuthorizedPartyMatches(tc.parties...)(options)
+		require.NoError(t, err)
+		require.Equal(t, tc.want, options.AuthorizedPartyHandler(tc.azp))
 	}
 }
