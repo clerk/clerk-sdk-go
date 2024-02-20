@@ -10,16 +10,16 @@ import (
 
 type JSONWebKeySet struct {
 	APIResource
-	Keys []JSONWebKey `json:"keys"`
+	Keys []*JSONWebKey `json:"keys"`
 }
 
 type JSONWebKey struct {
 	APIResource
-	raw       jose.JSONWebKey
 	Key       any    `json:"key"`
 	KeyID     string `json:"kid"`
 	Algorithm string `json:"alg"`
 	Use       string `json:"use"`
+	raw       jose.JSONWebKey
 }
 
 func (k *JSONWebKey) UnmarshalJSON(data []byte) error {

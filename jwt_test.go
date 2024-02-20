@@ -24,9 +24,8 @@ func TestSessionClaimsHasRole(t *testing.T) {
 			want:   true,
 		},
 	} {
-		claims := SessionClaims{
-			ActiveOrganizationRole: tc.active,
-		}
+		claims := SessionClaims{}
+		claims.ActiveOrganizationRole = tc.active
 		require.Equal(t, claims.HasRole(tc.role), tc.want)
 	}
 }
@@ -54,9 +53,8 @@ func TestSessionClaimsHasPermission(t *testing.T) {
 			want:       false,
 		},
 	} {
-		claims := SessionClaims{
-			ActiveOrganizationPermissions: tc.active,
-		}
+		claims := SessionClaims{}
+		claims.ActiveOrganizationPermissions = tc.active
 		require.Equal(t, claims.HasPermission(tc.permission), tc.want)
 	}
 }
