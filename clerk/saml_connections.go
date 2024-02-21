@@ -25,6 +25,7 @@ type SAMLConnection struct {
 	UserCount          int64                          `json:"user_count"`
 	SyncUserAttributes bool                           `json:"sync_user_attributes"`
 	AllowSubdomains    bool                           `json:"allow_subdomains"`
+	AllowIdpInitiated  bool                           `json:"allow_idp_initiated"`
 	CreatedAt          int64                          `json:"created_at"`
 	UpdatedAt          int64                          `json:"updated_at"`
 }
@@ -124,6 +125,7 @@ type UpdateSAMLConnectionParams struct {
 	Active             *bool                           `json:"active,omitempty"`
 	SyncUserAttributes *bool                           `json:"sync_user_attributes,omitempty"`
 	AllowSubdomains    *bool                           `json:"allow_subdomains,omitempty"`
+	AllowIdpInitiated  *bool                           `json:"allow_idp_initiated,omitempty"`
 }
 
 func (s SAMLConnectionsService) Update(id string, params *UpdateSAMLConnectionParams) (*SAMLConnection, error) {
