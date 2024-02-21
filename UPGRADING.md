@@ -32,178 +32,48 @@ API operations in `v1` of the Clerk Go SDK are organized by service. There are
 different services for each API and all services are properties of a single
 `clerk.Client`.
 
-Let's see a concrete example. Assume that we want to create an organization
-and then list all available organizations.
+In `v2` API operations are grouped by API resource. Every API resource is defined in its own package.
 
-Here's how we would do it in `v1`.
-
-```go
-import (
-    "github.com/clerkinc/clerk-sdk-go"
-)
-
-
-func main() {
-    client, err := clerk.NewClient("sk_live_XXX")
-    if err != nil {
-        // handle error
-    }
-
-    // Create an organization
-    org, err := client.Organizations().Create(clerk.CreateOrganizationParams{
-        Name: "Acme Inc",
-    })
-    if err != nil {
-        if errResp, ok := err.(*clerk.ErrorResponse); ok {
-            // Access the API errors
-            errResp.Errors
-        }
-    }
-    // List all organizations, limit results to one.
-    limit := 1
-    orgs, err := client.Organizations().ListAll(clerk.ListAllOrganizationsParams{
-        Limit: &limit,
-    })
-    if err != nil {
-        // handle the error
-    }
-    if orgs.TotalCount > 0 {
-        // Get the first organization in the list
-        org = orgs.Data[0]
-    }
-}
+```diff
+// Create an organization, in v1 and v2. Error handling is omitted.
+- client, err := clerk.NewClient("sk_live_XXX")
+- org, err := client.Organizations().Create(clerk.CreateOrganizationParams{
+-     Name: "Acme Inc",
+- })
++ ctx := context.Background()
++ clerk.SetKey("sk_live_XXX")
++ org, err := organization.Create(ctx, &organization.CreateParams{
++     Name: clerk.String("Acme Inc"),
++ })
 ```
 
-The `v2` version breaks away of the client and services pattern seen above.
-In `v2`, every API has its own package, following a resource-based structure.
+### Support for context.Context
 
-There are two ways to call API operations in `v2`: with or without a client. Let's see both approaches.
-
-### Usage without a client
-
-In most cases, you'll only have to deal with a single API key in your project.
-
-```go
-import (
-    "context"
-
-    "github.com/clerk/clerk-sdk-go/v2"
-    "github.com/clerk/clerk-sdk-go/v2/organization"
-)
-
-func main() {
-    ctx := context.Background()
-    clerk.SetKey("sk_live_XXX")
-
-    // Create an organization
-    org, err := organization.Create(ctx, &organization.CreateParams{
-        Name: clerk.String("Acme Inc"),
-    })
-    if err != nil {
-        if apiErr, ok := err.(*clerk.APIErrorResponse); ok {
-            // Access the API errors and additional information
-            apiErr.TraceID
-            apiErr.Error()
-            apiErr.Response.RawJSON
-        }
-    }
-    // List all organizations, limit results to one.
-    params := &organization.ListParams{}
-    params.Limit = clerk.Int64(1)
-    list, err := organization.List(ctx, params)
-    if err != nil {
-        // handle the error
-    }
-    if list.TotalCount > 0 {
-        // Get the first organization in the list
-        org = list.Organizations[0]
-    }
-}
-```
-
-### Usage with a client
-
-When you have to deal with more than one API keys in your project, or need more flexibility.
-
-```go
-import (
-    "context"
-
-    "github.com/clerk/clerk-sdk-go/v2"
-    "github.com/clerk/clerk-sdk-go/v2/organization"
-)
-
-func main() {
-    ctx := context.Background()
-    config := &organization.ClientConfig{}
-    config.Key = "sk_live_XXX"
-    client := organization.NewClient(config)
-
-    // Create an organization
-    org, err := client.Create(ctx, &organization.CreateParams{
-        Name: clerk.String("Acme Inc"),
-    })
-    if err != nil {
-        if apiErr, ok := err.(*clerk.APIErrorResponse); ok {
-            // Access the API errors and additional information
-            apiErr.TraceID
-            apiErr.Error()
-            apiErr.Response.RawJSON
-        }
-    }
-    // List all organizations, limit results to one.
-    params := &organization.ListParams{}
-    params.Limit = clerk.Int64(1)
-    list, err := organization.List(ctx, params)
-    if err != nil {
-        // handle the error
-    }
-    if list.TotalCount > 0 {
-        // Get the first organization in the list
-        org = list.Organizations[0]
-    }
-}
-```
+All API operations in `v2` receive a `context.Context` as their first argument.
 
 ### List operation responses
 
-A lot of APIs support operations where a resource list is returned. In `v2` of the Clerk Go SDK,
-the return types of list operations are similar. They always contain the total count of resources
-available in the server, while the (sometimes filtered or paginated) results are returned in a slice.
+In `v2` of the Clerk Go SDK, the return types of list operations are similar. They always contain the total count of resources
+available in the server, and a slice with the operation results.
 
-Here's an example. Replace `$resource$` with a resource (package) name.
-
-```go
-import (
-    "github.com/clerk/clerk-sdk-go/v2"
-    "github.com/clerk/clerk-sdk-go/v2/$resource$"
-)
-
-ctx := context.Background()
-list, err := $resource$.List(ctx, &$resource$.ListParams{})
-// If $resource$ was user, the following line would read
-// fmt.Println(list.TotalCount, list.Users)
-fmt.Println(list.TotalCount, list.$resource$s)
+```diff
+// Fetch a list of 10 users. Error handling is omitted.
+- limit := 10
+- users, err := client.Users().ListAll(clerk.ListAllUserParams{
+-    Limit: &limit,
+- })
+- if len(users) > 0 {
+-    fmt.Println(users[0].ID)
+- }
++ params := &user.ListParams{}
++ params.Limit = clerk.Int64(10)
++ list, err := user.List(context.Background(), &params)
++ if list.TotalLength > 0 {
++     fmt.Println(list.Users[0].ID)
++ }
 ```
 
-## Different types
-
-In the library's `v1` version, some operations would return the same type, while others wouldn't.
-
-The `v2` version moves to a more resource-oriented approach. Each API resource has a type and all types
-are defined in the `clerk` package.
-
-This means there are types for `clerk.User` and `clerk.Domain` and these types are returned by
-the Users and Domains API operations respectively.
-
-All types were consolidated and updated to match the currently supported request parameters and responses
-of the [Clerk Backend API](https://clerk.com/docs/reference/backend-api). Many fields have been renamed and a lot
-of new fields have been added. Deprecated struct fields have been dropped.
-
-### Operation parameters
-
-The `v2` version of Clerk SDK Go introduces another important change about types that can be used as API operation
-parameters. Every field for these structs is a pointer.
+### Every field in API operation parameters is a pointer
 
 The `v2` version of the library introduces helper functions to cast basic type values to pointers. These are:
 - `clerk.String`
@@ -218,50 +88,64 @@ domain.Create(context.Background(), &domain.CreateParams{
     IsSatellite: clerk.Bool(true),
 })
 ```
-
 You can explicitly pass zero values with `clerk.String("")` or `clerk.Int64(0)`.
 
-All API operations receive a `context.Context` as the first argument.
+### The type for failed API responses is now `*clerk.APIErrorResponse`
 
-## HTTP middleware
+The `v2` version of the library introduces a new type for API responses that contain errors.
+The new type is [clerk.APIErrorResponse](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2#APIErrorResponse) and it replaces `clerk.ErrorResponse`.
 
-The `v1` version of the Clerk Go SDK supports two HTTP middleware functions that can handle authentication with Clerk.
-These are `WithSessionV2` and `RequireSessionV2`.
+The `clerk.APIErrorResponse` type contains additional fields and provides access to more debugging information.
 
-The middleware in `v1` supports authentication with a bearer token in the HTTP request headers, falling back to cookie
-based authentication if the "Authorization" header is missing.
+```diff
+- org, err := client.Organizations().Create(clerk.CreateOrganizationParams{
+-     Name: "Acme Inc",
+- })
+- if err != nil {
+-     if errResp, ok := err.(*clerk.ErrorResponse); ok {
+-         // Access the API errors
+-         errResp.Errors
+-     }
+- }
++ ctx := context.Background()
++ clerk.SetKey("sk_live_XXX")
++ org, err := organization.Create(ctx, &organization.CreateParams{
++     Name: clerk.String("Acme Inc"),
++ })
++ if err != nil {
++     if apiErr, ok := err.(*clerk.APIErrorResponse); ok {
++         // Access the API errors and additional information
++         apiErr.TraceID
++         apiErr.Error()
++         apiErr.Response.RawJSON
++     }
++ }
+```
 
-In a similar way, the `v2` version of the library also provides two middleware functions that can handle authentication
-with Clerk; `WithHeaderAuthorization` and `RequireHeaderAuthorization`.
+### HTTP middleware
 
-As the name implies, the new middleware support only authentication with a bearer token, that needs to be present in the
-"Authorization" header of the HTTP request.
+The `clerk.WithSessionV2` and `clerk.RequireSessionV2` middleware functions from `v1` are replaced by [http.WithHeaderAuthorization](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2/http#WithHeaderAuthorization) and [http.RequireHeaderAuthorization](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2/http#RequireHeaderAuthorization) in `v2`
 
-Cookie based authentication is not supported at all by the `v2` version of the library.
+Please note that as the name implies `WithHeaderAuthorization` and `RequireHeaderAuthorization` support only authentication with a bearer token.
+The token needs to be provided in the "Authorization" request header.
 
-Usage has also changed between `v1` and `v2`, as have the different options that the middleware support.
+**Cookie based authentication is not supported at all by the `v2` version of the library.**
 
-In `v1`, here's how you would use the `RequireSessionV2` middleware to get access to the session token claims in HTTP handlers.
+To get access to the active session claims from the http.Request context, you must replace `clerk.SessionFromContext` with [clerk.SessionClaimsFromContext](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2#SessionClaimsFromContext).
 
-```go
-import (
-    "net/http"
-
-    "github.com/clerkinc/clerk-sdk-go"
-)
-
-func main() {
-    client, err := clerk.NewClient("sk_live_XXX")
-    if err != nil {
-        panic(err)
-    }
-    mux := http.NewServeMux()
-    mux.Handle("/session", clerk.RequireSessionV2(client)(http.HandlerFunc(handleSession)))
-    http.ListenAndServe(":3000", mux)
-}
+```diff
+// Protect a route with Clerk authentication middleware.
+// Error handling is omitted.
+mux := http.NewServeMux()
+- client, err := clerk.NewClient("sk_live_XXX")
+- mux.Handle("/session", clerk.RequireSessionV2(client)(http.HandlerFunc(handleSession)))
++ clerk.SetKey("sk_live_XXX")
++ mux.Handle("/session", clerkhttp.RequireHeaderAuthorization()(http.HandlerFunc(handleSession)))
+http.ListenAndServe(":3000", mux)
 
 func handleSession(w http.ResponseWriter, r *http.Request) {
-    sessionClaims, ok := clerk.SessionFromContext(r.Context())
+-    sessionClaims, ok := clerk.SessionFromContext(r.Context())
++    sessionClaims, ok := clerk.SessionClaimsFromContext(r.Context())
     if ok {
         // claims contain session information
     } else {
@@ -270,73 +154,12 @@ func handleSession(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Here's the same HTTP server written for `v2`. Please note that only header based authentication with a bearer token is
-supported by the `RequireHeaderAuthorization` middleware. Cookie based authentication is not supported.
-
-```go
-import (
-    "net/http"
-
-    "github.com/clerk/clerk-sdk-go/v2"
-    clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
-)
-
-func main() {
-    clerk.SetKey("sk_live_XXX")
-    mux := http.NewServeMux()
-    mux.Handle("/session", clerkhttp.RequireHeaderAuthorization()(http.HandlerFunc(handleSession)))
-    http.ListenAndServe(":3000", mux)
-}
-
-func handleSession(w http.ResponseWriter, r *http.Request) {
-    sessionClaims, ok := clerk.SessionClaimsFromContext(r.Context())
-    if ok {
-        // claims contain session information
-    } else {
-        // there is no active session (non-authenticated user)
-    }
-}
-```
-
-If you're dealing with multiple Clerk API keys, you can pass a `jwks.Client` to the `RequireHeaderAuthorization` middleware.
-
-```go
-import (
-    "net/http"
-
-    "github.com/clerk/clerk-sdk-go/v2"
-    clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
-    "github.com/clerk/clerk-sdk-go/v2/jwks"
-)
-
-func main() {
-    config := &jwks.ClientConfig{}
-    config.Key = "sk_live_XXX"
-    client := jwks.NewClient(config)
-    mux := http.NewServeMux()
-    withAuth := clerkhttp.RequireHeaderAuthorization(
-        clerkhttp.JWKSClient(client),
-    )
-    mux.Handle("/session", withAuth(http.HandlerFunc(handleSession)))
-    http.ListenAndServe(":3000", mux)
-}
-
-func handleSession(w http.ResponseWriter, r *http.Request) {
-    sessionClaims, ok := clerk.SessionClaimsFromContext(r.Context())
-    if ok {
-        // claims contain session information
-    } else {
-        // there is no active session (non-authenticated user)
-    }
-}
-```
-
-### Available middleware options
+#### Available middleware options
 
 All available middleware options are preserved in the `v2` version of the library, but they have been renamed.
 
-Name in v1 | Name in v2
------------|------------
+v1 | v2
+-----|-----
 `WithAuthorizedParty` | `AuthorizedParty` and `AuthorizedPartyMatches`
 `WithLeeway` | `Leeway`
 `WithJWTVerificationKey` | `JSONWebKey`
@@ -345,28 +168,11 @@ Name in v1 | Name in v2
 `WithCustomClaims` | `CustomClaimsConstructor`
 n/a | `JWKSClient`
 
-## Verify tokens
+### Verify tokens
 
-The `clerk.VerifyToken` method in version `v1` of the Clerk Go SDK has been renamed to `jwt.Verify` in `v2`.
+The `clerk.VerifyToken` method in version `v1` of the Clerk Go SDK has been renamed to [jwt.Verify](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2/jwt#Verify) in `v2`.
 
 The method accepts the same parameters, with two important differences.
 
 - The JSON web key with which the token will be verified is a required parameter.
 - The method will not cache the JSON web key.
-
-In the `v1` version, the `clerk.VerifyToken` method would trigger an HTTP request to the Clerk Backend API to
-fetch the JSON web key and would cache its value for one hour.
-
-The new `jwt.Verify` method that is included in `v2` accepts the JSON web key as a required parameter. It is up
-to the caller to get access to the key and pass it to `jwt.Verify`.
-
-Please note that both HTTP middleware functions, `WithHeaderAuthorization` and `RequireHeaderAuthorization` will cache
-the  JSON web key by default.
-
-## Feedback and omissions
-
-Please let us know about your experience upgrading to the `v2` version of the Clerk Go SDK.
-
-You can reach us via [various support channels](https://clerk.com/support).
-
-If you notice any bugs or omissions, feel free to open an [issue on Github](https://github.com/clerk/clerk-sdk-go/issues/new).
