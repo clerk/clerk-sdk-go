@@ -26,7 +26,19 @@ a lot of breaking changes.
 
 The minimum supported Go version for the `v2` version of the Clerk Go SDK is `1.19`.
 
-### New API and package layout
+### Setting an API key
+
+```diff
+- client, err := clerk.NewClient("sk_live_XXX")
++ clerk.SetKey("sk_live_XXX")
+```
+
+### Invoking API operations
+
+```diff
+- client.$Resource$().Create(clerk.Create$Resource$Params{})
++ $resource$.Create(ctx, $resource$.CreateParams{})
+```
 
 API operations in `v1` of the Clerk Go SDK are organized by service. There are
 different services for each API and all services are properties of a single
@@ -75,7 +87,7 @@ available in the server, and a slice with the operation results.
 
 ### Every field in API operation parameters is a pointer
 
-The `v2` version of the library introduces helper functions to cast basic type values to pointers. These are:
+The `v2` version of the library introduces helper functions to generate pointers from basic type values. These are:
 - `clerk.String`
 - `clerk.Bool`
 - `clerk.Int64`
@@ -90,7 +102,12 @@ domain.Create(context.Background(), &domain.CreateParams{
 ```
 You can explicitly pass zero values with `clerk.String("")` or `clerk.Int64(0)`.
 
-### The type for failed API responses is now `*clerk.APIErrorResponse`
+### The `clerk.ErrorResponse` type changed to `clerk.APIErrorResponse`
+
+```diff
+- clerk.ErrorResponse
++ clerk.APIErrorResponse
+```
 
 The `v2` version of the library introduces a new type for API responses that contain errors.
 The new type is [clerk.APIErrorResponse](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2#APIErrorResponse) and it replaces `clerk.ErrorResponse`.
@@ -124,12 +141,24 @@ The `clerk.APIErrorResponse` type contains additional fields and provides access
 
 ### HTTP middleware
 
+```diff
+- clerk.WithSessionV2
++ http.WithHeaderAuthorization
+
+- clerk.RequireSessionV2
++ http.RequireHeaderAuthorization
+
+- clerk.SessionFromContext
++ clerk.SessionClaimsFromContext
+```
+
 The `clerk.WithSessionV2` and `clerk.RequireSessionV2` middleware functions from `v1` are replaced by [http.WithHeaderAuthorization](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2/http#WithHeaderAuthorization) and [http.RequireHeaderAuthorization](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2/http#RequireHeaderAuthorization) in `v2`
 
 Please note that as the name implies `WithHeaderAuthorization` and `RequireHeaderAuthorization` support only authentication with a bearer token.
 The token needs to be provided in the "Authorization" request header.
 
-**Cookie based authentication is not supported at all by the `v2` version of the library.**
+> [! IMPORTANT]
+> Cookie based authentication is not supported at all by the `v2` version of the library.
 
 To get access to the active session claims from the http.Request context, you must replace `clerk.SessionFromContext` with [clerk.SessionClaimsFromContext](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2#SessionClaimsFromContext).
 
@@ -158,15 +187,30 @@ func handleSession(w http.ResponseWriter, r *http.Request) {
 
 All available middleware options are preserved in the `v2` version of the library, but they have been renamed.
 
-v1 | v2
------|-----
-`WithAuthorizedParty` | `AuthorizedParty` and `AuthorizedPartyMatches`
-`WithLeeway` | `Leeway`
-`WithJWTVerificationKey` | `JSONWebKey`
-`WithSatelliteDomain` | `Satellite`
-`WithProxyURL` | `ProxyURL`
-`WithCustomClaims` | `CustomClaimsConstructor`
-n/a | `JWKSClient`
+```diff
+- WithAuthorizedParty(...string)
++ AuthorizedPartyMatches(...string)
+
+- WithLeeway(time.Duration)
++ Leeway(time.Duration)
+
+- WithJWTVerificationKey(string)
++ JSONWebKey(string)
+
+- WithSatelliteDomain(string)
++ Satellite(string)
+
+- WithProxyURL(string)
++ ProxyURL(string)
+
+- WithCustomClaims(interface{})
++ CustomClaimsConstructor(func(context.Context) any)
+```
+
+The `v2` version of the Clerk Go SDK provides additional middleware options.
+
+- [AuthorizedParty(func(string) bool)](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2/http#AuthorizedParty)
+- [JWKSClient(\*jwks.Client)](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2/http#JWKSClient)
 
 ### Verify tokens
 

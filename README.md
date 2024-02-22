@@ -19,7 +19,9 @@ The official [Clerk](https://clerk.com) Go client library for accessing the [Cle
 [![documentation](https://img.shields.io/badge/documentation-clerk-green.svg)](https://clerk.com/docs)
 [![twitter](https://img.shields.io/twitter/follow/ClerkDev?style=social)](https://twitter.com/intent/follow?screen_name=ClerkDev)
 
-**Migrating from `v1`?** Check out the [upgrade guide](UPGRADING.md#1-x-x-to-2-x-x).
+### Migrating from `v1`?
+
+Check out the [upgrade guide](UPGRADING.md#1-x-x-to-2-x-x).
 
 ## Requirements
 
