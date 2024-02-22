@@ -36,20 +36,15 @@ func RequireHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) 
 // is expected to have the following format:
 // Authorization: Bearer <token>
 func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) http.Handler {
-	var paramsErr error
-	params := &AuthorizationParams{}
-	for _, opt := range opts {
-		paramsErr = opt(params)
-		if paramsErr != nil {
-			break
-		}
-	}
-
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if paramsErr != nil {
-				w.WriteHeader(http.StatusUnauthorized)
-				return
+			params := &AuthorizationParams{}
+			for _, opt := range opts {
+				err := opt(params)
+				if err != nil {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
 			}
 
 			authorization := strings.TrimSpace(r.Header.Get("Authorization"))
