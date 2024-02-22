@@ -448,6 +448,32 @@ type ClientConfig struct {
 	BackendConfig
 }
 
+// Clock is an interface that can be used with the library instead
+// of the [time] package.
+// The interface is useful for testing time sensitive paths or
+// feeding the library with an authoritative source of time, like
+// an external time generator.
+type Clock interface {
+	Now() time.Time
+}
+
+// A default implementation of a Clock, keeping the real time by
+// using the [time] package directly.
+type defaultClock struct{}
+
+// Now returns the current time.
+func (c *defaultClock) Now() time.Time {
+	return time.Now()
+}
+
+// NewClock returns a default clock implementation which calls
+// the [time] package internally.
+// Please note that the return type is an interface because the
+// Clock is not supposed to be used directly.
+func NewClock() Clock {
+	return &defaultClock{}
+}
+
 // Regular expression that matches multiple backslashes in a row.
 var extraBackslashesRE = regexp.MustCompile("([^:])//+")
 

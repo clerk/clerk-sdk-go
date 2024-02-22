@@ -1,11 +1,15 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/clerk/clerk-sdk-go/v2"
+	"github.com/clerk/clerk-sdk-go/v2/clerktest"
+	"github.com/jonboulle/clockwork"
 	"github.com/stretchr/testify/require"
 )
 
@@ -61,6 +65,74 @@ func TestRequireHeaderAuthorization_InvalidAuthorization(t *testing.T) {
 	res, err = ts.Client().Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusForbidden, res.StatusCode)
+}
+
+func TestWithHeaderAuthorization_Caching(t *testing.T) {
+	kid := "kid"
+	clock := clockwork.NewFakeClockAt(time.Now().UTC())
+
+	// Mock the Clerk API server. We expect requests to GET /v1/jwks.
+	totalJWKSRequests := 0
+	clerkAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/jwks" && r.Method == http.MethodGet {
+			// Count the number of requests to the JWKS endpoint
+			totalJWKSRequests++
+			_, err := w.Write([]byte(
+				fmt.Sprintf(
+					`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
+					kid,
+				),
+			))
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer clerkAPI.Close()
+
+	// Mock the clerk backend
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: clerkAPI.Client(),
+		URL:        &clerkAPI.URL,
+	}))
+
+	// This is the user's server, guarded by Clerk's http middleware.
+	ts := httptest.NewServer(WithHeaderAuthorization(Clock(clock))(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := w.Write([]byte("{}"))
+		require.NoError(t, err)
+	})))
+	defer ts.Close()
+
+	// Generate a token with the claims below.
+	tokenClaims := map[string]any{
+		"sid": "sess_123",
+		"sub": "user_123",
+		"iss": "https://clerk.com",
+	}
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	// The first request needs to fetch the JSON web key set, because
+	// the cache is empty.
+	req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	require.NoError(t, err)
+	_, err = ts.Client().Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 1, totalJWKSRequests)
+
+	// The next request will use the cached value
+	_, err = ts.Client().Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 1, totalJWKSRequests)
+
+	// If we move past the cache's expiry date, the JWKS will be fetched again.
+	clock.Advance(2 * time.Hour)
+	_, err = ts.Client().Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 2, totalJWKSRequests)
+
+	// The next time the JWKS will be cached again.
+	_, err = ts.Client().Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 2, totalJWKSRequests)
 }
 
 func TestAuthorizedPartyFunc(t *testing.T) {

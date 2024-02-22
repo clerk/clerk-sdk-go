@@ -324,6 +324,7 @@ Name in v1 | Name in v2
 `WithSatelliteDomain` | `Satellite`
 `WithProxyURL` | `ProxyURL`
 `WithCustomClaims` | `CustomClaimsConstructor`
+n/a | `Clock`
 n/a | `JWKSClient`
 
 ## Verify tokens
