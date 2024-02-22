@@ -36,6 +36,6 @@ func (c *Client) Get(ctx context.Context, params *GetParams) (*clerk.JSONWebKeyS
 	req := clerk.NewAPIRequest(http.MethodGet, path)
 	req.SetParams(params)
 	resource := &clerk.JSONWebKeySet{}
-	err := clerk.GetBackend().Call(ctx, req, resource)
+	err := c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
