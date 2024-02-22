@@ -10,7 +10,7 @@
 
 # Clerk Go SDK
 
-**This is still a work in progress. The current stable release is v1. See the main branch for the stable release.**
+**This is a beta release. The package is fully working and is expected to enter the GA phase soon. See the main branch for the stable release.**
 
 The official [Clerk](https://clerk.com) Go client library for accessing the [Clerk Backend API](https://clerk.com/docs/reference/backend-api).
 
@@ -18,6 +18,8 @@ The official [Clerk](https://clerk.com) Go client library for accessing the [Cle
 [![chat on Discord](https://img.shields.io/discord/856971667393609759.svg?logo=discord)](https://discord.com/invite/b5rXHjAg7A)
 [![documentation](https://img.shields.io/badge/documentation-clerk-green.svg)](https://clerk.com/docs)
 [![twitter](https://img.shields.io/twitter/follow/ClerkDev?style=social)](https://twitter.com/intent/follow?screen_name=ClerkDev)
+
+**Migrating from `v1`?** Check out the [upgrade guide](UPGRADING.md#1-x-x-to-2-x-x).
 
 ## Requirements
 
