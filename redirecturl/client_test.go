@@ -16,7 +16,7 @@ func TestRedirectURLClientCreate(t *testing.T) {
 	t.Parallel()
 	id := "ru_123"
 	url := "https://example.com"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -37,7 +37,7 @@ func TestRedirectURLClientCreate(t *testing.T) {
 
 func TestRedirectURLClientCreate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -64,7 +64,7 @@ func TestRedirectURLClientGet(t *testing.T) {
 	t.Parallel()
 	id := "ru_123"
 	url := "https://example.com"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -83,7 +83,7 @@ func TestRedirectURLClientGet(t *testing.T) {
 func TestRedirectURLClientDelete(t *testing.T) {
 	t.Parallel()
 	id := "ru_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -101,7 +101,7 @@ func TestRedirectURLClientDelete(t *testing.T) {
 
 func TestRedirectURLClientList(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,

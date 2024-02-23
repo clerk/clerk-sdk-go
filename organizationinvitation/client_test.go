@@ -17,7 +17,7 @@ func TestOrganizationInvitationClientCreate(t *testing.T) {
 	id := "orginv_123"
 	organizationID := "org_123"
 	emailAddress := "foo@bar.com"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -40,7 +40,7 @@ func TestOrganizationInvitationClientCreate(t *testing.T) {
 
 func TestOrganizationInvitationClientCreate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,

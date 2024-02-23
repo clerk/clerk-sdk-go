@@ -18,7 +18,7 @@ func TestOrganizationClientCreate(t *testing.T) {
 	t.Parallel()
 	id := "org_123"
 	name := "Acme Inc"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -39,7 +39,7 @@ func TestOrganizationClientCreate(t *testing.T) {
 
 func TestOrganizationClientCreate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -66,7 +66,7 @@ func TestOrganizationClientGet(t *testing.T) {
 	t.Parallel()
 	id := "org_123"
 	name := "Acme Inc"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -86,7 +86,7 @@ func TestOrganizationClientUpdate(t *testing.T) {
 	t.Parallel()
 	id := "org_123"
 	name := "Acme Inc"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -107,7 +107,7 @@ func TestOrganizationClientUpdate(t *testing.T) {
 
 func TestOrganizationClientUpdate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -133,7 +133,7 @@ func TestOrganizationClientUpdate_Error(t *testing.T) {
 func TestOrganizationClientDelete(t *testing.T) {
 	t.Parallel()
 	id := "org_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -151,7 +151,7 @@ func TestOrganizationClientDelete(t *testing.T) {
 
 func TestOrganizationClientList(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,
@@ -198,7 +198,7 @@ func TestOrganizationClientUpdateLogo(t *testing.T) {
 	t.Parallel()
 	id := "org_123"
 	userID := "user_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -219,7 +219,7 @@ func TestOrganizationClientUpdateLogo(t *testing.T) {
 func TestOrganizationClientDeleteLogo(t *testing.T) {
 	t.Parallel()
 	id := "org_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -238,7 +238,7 @@ func TestOrganizationClientUpdateMetadata(t *testing.T) {
 	t.Parallel()
 	id := "org_123"
 	metadata := `{"foo":"bar"}`
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/clerk/clerk-sdk-go/v2/clerktest"
 	"github.com/stretchr/testify/require"
 )
@@ -14,7 +15,7 @@ import (
 func TestSvixWebhookClientCreate(t *testing.T) {
 	t.Parallel()
 	svixURL := "https://foo.com/webhook"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -31,7 +32,7 @@ func TestSvixWebhookClientCreate(t *testing.T) {
 
 func TestSvixWebhookClientDelete(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -47,7 +48,7 @@ func TestSvixWebhookClientDelete(t *testing.T) {
 func TestSvixWebhookClientRefreshURL(t *testing.T) {
 	t.Parallel()
 	svixURL := "https://foo.com/webhook"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,

@@ -16,7 +16,7 @@ func TestBlocklistIdentifierClientCreate(t *testing.T) {
 	t.Parallel()
 	identifier := "foo@bar.com"
 	id := "blid_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -37,7 +37,7 @@ func TestBlocklistIdentifierClientCreate(t *testing.T) {
 
 func TestBlocklistIdentifierClientCreate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -63,7 +63,7 @@ func TestBlocklistIdentifierClientCreate_Error(t *testing.T) {
 func TestBlocklistIdentifierClientDelete(t *testing.T) {
 	t.Parallel()
 	id := "blid_456"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -81,7 +81,7 @@ func TestBlocklistIdentifierClientDelete(t *testing.T) {
 
 func TestBlocklistIdentifierClientList(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,

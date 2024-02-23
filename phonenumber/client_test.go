@@ -17,7 +17,7 @@ func TestPhoneNumberClientCreate(t *testing.T) {
 	phone := "+10123456789"
 	userID := "user_123"
 	id := "idn_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -41,7 +41,7 @@ func TestPhoneNumberClientCreate(t *testing.T) {
 func TestPhoneNumberClientUpdate(t *testing.T) {
 	t.Parallel()
 	id := "idn_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -63,7 +63,7 @@ func TestPhoneNumberClientUpdate(t *testing.T) {
 func TestPhoneNumberClientGet(t *testing.T) {
 	t.Parallel()
 	id := "idn_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -82,7 +82,7 @@ func TestPhoneNumberClientGet(t *testing.T) {
 func TestPhoneNumberClientDelete(t *testing.T) {
 	t.Parallel()
 	id := "idn_456"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,

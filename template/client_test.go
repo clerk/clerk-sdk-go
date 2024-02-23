@@ -15,7 +15,7 @@ import (
 
 func TestTemplateClientList(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,
@@ -45,7 +45,7 @@ func TestTemplateClientGet(t *testing.T) {
 	t.Parallel()
 	templateType := clerk.TemplateTypeSMS
 	slug := "the-slug"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -69,7 +69,7 @@ func TestTemplateClientUpdate(t *testing.T) {
 	templateType := clerk.TemplateTypeEmail
 	subject := "subject"
 	slug := "the-slug"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -95,7 +95,7 @@ func TestTemplateClientDelete(t *testing.T) {
 	t.Parallel()
 	templateType := clerk.TemplateTypeEmail
 	slug := "the-slug"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -118,7 +118,7 @@ func TestTemplateClientRevert(t *testing.T) {
 	t.Parallel()
 	templateType := clerk.TemplateTypeEmail
 	slug := "the-slug"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -141,7 +141,7 @@ func TestTemplateClientPreview(t *testing.T) {
 	templateType := clerk.TemplateTypeEmail
 	slug := "the-slug"
 	body := "body"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -166,7 +166,7 @@ func TestTemplateClientToggleDelivery(t *testing.T) {
 	templateType := clerk.TemplateTypeEmail
 	slug := "the-slug"
 	deliveredByClerk := true
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,

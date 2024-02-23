@@ -110,7 +110,7 @@ import (
 ctx := context.Background()
 
 // Initialize a client with an API key
-config := &$resource$.ClientConfig{}
+config := &clerk.ClientConfig{}
 config.Key = "sk_live_XXX"
 client := $resource$.NewClient(config)
 
