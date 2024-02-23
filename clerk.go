@@ -442,6 +442,12 @@ func (params ListParams) ToQuery() url.Values {
 	return q
 }
 
+// ClientConfig is used to configure a new Client that can invoke
+// API operations.
+type ClientConfig struct {
+	BackendConfig
+}
+
 // Regular expression that matches multiple backslashes in a row.
 var extraBackslashesRE = regexp.MustCompile("([^:])//+")
 

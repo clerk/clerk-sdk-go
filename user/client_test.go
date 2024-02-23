@@ -19,7 +19,7 @@ func TestUserClientCreate(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
 	username := "username"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -40,7 +40,7 @@ func TestUserClientCreate(t *testing.T) {
 
 func TestUserClientList_Request(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -79,7 +79,7 @@ func TestUserClientList_Response(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.URL = clerk.String(ts.URL)
 	config.HTTPClient = ts.Client()
 	client := NewClient(config)
@@ -92,7 +92,7 @@ func TestUserClientList_Response(t *testing.T) {
 
 func TestUserClientCount(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -124,7 +124,7 @@ func TestUserClientGet(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
 	username := "username"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -143,7 +143,7 @@ func TestUserClientGet(t *testing.T) {
 func TestUserClientDelete(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -163,7 +163,7 @@ func TestUserClientUpdate(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
 	username := "username"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -186,7 +186,7 @@ func TestUserClientUpdateMetadata(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
 	metadata := json.RawMessage(`{"foo":"bar"}`)
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -209,7 +209,7 @@ func TestUserClientListOAuthAccessTokens(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
 	provider := "oauth_custom"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,
@@ -242,7 +242,7 @@ func TestUserClientListOAuthAccessTokens(t *testing.T) {
 func TestUserClientDeleteMFA(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -262,7 +262,7 @@ func TestUserClientDeleteMFA(t *testing.T) {
 func TestUserClientBan(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -281,7 +281,7 @@ func TestUserClientBan(t *testing.T) {
 func TestUserClientUnban(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -300,7 +300,7 @@ func TestUserClientUnban(t *testing.T) {
 func TestUserClientLock(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -319,7 +319,7 @@ func TestUserClientLock(t *testing.T) {
 func TestUserClientUnlock(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -340,7 +340,7 @@ func TestUserClientListOrganizationMemberships(t *testing.T) {
 	membershipID := "orgmem_123"
 	organizationID := "org_123"
 	userID := "user_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,

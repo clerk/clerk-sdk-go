@@ -13,7 +13,7 @@ import (
 
 func TestInstanceClientUpdate(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -32,7 +32,7 @@ func TestInstanceClientUpdate(t *testing.T) {
 
 func TestInstanceClientUpdate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -57,7 +57,7 @@ func TestInstanceClientUpdate_Error(t *testing.T) {
 
 func TestInstanceClientUpdateRestrictions(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -78,7 +78,7 @@ func TestInstanceClientUpdateRestrictions(t *testing.T) {
 
 func TestInstanceClientUpdateRestrictions_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -103,7 +103,7 @@ func TestInstanceClientUpdateRestrictions_Error(t *testing.T) {
 
 func TestInstanceClientUpdateOrganizationSettings(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -124,7 +124,7 @@ func TestInstanceClientUpdateOrganizationSettings(t *testing.T) {
 
 func TestInstanceClientUpdateOrganizationSettings_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,

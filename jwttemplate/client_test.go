@@ -17,7 +17,7 @@ func TestJWTTemplateClientCreate(t *testing.T) {
 	t.Parallel()
 	name := "the-name"
 	id := "jtmpl_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -38,7 +38,7 @@ func TestJWTTemplateClientCreate(t *testing.T) {
 
 func TestJWTTemplateClientCreate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -65,7 +65,7 @@ func TestJWTTemplateClientGet(t *testing.T) {
 	t.Parallel()
 	id := "jtmpl_123"
 	name := "the-name"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -85,7 +85,7 @@ func TestJWTTemplateClientUpdate(t *testing.T) {
 	t.Parallel()
 	id := "jtmpl_123"
 	name := "the-name"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -106,7 +106,7 @@ func TestJWTTemplateClientUpdate(t *testing.T) {
 
 func TestJWTTemplateClientUpdate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -132,7 +132,7 @@ func TestJWTTemplateClientUpdate_Error(t *testing.T) {
 func TestJWTTemplateClientDelete(t *testing.T) {
 	t.Parallel()
 	id := "jtmpl_456"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -150,7 +150,7 @@ func TestJWTTemplateClientDelete(t *testing.T) {
 
 func TestJWTTemplateClientList(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,

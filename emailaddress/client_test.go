@@ -17,7 +17,7 @@ func TestEmailAddressClientCreate(t *testing.T) {
 	email := "foo@bar.com"
 	userID := "user_123"
 	id := "idn_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -40,7 +40,7 @@ func TestEmailAddressClientCreate(t *testing.T) {
 
 func TestEmailAddressClientCreate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -66,7 +66,7 @@ func TestEmailAddressClientCreate_Error(t *testing.T) {
 func TestEmailAddressClientUpdate(t *testing.T) {
 	t.Parallel()
 	id := "idn_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -87,7 +87,7 @@ func TestEmailAddressClientUpdate(t *testing.T) {
 
 func TestEmailAddressClientUpdate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -113,7 +113,7 @@ func TestEmailAddressClientUpdate_Error(t *testing.T) {
 func TestEmailAddressClientGet(t *testing.T) {
 	t.Parallel()
 	id := "idn_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -132,7 +132,7 @@ func TestEmailAddressClientGet(t *testing.T) {
 func TestEmailAddressClientDelete(t *testing.T) {
 	t.Parallel()
 	id := "idn_456"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,

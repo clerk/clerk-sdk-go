@@ -116,7 +116,7 @@ import (
 
 func main() {
     ctx := context.Background()
-    config := &organization.ClientConfig{}
+    config := &clerk.ClientConfig{}
     config.Key = "sk_live_XXX"
     client := organization.NewClient(config)
 
@@ -291,7 +291,7 @@ import (
 )
 
 func main() {
-    config := &jwks.ClientConfig{}
+    config := &clerk.ClientConfig{}
     config.Key = "sk_live_XXX"
     client := jwks.NewClient(config)
     mux := http.NewServeMux()

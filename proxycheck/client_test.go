@@ -17,7 +17,7 @@ func TestProxyCheckClientCreate(t *testing.T) {
 	id := "proxchk_123"
 	proxyURL := "https://clerk.com/__proxy"
 	domainID := "dmn_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,

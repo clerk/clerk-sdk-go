@@ -19,7 +19,7 @@ func TestOrganizationMembershipClientCreate(t *testing.T) {
 	organizationID := "org_123"
 	userID := "user_123"
 	role := "admin"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:  t,
@@ -50,7 +50,7 @@ func TestOrganizationMembershipClientCreate(t *testing.T) {
 
 func TestOrganizationMembershipClientCreate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -79,7 +79,7 @@ func TestOrganizationMembershipClientUpdate(t *testing.T) {
 	organizationID := "org_123"
 	userID := "user_123"
 	role := "admin"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:  t,
@@ -110,7 +110,7 @@ func TestOrganizationMembershipClientUpdate(t *testing.T) {
 
 func TestOrganizationMembershipClientUpdate_Error(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -138,7 +138,7 @@ func TestOrganizationMembershipClientDelete(t *testing.T) {
 	id := "orgmem_123"
 	organizationID := "org_123"
 	userID := "user_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,
@@ -168,7 +168,7 @@ func TestOrganizationMembershipClientList(t *testing.T) {
 	id := "orgmem_123"
 	organizationID := "org_123"
 	userID := "user_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,

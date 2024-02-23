@@ -17,7 +17,7 @@ func TestSessionClientGet(t *testing.T) {
 	t.Parallel()
 	id := "sess_123"
 	status := "active"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -35,7 +35,7 @@ func TestSessionClientGet(t *testing.T) {
 
 func TestSessionClientList(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,
@@ -71,7 +71,7 @@ func TestSessionClientRevoke(t *testing.T) {
 	t.Parallel()
 	id := "sess_123"
 	status := "revoked"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -92,7 +92,7 @@ func TestSessionClientRevoke(t *testing.T) {
 func TestSessionClientVerify(t *testing.T) {
 	t.Parallel()
 	id := "sess_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,

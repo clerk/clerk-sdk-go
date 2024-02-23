@@ -16,7 +16,7 @@ import (
 func TestClientClientGet(t *testing.T) {
 	t.Parallel()
 	id := "client_123"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -35,7 +35,7 @@ func TestClientClientVerify(t *testing.T) {
 	t.Parallel()
 	id := "client_123"
 	token := "the-token"
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
@@ -55,7 +55,7 @@ func TestClientClientVerify(t *testing.T) {
 
 func TestClientClientList(t *testing.T) {
 	t.Parallel()
-	config := &ClientConfig{}
+	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,

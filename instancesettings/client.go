@@ -17,11 +17,7 @@ type Client struct {
 	Backend clerk.Backend
 }
 
-type ClientConfig struct {
-	clerk.BackendConfig
-}
-
-func NewClient(config *ClientConfig) *Client {
+func NewClient(config *clerk.ClientConfig) *Client {
 	return &Client{
 		Backend: clerk.NewBackend(&config.BackendConfig),
 	}
