@@ -463,7 +463,7 @@ type defaultClock struct{}
 
 // Now returns the current time.
 func (c *defaultClock) Now() time.Time {
-	return time.Now()
+	return time.Now().UTC()
 }
 
 // NewClock returns a default clock implementation which calls
