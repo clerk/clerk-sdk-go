@@ -46,6 +46,9 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 					return
 				}
 			}
+			if params.Clock == nil {
+				params.Clock = clerk.NewClock()
+			}
 
 			authorization := strings.TrimSpace(r.Header.Get("Authorization"))
 			if authorization == "" {
@@ -60,7 +63,7 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 				return
 			}
 			if params.JWK == nil {
-				params.JWK, err = getJWK(r.Context(), params.JWKSClient, decoded.KeyID)
+				params.JWK, err = getJWK(r.Context(), params.JWKSClient, decoded.KeyID, params.Clock)
 				if err != nil {
 					w.WriteHeader(http.StatusUnauthorized)
 					return
@@ -84,20 +87,20 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 // Tries a cached value first, but if there's no value or the entry
 // has expired, it will fetch the JWK set from the API and cache the
 // value.
-func getJWK(ctx context.Context, jwksClient *jwks.Client, kid string) (*clerk.JSONWebKey, error) {
+func getJWK(ctx context.Context, jwksClient *jwks.Client, kid string, clock clerk.Clock) (*clerk.JSONWebKey, error) {
 	if kid == "" {
 		return nil, fmt.Errorf("missing jwt kid header claim")
 	}
 
 	jwk := getCache().Get(kid)
-	if jwk == nil {
+	if jwk == nil || !getCache().IsValid(kid, clock.Now().UTC()) {
 		var err error
 		jwk, err = forceGetJWK(ctx, jwksClient, kid)
 		if err != nil {
 			return nil, err
 		}
 	}
-	getCache().Set(kid, jwk, time.Now().UTC().Add(time.Hour))
+	getCache().Set(kid, jwk, clock.Now().UTC().Add(time.Hour))
 	return jwk, nil
 }
 
@@ -165,6 +168,17 @@ func AuthorizedPartyMatches(parties ...string) AuthorizationOption {
 			_, ok := authorizedParties[azp]
 			return ok
 		}
+		return nil
+	}
+}
+
+// Clock allows to pass a clock implementation that will be the
+// authority for time related operations.
+// You can use a custom clock for testing purposes, or to
+// eliminate clock skew if your code runs on different servers.
+func Clock(c clerk.Clock) AuthorizationOption {
+	return func(params *AuthorizationParams) error {
+		params.Clock = c
 		return nil
 	}
 }
@@ -280,6 +294,15 @@ type cacheEntry struct {
 	expiresAt time.Time
 }
 
+// IsValid returns true if a non-expired entry exists in the cache
+// for the provided key, false otherwise.
+func (c *jwkCache) IsValid(key string, t time.Time) bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	entry, ok := c.entries[key]
+	return ok && entry != nil && entry.expiresAt.After(t)
+}
+
 // Get fetches the JSON Web Key for the provided key, unless the
 // entry has expired.
 func (c *jwkCache) Get(key string) *clerk.JSONWebKey {
@@ -287,9 +310,6 @@ func (c *jwkCache) Get(key string) *clerk.JSONWebKey {
 	defer c.mu.RUnlock()
 	entry, ok := c.entries[key]
 	if !ok || entry == nil {
-		return nil
-	}
-	if entry.expiresAt.Before(time.Now().UTC()) {
 		return nil
 	}
 	return entry.value

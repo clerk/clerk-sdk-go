@@ -26,6 +26,10 @@ type VerifyParams struct {
 	// JWK the custom JSON Web Key that will be used to verify the
 	// Token with. Required.
 	JWK *clerk.JSONWebKey
+	// Clock can be used to keep track of time and will replace usage of
+	// the [time] package. Pass a custom Clock to control the source of
+	// time or facilitate testing chronologically sensitive flows.
+	Clock clerk.Clock
 	// CustomClaimsConstructor will be called when parsing the Token's
 	// claims. It's useful for parsing custom claims into user-defined
 	// types.
@@ -77,7 +81,11 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 		return nil, err
 	}
 
-	err = claims.ValidateWithLeeway(time.Now().UTC(), params.Leeway)
+	clock := params.Clock
+	if clock == nil {
+		clock = clerk.NewClock()
+	}
+	err = claims.ValidateWithLeeway(clock.Now().UTC(), params.Leeway)
 	if err != nil {
 		return nil, err
 	}
