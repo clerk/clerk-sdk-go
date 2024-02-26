@@ -87,10 +87,11 @@ available in the server, and a slice with the operation results.
 
 ### Every field in API operation parameters is a pointer
 
-The `v2` version of the library introduces helper functions to generate pointers from basic type values. These are:
+The `v2` version of the library introduces helper functions to generate pointers from various type values. These are:
 - `clerk.String`
 - `clerk.Bool`
 - `clerk.Int64`
+- `clerk.JSONRawMessage`
 
 Using the helpers above, here's how you can invoke an API operation with a `*Params` struct.
 

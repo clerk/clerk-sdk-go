@@ -515,3 +515,8 @@ func Int64(v int64) *int64 {
 func Bool(v bool) *bool {
 	return &v
 }
+
+// JSONRawMessage returns a pointer to the provided json.RawMessage value.
+func JSONRawMessage(v json.RawMessage) *json.RawMessage {
+	return &v
+}

@@ -186,10 +186,11 @@ of new fields have been added. Deprecated struct fields have been dropped.
 The `v2` version of Clerk SDK Go introduces another important change about types that can be used as API operation
 parameters. Every field for these structs is a pointer.
 
-The `v2` version of the library introduces helper functions to cast basic type values to pointers. These are:
+The `v2` version of the library introduces helper functions to cast various type values to pointers. These are:
 - `clerk.String`
 - `clerk.Bool`
 - `clerk.Int64`
+- `clerk.JSONRawMessage`
 
 Using the helpers above, here's how you can invoke an API operation with a `*Params` struct.
 
