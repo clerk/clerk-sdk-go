@@ -340,12 +340,38 @@ The method accepts the same parameters, with two important differences.
 In the `v1` version, the `clerk.VerifyToken` method would trigger an HTTP request to the Clerk Backend API to
 fetch the JSON web key and would cache its value for one hour.
 
-The new `jwt.Verify` method that is included in `v2` accepts the JSON web key as a required parameter. It is up
+The new `jwt.Verify` method that is included in `v2` accepts the JSON web key that is used to verify the token. It is up
 to the caller to get access to the key and pass it to `jwt.Verify`.
 
 Please note that both HTTP middleware functions, `WithHeaderAuthorization` and `RequireHeaderAuthorization` will cache
 the  JSON web key by default.
 
+You can fetch the JSON web key with the `jwt.GetJSONWebKey` method.
+
+```go
+ctx := context.Background()
+token := "the-clerk-session-jwt"
+decoded, err := jwt.Decode(ctx, &jwt.DecodeParams{Token: token})
+if err != nil {
+    panic(err)
+}
+
+// Fetch the JSON web key for your instance.
+// It is advised to cache the JSON web key until your instance secret
+// key changes.
+jwk, err := jwt.GetJSONWebKey(ctx, &jwt.GetJSONWebKeyParams{
+    KeyID: decoded.KeyID,
+})
+if err != nil {
+    panic(err)
+}
+claims, err := jwt.Verify(ctx, &jwt.VerifyParams{
+    Token: token,
+    JWK: jwk,
+})
+```
+
+If you don't have access to the JSON web key, you can
 ## Feedback and omissions
 
 Please let us know about your experience upgrading to the `v2` version of the Clerk Go SDK.

@@ -2,11 +2,15 @@ package jwt
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/clerk/clerk-sdk-go/v2/clerktest"
+	"github.com/clerk/clerk-sdk-go/v2/jwks"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/stretchr/testify/require"
 )
@@ -17,15 +21,8 @@ func TestVerify_InvalidParams(t *testing.T) {
 	kid := "kid"
 	token, pubKey := clerktest.GenerateJWT(t, map[string]any{"iss": "https://clerk.com"}, kid)
 
-	// Verifying without providing a key returns an error.
-	_, err := Verify(ctx, &VerifyParams{
-		Token: token,
-	})
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "missing json web key")
-
 	// Verifying with wrong public key for the key.
-	_, err = Verify(ctx, &VerifyParams{
+	_, err := Verify(ctx, &VerifyParams{
 		Token: token,
 		JWK: &clerk.JSONWebKey{
 			Key:       nil,
@@ -261,6 +258,93 @@ func TestVerify_CustomClaims(t *testing.T) {
 	require.Equal(t, "production", customClaims.Environment)
 }
 
+// TestVerify_UsesTheJWKSClient tests that when verifying a JWT if
+// you don't provide the JWK, the Verify method will make a request
+// to GET /v1/jwks to fetch the JWK set.
+func TestVerify_UsesTheJWKSClient(t *testing.T) {
+	t.Parallel()
+	kid := "kid"
+	totalJWKSRequests := 0
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/jwks" && r.Method == http.MethodGet {
+			require.Equal(t, "custom client was used", r.Header.Get("X-Clerk-Application"))
+			// Count the number of requests to the JWKS endpoint
+			totalJWKSRequests++
+			_, err := w.Write([]byte(
+				fmt.Sprintf(
+					`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
+					kid,
+				),
+			))
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = ts.Client()
+	config.URL = &ts.URL
+	config.CustomRequestHeaders = &clerk.CustomRequestHeaders{
+		Application: "custom client was used",
+	}
+	jwksClient := jwks.NewClient(config)
+
+	tokenClaims := map[string]any{
+		"sid": "sess_123",
+		"sub": "user_123",
+		"iss": "https://clerk.com",
+	}
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	_, _ = Verify(context.Background(), &VerifyParams{
+		Token:      token,
+		JWKSClient: jwksClient,
+	})
+	// A request was made to fetch the JWKS
+	require.Equal(t, 1, totalJWKSRequests)
+}
+
+// TestVerify_DefaultJWKSClient tests that when verifying a JWT if
+// you don't provide the JWK and you dont' provide a jwks.Client,
+// the Verify method will initialize a new jwks.Client with the
+// default Backend and use it to fetch the JWK set.
+func TestVerify_DefaultJWKSClient(t *testing.T) {
+	kid := "kid"
+	totalJWKSRequests := 0
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/jwks" && r.Method == http.MethodGet {
+			// Count the number of requests to the JWKS endpoint
+			totalJWKSRequests++
+			_, err := w.Write([]byte(
+				fmt.Sprintf(
+					`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
+					kid,
+				),
+			))
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer ts.Close()
+
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: ts.Client(),
+		URL:        &ts.URL,
+	}))
+
+	tokenClaims := map[string]any{
+		"sid": "sess_123",
+		"sub": "user_123",
+		"iss": "https://clerk.com",
+	}
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	_, _ = Verify(context.Background(), &VerifyParams{
+		Token: token,
+	})
+	// A request was made to fetch the JWKS
+	require.Equal(t, 1, totalJWKSRequests)
+}
+
 func TestDecode_KeyID(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
@@ -307,4 +391,72 @@ func TestDecode_IsUnsafe(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Equal(t, "https://clerk.com", claims.Issuer)
+}
+
+func TestGetJSONWebKey_DefaultJWKSClient(t *testing.T) {
+	kid := "kid"
+	totalJWKSRequests := 0
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/jwks" && r.Method == http.MethodGet {
+			// Count the number of requests to the JWKS endpoint
+			totalJWKSRequests++
+			_, err := w.Write([]byte(
+				fmt.Sprintf(
+					`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
+					kid,
+				),
+			))
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer ts.Close()
+
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: ts.Client(),
+		URL:        &ts.URL,
+	}))
+
+	_, _ = GetJSONWebKey(context.Background(), &GetJSONWebKeyParams{
+		KeyID: kid,
+	})
+	// A request was made to fetch the JWKS
+	require.Equal(t, 1, totalJWKSRequests)
+}
+
+func TestGetJSONWebKey_UsesTheJWKSClient(t *testing.T) {
+	t.Parallel()
+	kid := "kid"
+	totalJWKSRequests := 0
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/jwks" && r.Method == http.MethodGet {
+			require.Equal(t, "custom client was used", r.Header.Get("X-Clerk-Application"))
+			// Count the number of requests to the JWKS endpoint
+			totalJWKSRequests++
+			_, err := w.Write([]byte(
+				fmt.Sprintf(
+					`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
+					kid,
+				),
+			))
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = ts.Client()
+	config.URL = &ts.URL
+	config.CustomRequestHeaders = &clerk.CustomRequestHeaders{
+		Application: "custom client was used",
+	}
+	jwksClient := jwks.NewClient(config)
+
+	_, _ = GetJSONWebKey(context.Background(), &GetJSONWebKeyParams{
+		KeyID:      kid,
+		JWKSClient: jwksClient,
+	})
+	// A request was made to fetch the JWKS
+	require.Equal(t, 1, totalJWKSRequests)
 }

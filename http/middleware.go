@@ -95,38 +95,16 @@ func getJWK(ctx context.Context, jwksClient *jwks.Client, kid string, clock cler
 	jwk := getCache().Get(kid)
 	if jwk == nil || !getCache().IsValid(kid, clock.Now().UTC()) {
 		var err error
-		jwk, err = forceGetJWK(ctx, jwksClient, kid)
+		jwk, err = jwt.GetJSONWebKey(ctx, &jwt.GetJSONWebKeyParams{
+			KeyID:      kid,
+			JWKSClient: jwksClient,
+		})
 		if err != nil {
 			return nil, err
 		}
 	}
 	getCache().Set(kid, jwk, clock.Now().UTC().Add(time.Hour))
 	return jwk, nil
-}
-
-// Fetch the JSON Web Key Set from the Clerk API and return the JSON
-// Web Key corresponding to the provided KeyID.
-// A default client will be initialized if the provided jwks.Client
-// is nil.
-func forceGetJWK(ctx context.Context, jwksClient *jwks.Client, kid string) (*clerk.JSONWebKey, error) {
-	if jwksClient == nil {
-		jwksClient = &jwks.Client{
-			Backend: clerk.GetBackend(),
-		}
-	}
-	jwks, err := jwksClient.Get(ctx, &jwks.GetParams{})
-	if err != nil {
-		return nil, err
-	}
-	if jwks == nil {
-		return nil, fmt.Errorf("no jwks found")
-	}
-	for _, k := range jwks.Keys {
-		if k != nil && k.KeyID == kid {
-			return k, nil
-		}
-	}
-	return nil, fmt.Errorf("no jwk key found for kid %s", kid)
 }
 
 type AuthorizationParams struct {
