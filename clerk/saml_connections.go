@@ -16,6 +16,7 @@ type SAMLConnection struct {
 	IdpSsoURL          *string                        `json:"idp_sso_url"`
 	IdpCertificate     *string                        `json:"idp_certificate"`
 	IdpMetadataURL     *string                        `json:"idp_metadata_url"`
+	IdpMetadata        *string                        `json:"idp_metadata"`
 	AcsURL             string                         `json:"acs_url"`
 	SPEntityID         string                         `json:"sp_entity_id"`
 	SPMetadataURL      string                         `json:"sp_metadata_url"`
@@ -97,6 +98,7 @@ type CreateSAMLConnectionParams struct {
 	IdpSsoURL        *string                         `json:"idp_sso_url,omitempty"`
 	IdpCertificate   *string                         `json:"idp_certificate,omitempty"`
 	IdpMetadataURL   *string                         `json:"idp_metadata_url,omitempty"`
+	IdpMetadata      *string                         `json:"idp_metadata,omitempty"`
 	AttributeMapping *SAMLConnectionAttributeMapping `json:"attribute_mapping,omitempty"`
 }
 
@@ -121,6 +123,7 @@ type UpdateSAMLConnectionParams struct {
 	IdpSsoURL          *string                         `json:"idp_sso_url,omitempty"`
 	IdpCertificate     *string                         `json:"idp_certificate,omitempty"`
 	IdpMetadataURL     *string                         `json:"idp_metadata_url,omitempty"`
+	IdpMetadata        *string                         `json:"idp_metadata,omitempty"`
 	AttributeMapping   *SAMLConnectionAttributeMapping `json:"attribute_mapping,omitempty"`
 	Active             *bool                           `json:"active,omitempty"`
 	SyncUserAttributes *bool                           `json:"sync_user_attributes,omitempty"`
