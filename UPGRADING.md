@@ -219,5 +219,15 @@ The `clerk.VerifyToken` method in version `v1` of the Clerk Go SDK has been rena
 
 The method accepts the same parameters, with two important differences.
 
-- The JSON web key with which the token will be verified is a required parameter.
+- You can provide the JSON web key with which the token will be verified.
+- If you don't provide the JSON web key, you can provide a jwks.Client that will be used to retrieve it. If you don't provide a jwks.Client, one with default configuration will be used.
 - The method will not cache the JSON web key.
+
+```go
+sessionToken := "the-clerk-session-jwt"
+- client := clerk.NewClient("sk_live_XXXX")
+- claims, err := client.VerifyToken(sessionToken)
++ claims, err := jwt.Verify(context.Background(), &jwt.VerifyParams{
++   Token: sessionToken,
++ })
+```

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/clerk/clerk-sdk-go/v2"
+	"github.com/clerk/clerk-sdk-go/v2/jwks"
 	"github.com/go-jose/go-jose/v3/jwt"
 )
 
@@ -23,9 +24,18 @@ type CustomClaimsConstructor func(context.Context) any
 type VerifyParams struct {
 	// Token is the JWT that will be verified. Required.
 	Token string
-	// JWK the custom JSON Web Key that will be used to verify the
-	// Token with. Required.
+	// JWK is the custom JSON Web Key that will be used to verify the
+	// Token with.
+	// If the JWK parameter is provided, the Verify method won't
+	// fetch the JSON Web Key Set and there's no need to provide
+	// the JWKSClient parameter.
 	JWK *clerk.JSONWebKey
+	// JWKSClient is a jwks API client that will be used to fetch the
+	// JSON Web Key Set for verifying the Token with.
+	// If the JWK parameter is provided, the JWKSClient is not needed.
+	// If no JWK or JWKSClient is provided, the Verify method will use
+	// a JWKSClient with the default Backend.
+	JWKSClient *jwks.Client
 	// Clock can be used to keep track of time and will replace usage of
 	// the [time] package. Pass a custom Clock to control the source of
 	// time or facilitate testing chronologically sensitive flows.
@@ -57,15 +67,27 @@ type VerifyParams struct {
 // Verify verifies a Clerk session JWT and returns the parsed
 // clerk.SessionClaims.
 func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, error) {
-	jwk := params.JWK
-	if jwk == nil {
-		return nil, fmt.Errorf("missing json web key, need to set JWK in the params")
-	}
-
 	parsedToken, err := jwt.ParseSigned(params.Token)
 	if err != nil {
 		return nil, err
 	}
+	if len(parsedToken.Headers) == 0 {
+		return nil, fmt.Errorf("missing JWT headers")
+	}
+	jwk := params.JWK
+	if jwk == nil {
+		jwk, err = GetJSONWebKey(ctx, &GetJSONWebKeyParams{
+			KeyID:      parsedToken.Headers[0].KeyID,
+			JWKSClient: params.JWKSClient,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	if jwk == nil {
+		return nil, fmt.Errorf("missing json web key, need to set JWK in the params")
+	}
+
 	if parsedToken.Headers[0].Algorithm != jwk.Algorithm {
 		return nil, fmt.Errorf("invalid signing algorithm %s", jwk.Algorithm)
 	}
@@ -144,4 +166,42 @@ func Decode(_ context.Context, params *DecodeParams) (*clerk.UnverifiedToken, er
 		claims.KeyID = parsedToken.Headers[0].KeyID
 	}
 	return claims, nil
+}
+
+type GetJSONWebKeyParams struct {
+	// KeyID is the token's 'kid' claim.
+	KeyID string
+	// JWKSClient can be used to call the jwks Get Clerk API operation.
+	JWKSClient *jwks.Client
+}
+
+// GetJSONWebKey fetches the JSON Web Key Set from the Clerk API
+// and returns the JSON Web Key corresponding to the provided KeyID.
+// A default client will be initialized if the provided JWKSClient
+// is nil.
+func GetJSONWebKey(ctx context.Context, params *GetJSONWebKeyParams) (*clerk.JSONWebKey, error) {
+	if params.KeyID == "" {
+		return nil, fmt.Errorf("missing jwt kid header claim")
+	}
+
+	jwksClient := params.JWKSClient
+	if jwksClient == nil {
+		jwksClient = &jwks.Client{
+			Backend: clerk.GetBackend(),
+		}
+	}
+	jwks, err := jwksClient.Get(ctx, &jwks.GetParams{})
+	if err != nil {
+		return nil, err
+	}
+	if jwks == nil {
+		return nil, fmt.Errorf("no jwks found")
+	}
+
+	for _, k := range jwks.Keys {
+		if k != nil && k.KeyID == params.KeyID {
+			return k, nil
+		}
+	}
+	return nil, fmt.Errorf("missing json web key")
 }
