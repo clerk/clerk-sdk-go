@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/clerk/clerk-sdk-go/v2"
@@ -174,10 +175,15 @@ func TestSAMLConnectionClientList(t *testing.T) {
 }`, id, name, domain, provider)),
 			Method: http.MethodGet,
 			Path:   "/v1/saml_connections",
+			Query: &url.Values{
+				"limit": []string{"1"},
+			},
 		},
 	}
 	client := NewClient(config)
-	list, err := client.List(context.Background(), &ListParams{})
+	params := &ListParams{}
+	params.Limit = clerk.Int64(1)
+	list, err := client.List(context.Background(), params)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), list.TotalCount)
 	require.Equal(t, 1, len(list.SAMLConnections))
