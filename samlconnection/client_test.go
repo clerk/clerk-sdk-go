@@ -176,13 +176,20 @@ func TestSAMLConnectionClientList(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/saml_connections",
 			Query: &url.Values{
-				"limit": []string{"1"},
+				"limit":    []string{"1"},
+				"query":    []string{"Acme"},
+				"order_by": []string{"-created_at"},
 			},
 		},
 	}
 	client := NewClient(config)
-	params := &ListParams{}
-	params.Limit = clerk.Int64(1)
+	params := &ListParams{
+		ListParams: clerk.ListParams{
+			Limit: clerk.Int64(1),
+		},
+		Query:   clerk.String("Acme"),
+		OrderBy: clerk.String("-created_at"),
+	}
 	list, err := client.List(context.Background(), params)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), list.TotalCount)
