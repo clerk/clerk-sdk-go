@@ -109,11 +109,20 @@ func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource,
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
+	Query   *string `json:"query,omitempty"`
+	OrderBy *string `json:"order_by,omitempty"`
 }
 
 // ToQuery returns query string values from the params.
 func (params *ListParams) ToQuery() url.Values {
-	return params.ListParams.ToQuery()
+	q := params.ListParams.ToQuery()
+	if params.Query != nil {
+		q.Set("query", *params.Query)
+	}
+	if params.OrderBy != nil {
+		q.Set("order_by", *params.OrderBy)
+	}
+	return q
 }
 
 // List returns a list of SAML Connections.
