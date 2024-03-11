@@ -525,6 +525,7 @@ const dummyUserJson = `{
 
 const dummyUserOAuthAccessTokensJson = `[
 		{
+			"external_account_id": "eac_2dYS7stz9bgxQsSRvNqEAHhuxvW",
 			"object": "oauth_access_token",
 			"token": "test_token",
 			"provider": "oauth_testProvider",
