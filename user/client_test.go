@@ -215,6 +215,7 @@ func TestUserClientListOAuthAccessTokens(t *testing.T) {
 			T: t,
 			Out: json.RawMessage(fmt.Sprintf(`{
 "data":[{
+	"external_account_id":"eac_2dYS7stz9bgxQsSRvNqEAHhuxvW",
 	"provider":"%s",
 	"token":"the-token"
 }],
@@ -236,6 +237,7 @@ func TestUserClientListOAuthAccessTokens(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(1), list.TotalCount)
 	require.Equal(t, 1, len(list.OAuthAccessTokens))
+	require.Equal(t, "eac_2dYS7stz9bgxQsSRvNqEAHhuxvW", list.OAuthAccessTokens[0].ExternalAccountID)
 	require.Equal(t, provider, list.OAuthAccessTokens[0].Provider)
 }
 
