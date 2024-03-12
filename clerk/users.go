@@ -46,13 +46,14 @@ type User struct {
 }
 
 type UserOAuthAccessToken struct {
-	Object         string          `json:"object"`
-	Token          string          `json:"token"`
-	Provider       string          `json:"provider"`
-	PublicMetadata json.RawMessage `json:"public_metadata"`
-	Label          *string         `json:"label"`
-	Scopes         []string        `json:"scopes"`
-	TokenSecret    *string         `json:"token_secret"`
+	ExternalAccountID string          `json:"external_account_id"`
+	Object            string          `json:"object"`
+	Token             string          `json:"token"`
+	Provider          string          `json:"provider"`
+	PublicMetadata    json.RawMessage `json:"public_metadata"`
+	Label             *string         `json:"label"`
+	Scopes            []string        `json:"scopes"`
+	TokenSecret       *string         `json:"token_secret"`
 }
 
 type IdentificationLink struct {
