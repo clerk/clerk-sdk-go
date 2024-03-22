@@ -180,13 +180,15 @@ func TestBackendCall_RequestHeaders(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, method, r.Method)
-		require.Equal(t, "/"+clerkAPIVersion+path, r.URL.Path)
+		require.Equal(t, path, r.URL.Path)
 
 		// The client sets the Authorization header correctly.
 		assert.Equal(t, fmt.Sprintf("Bearer %s", secretKey), r.Header.Get("Authorization"))
 		// The client sets the User-Agent header.
 		assert.Equal(t, fmt.Sprintf("clerk/clerk-sdk-go@%s", sdkVersion), r.Header.Get("User-Agent"))
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
+		// The client sets the API version header.
+		assert.Equal(t, clerkAPIVersion, r.Header.Get("Clerk-API-Version"))
 		// The client includes a custom header with the SDK version.
 		assert.Equal(t, fmt.Sprintf("go/%s", sdkVersion), r.Header.Get("X-Clerk-SDK"))
 		// Custom headers are added correctly.

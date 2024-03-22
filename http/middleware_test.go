@@ -71,10 +71,10 @@ func TestWithHeaderAuthorization_Caching(t *testing.T) {
 	kid := "kid"
 	clock := clockwork.NewFakeClockAt(time.Now().UTC())
 
-	// Mock the Clerk API server. We expect requests to GET /v1/jwks.
+	// Mock the Clerk API server. We expect requests to GET /jwks.
 	totalJWKSRequests := 0
 	clerkAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/v1/jwks" && r.Method == http.MethodGet {
+		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
 			// Count the number of requests to the JWKS endpoint
 			totalJWKSRequests++
 			_, err := w.Write([]byte(

@@ -260,13 +260,13 @@ func TestVerify_CustomClaims(t *testing.T) {
 
 // TestVerify_UsesTheJWKSClient tests that when verifying a JWT if
 // you don't provide the JWK, the Verify method will make a request
-// to GET /v1/jwks to fetch the JWK set.
+// to GET /jwks to fetch the JWK set.
 func TestVerify_UsesTheJWKSClient(t *testing.T) {
 	t.Parallel()
 	kid := "kid"
 	totalJWKSRequests := 0
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/v1/jwks" && r.Method == http.MethodGet {
+		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
 			require.Equal(t, "custom client was used", r.Header.Get("X-Clerk-Application"))
 			// Count the number of requests to the JWKS endpoint
 			totalJWKSRequests++
@@ -312,7 +312,7 @@ func TestVerify_DefaultJWKSClient(t *testing.T) {
 	kid := "kid"
 	totalJWKSRequests := 0
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/v1/jwks" && r.Method == http.MethodGet {
+		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
 			// Count the number of requests to the JWKS endpoint
 			totalJWKSRequests++
 			_, err := w.Write([]byte(
@@ -397,7 +397,7 @@ func TestGetJSONWebKey_DefaultJWKSClient(t *testing.T) {
 	kid := "kid"
 	totalJWKSRequests := 0
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/v1/jwks" && r.Method == http.MethodGet {
+		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
 			// Count the number of requests to the JWKS endpoint
 			totalJWKSRequests++
 			_, err := w.Write([]byte(
@@ -429,7 +429,7 @@ func TestGetJSONWebKey_UsesTheJWKSClient(t *testing.T) {
 	kid := "kid"
 	totalJWKSRequests := 0
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/v1/jwks" && r.Method == http.MethodGet {
+		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
 			require.Equal(t, "custom client was used", r.Header.Get("X-Clerk-Application"))
 			// Count the number of requests to the JWKS endpoint
 			totalJWKSRequests++

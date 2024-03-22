@@ -21,12 +21,12 @@ import (
 
 const (
 	sdkVersion      string = "v2.0.0"
-	clerkAPIVersion string = "v1"
+	clerkAPIVersion string = "2021-02-05"
 )
 
 const (
 	// APIURL is the base URL for the Clerk API.
-	APIURL string = "https://api.clerk.com"
+	APIURL string = "https://api.clerk.com/v1"
 )
 
 // The Clerk secret key. Configured on a package level.
@@ -261,7 +261,7 @@ func (b *defaultBackend) Call(ctx context.Context, apiReq *APIRequest, setter Re
 }
 
 func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*http.Request, error) {
-	path, err := JoinPath(b.URL, clerkAPIVersion, apiReq.Path)
+	path, err := JoinPath(b.URL, apiReq.Path)
 	if err != nil {
 		return nil, err
 	}
@@ -272,6 +272,7 @@ func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*h
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", b.Key))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("User-Agent", fmt.Sprintf("clerk/clerk-sdk-go@%s", sdkVersion))
+	req.Header.Add("Clerk-API-Version", clerkAPIVersion)
 	req.Header.Add("X-Clerk-SDK", fmt.Sprintf("go/%s", sdkVersion))
 	b.CustomRequestHeaders.apply(req)
 	req = req.WithContext(ctx)
