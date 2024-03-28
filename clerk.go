@@ -275,7 +275,6 @@ func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*h
 	req.Header.Add("Clerk-API-Version", clerkAPIVersion)
 	req.Header.Add("X-Clerk-SDK", fmt.Sprintf("go/%s", sdkVersion))
 	b.CustomRequestHeaders.apply(req)
-	req = req.WithContext(ctx)
 
 	return req, nil
 }
@@ -492,7 +491,7 @@ func JoinPath(base string, elem ...string) (string, error) {
 	// multiple backslashes in a row with one backslash, preserve the
 	// protocol's two backslashes.
 	// e.g. http://foo.com//bar/ will become http://foo.com/bar
-	res := extraBackslashesRE.ReplaceAllString(strings.Trim(sb.String(), "/"), "$1/")
+	res := extraBackslashesRE.ReplaceAllString(strings.TrimRight(sb.String(), "/"), "$1/")
 
 	// Make sure we have a valid URL.
 	u, err := url.Parse(res)
