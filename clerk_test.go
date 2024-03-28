@@ -455,3 +455,32 @@ func TestBackendCall_Multipart(t *testing.T) {
 	err := GetBackend().Call(ctx, req, &testResource{})
 	require.NoError(t, err)
 }
+
+func TestJoinPath(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		base  string
+		paths []string
+		want  string
+	}{
+		{base: "clerk.com", paths: []string{"baz", "1"}, want: "clerk.com/baz/1"},
+		{base: "https://clerk.com", paths: []string{"baz", "1"}, want: "https://clerk.com/baz/1"},
+		{base: "http://clerk.com", paths: []string{"baz", "1"}, want: "http://clerk.com/baz/1"},
+		{base: "https://clerk.com", paths: []string{"/baz", "1/"}, want: "https://clerk.com/baz/1"},
+		{base: "https://clerk.com", paths: []string{"/baz/", "/1/"}, want: "https://clerk.com/baz/1"},
+		{base: "https://clerk.com", paths: []string{"//baz/", "/1/"}, want: "https://clerk.com/baz/1"},
+		{base: "https://clerk.com", paths: []string{"//baz/", "///1/"}, want: "https://clerk.com/baz/1"},
+		{base: "https://clerk.com", paths: []string{"/baz/", "/1?foo=bar&baz=bar/"}, want: "https://clerk.com/baz/1?foo=bar&baz=bar"},
+	} {
+		got, err := JoinPath(tc.base, tc.paths...)
+		require.NoError(t, err)
+		require.Equal(t, tc.want, got)
+
+		got, err = JoinPath(tc.base+"/", tc.paths...)
+		require.NoError(t, err)
+		require.Equal(t, tc.want, got)
+	}
+
+	_, err := JoinPath("https://clerk.com", "*%{wontwork$")
+	require.Error(t, err)
+}
