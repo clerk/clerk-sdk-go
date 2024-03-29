@@ -10,7 +10,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/go-jose/go-jose/v3"
 	"github.com/go-jose/go-jose/v3/jwt"
@@ -87,4 +89,28 @@ func GenerateJWT(t *testing.T, claims any, kid string) (string, crypto.PublicKey
 	require.NoError(t, err)
 
 	return token, privKey.Public()
+}
+
+// Clock provides a test clock which can be manually advanced through time.
+type Clock struct {
+	mu sync.RWMutex
+	// The current time of this test clock.
+	time time.Time
+}
+
+// NewClockAt returns a Clock initialized at the given time.
+func NewClockAt(t time.Time) *Clock {
+	return &Clock{time: t}
+}
+
+// Now returns the clock's current time.
+func (c *Clock) Now() time.Time {
+	return c.time
+}
+
+// Advance moves the test clock to a new point in time.
+func (c *Clock) Advance(d time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.time = c.time.Add(d)
 }

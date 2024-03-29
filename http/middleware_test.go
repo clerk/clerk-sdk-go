@@ -9,7 +9,6 @@ import (
 
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/clerk/clerk-sdk-go/v2/clerktest"
-	"github.com/jonboulle/clockwork"
 	"github.com/stretchr/testify/require"
 )
 
@@ -69,7 +68,7 @@ func TestRequireHeaderAuthorization_InvalidAuthorization(t *testing.T) {
 
 func TestWithHeaderAuthorization_Caching(t *testing.T) {
 	kid := "kid"
-	clock := clockwork.NewFakeClockAt(time.Now().UTC())
+	clock := clerktest.NewClockAt(time.Now().UTC())
 
 	// Mock the Clerk API server. We expect requests to GET /jwks.
 	totalJWKSRequests := 0
