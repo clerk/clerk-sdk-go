@@ -347,7 +347,6 @@ func (c *Client) Unlock(ctx context.Context, id string) (*clerk.User, error) {
 type ListOrganizationMembershipsParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	ID string `json:"-"`
 }
 
 // ToQuery returns url.Values from the params.
@@ -356,8 +355,8 @@ func (params *ListOrganizationMembershipsParams) ToQuery() url.Values {
 }
 
 // ListOrganizationMemberships lists all the user's organization memberships.
-func (c *Client) ListOrganizationMemberships(ctx context.Context, params *ListOrganizationMembershipsParams) (*clerk.OrganizationMembershipList, error) {
-	path, err := clerk.JoinPath(path, params.ID, "/organization_memberships")
+func (c *Client) ListOrganizationMemberships(ctx context.Context, id string, params *ListOrganizationMembershipsParams) (*clerk.OrganizationMembershipList, error) {
+	path, err := clerk.JoinPath(path, id, "/organization_memberships")
 	if err != nil {
 		return nil, err
 	}

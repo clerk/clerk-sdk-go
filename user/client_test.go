@@ -364,12 +364,10 @@ func TestUserClientListOrganizationMemberships(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	params := &ListOrganizationMembershipsParams{
-		ID: userID,
-	}
+	params := &ListOrganizationMembershipsParams{}
 	params.Limit = clerk.Int64(1)
 	params.Offset = clerk.Int64(2)
-	list, err := client.ListOrganizationMemberships(context.Background(), params)
+	list, err := client.ListOrganizationMemberships(context.Background(), userID, params)
 	require.NoError(t, err)
 	require.Equal(t, membershipID, list.OrganizationMemberships[0].ID)
 	require.Equal(t, organizationID, list.OrganizationMemberships[0].Organization.ID)

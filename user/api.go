@@ -76,8 +76,8 @@ func Unlock(ctx context.Context, id string) (*clerk.User, error) {
 }
 
 // ListOrganizationMemberships lists all the user's organization memberships.
-func ListOrganizationMemberships(ctx context.Context, params *ListOrganizationMembershipsParams) (*clerk.OrganizationMembershipList, error) {
-	return getClient().ListOrganizationMemberships(ctx, params)
+func ListOrganizationMemberships(ctx context.Context, id string, params *ListOrganizationMembershipsParams) (*clerk.OrganizationMembershipList, error) {
+	return getClient().ListOrganizationMemberships(ctx, id, params)
 }
 
 func getClient() *Client {
