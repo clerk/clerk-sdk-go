@@ -14,6 +14,7 @@ type Template struct {
 	CanRevert        bool    `json:"can_revert"`
 	CanDelete        bool    `json:"can_delete"`
 	FromEmailName    *string `json:"from_email_name"`
+	ReplyToEmailName *string `json:"reply_to_email_name"`
 	DeliveredByClerk bool    `json:"delivered_by_clerk"`
 	CreatedAt        int64   `json:"created_at"`
 	UpdatedAt        int64   `json:"updated_at"`
@@ -69,13 +70,15 @@ type UpsertTemplateRequest struct {
 	Markup           string  `json:"markup,omitempty"`
 	Body             string  `json:"body"`
 	FromEmailName    *string `json:"from_email_name"`
+	ReplyToEmailName *string `json:"reply_to_email_name,omitempty"`
 	DeliveredByClerk *bool   `json:"delivered_by_clerk"`
 }
 
 type PreviewTemplateRequest struct {
-	Subject       string  `json:"subject,omitempty"`
-	Body          string  `json:"body"`
-	FromEmailName *string `json:"from_email_name"`
+	Subject          string  `json:"subject,omitempty"`
+	Body             string  `json:"body"`
+	FromEmailName    *string `json:"from_email_name"`
+	ReplyToEmailName *string `json:"reply_to_email_name,omitempty"`
 }
 
 type ToggleDeliveryTemplateRequest struct {
