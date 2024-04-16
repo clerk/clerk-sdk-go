@@ -20,6 +20,7 @@ type Template struct {
 	CanRevert          bool         `json:"can_revert"`
 	CanDelete          bool         `json:"can_delete"`
 	FromEmailName      *string      `json:"from_email_name,omitempty"`
+	ReplyToEmailName   *string      `json:"reply_to_email_name,omitempty"`
 	DeliveredByClerk   bool         `json:"delivered_by_clerk"`
 	Subject            string       `json:"subject"`
 	Markup             string       `json:"markup"`

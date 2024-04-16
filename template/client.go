@@ -48,6 +48,7 @@ type UpdateParams struct {
 	Markup           *string            `json:"markup,omitempty"`
 	Body             *string            `json:"body,omitempty"`
 	FromEmailName    *string            `json:"from_email_name,omitempty"`
+	ReplyToEmailName *string            `json:"reply_to_email_name,omitempty"`
 	DeliveredByClerk *bool              `json:"delivered_by_clerk,omitempty"`
 	TemplateType     clerk.TemplateType `json:"-"`
 	Slug             string             `json:"-"`
@@ -123,11 +124,12 @@ func (c *Client) ToggleDelivery(ctx context.Context, params *ToggleDeliveryParam
 
 type PreviewParams struct {
 	clerk.APIParams
-	Subject       *string            `json:"subject,omitempty"`
-	Body          *string            `json:"body,omitempty"`
-	FromEmailName *string            `json:"from_email_name,omitempty"`
-	TemplateType  clerk.TemplateType `json:"-"`
-	Slug          string             `json:"-"`
+	Subject          *string            `json:"subject,omitempty"`
+	Body             *string            `json:"body,omitempty"`
+	FromEmailName    *string            `json:"from_email_name,omitempty"`
+	ReplyToEmailName *string            `json:"reply_to_email_name,omitempty"`
+	TemplateType     clerk.TemplateType `json:"-"`
+	Slug             string             `json:"-"`
 }
 
 // Preview returns a preview of a template.
