@@ -49,6 +49,9 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 			if params.Clock == nil {
 				params.Clock = clerk.NewClock()
 			}
+			if params.AuthorizationFailureHandler == nil {
+				params.AuthorizationFailureHandler = http.HandlerFunc(defaultAuthorizationFailureHandler)
+			}
 
 			authorization := strings.TrimSpace(r.Header.Get("Authorization"))
 			if authorization == "" {
@@ -65,14 +68,14 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 			if params.JWK == nil {
 				params.JWK, err = getJWK(r.Context(), params.JWKSClient, decoded.KeyID, params.Clock)
 				if err != nil {
-					w.WriteHeader(http.StatusUnauthorized)
+					params.AuthorizationFailureHandler.ServeHTTP(w, r)
 					return
 				}
 			}
 			params.Token = token
 			claims, err := jwt.Verify(r.Context(), &params.VerifyParams)
 			if err != nil {
-				w.WriteHeader(http.StatusUnauthorized)
+				params.AuthorizationFailureHandler.ServeHTTP(w, r)
 				return
 			}
 
@@ -81,6 +84,10 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 			next.ServeHTTP(w, r.WithContext(newCtx))
 		})
 	}
+}
+
+func defaultAuthorizationFailureHandler(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusUnauthorized)
 }
 
 // Retrieve the JSON web key for the provided token from the JWKS set.
@@ -109,6 +116,11 @@ func getJWK(ctx context.Context, jwksClient *jwks.Client, kid string, clock cler
 
 type AuthorizationParams struct {
 	jwt.VerifyParams
+	// AuthorizationFailureHandler gets executed when request authorization
+	// fails. Pass a custom http.Handler to control the http.Response for
+	// invalid authorization. The default is a Response with an empty body
+	// and 401 Unauthorized status.
+	AuthorizationFailureHandler http.Handler
 	// JWKSClient is the jwks.Client that will be used to fetch the
 	// JSON Web Key Set. A default client will be used if none is
 	// provided.
@@ -118,6 +130,17 @@ type AuthorizationParams struct {
 // AuthorizationOption is a functional parameter for configuring
 // authorization options.
 type AuthorizationOption func(*AuthorizationParams) error
+
+// AuthorizationFailureHandler allows to provide a handler that
+// writes the response in case of authorization failures.
+// The default behavior is a response with an empty body and 401
+// Unauthorized status.
+func AuthorizationFailureHandler(h http.Handler) AuthorizationOption {
+	return func(params *AuthorizationParams) error {
+		params.AuthorizationFailureHandler = h
+		return nil
+	}
+}
 
 // AuthorizedParty allows to provide a handler that accepts the
 // 'azp' claim.
