@@ -37,10 +37,12 @@ func TestTemplates(t *testing.T) {
 
 		// Preview each template with sample data
 		fromEmailName := "marketing"
+		replyToEmailName := "support"
 		templatePreview, err := client.Templates().Preview(templateType, slug, &clerk.PreviewTemplateRequest{
-			Subject:       "{{AppName}} is da bomb",
-			Body:          "<p><a href=\"{{AppURL}}\">{{AppName}}</a> is the greatest app of all time!</p>",
-			FromEmailName: &fromEmailName,
+			Subject:          "{{AppName}} is da bomb",
+			Body:             "<p><a href=\"{{AppURL}}\">{{AppName}}</a> is the greatest app of all time!</p>",
+			FromEmailName:    &fromEmailName,
+			ReplyToEmailName: &replyToEmailName,
 		})
 		if err != nil {
 			t.Fatalf("Templates.Preview returned error: %v", err)
@@ -60,12 +62,14 @@ func TestTemplates_Upsert(t *testing.T) {
 	requiredVariable := "{{action_url}}"
 	deliveredByClerk := false
 	fromEmailName := "marketing"
+	replyToEmailName := "support"
 	upsertedTemplate, err := client.Templates().Upsert(templateType, slug, &clerk.UpsertTemplateRequest{
 		Name:             "Remarketing email",
 		Subject:          "Unmissable opportunity",
 		Markup:           "",
 		Body:             fmt.Sprintf("Click %s for free unicorns", requiredVariable),
 		FromEmailName:    &fromEmailName,
+		ReplyToEmailName: &replyToEmailName,
 		DeliveredByClerk: &deliveredByClerk,
 	})
 	if err != nil {
