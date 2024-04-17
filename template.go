@@ -39,7 +39,8 @@ type TemplateList struct {
 
 type TemplatePreview struct {
 	APIResource
-	Subject          string  `json:"subject,omitempty"`
-	Body             string  `json:"body"`
-	FromEmailAddress *string `json:"from_email_address,omitempty"`
+	Subject             string  `json:"subject,omitempty"`
+	Body                string  `json:"body"`
+	FromEmailAddress    *string `json:"from_email_address,omitempty"`
+	ReplyToEmailAddress *string `json:"reply_to_email_address,omitempty"`
 }
