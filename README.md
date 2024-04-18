@@ -10,8 +10,6 @@
 
 # Clerk Go SDK
 
-**This is a beta release. The package is fully working and is expected to enter the GA phase soon. See the main branch for the stable release.**
-
 The official [Clerk](https://clerk.com) Go client library for accessing the [Clerk Backend API](https://clerk.com/docs/reference/backend-api).
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/clerk/clerk-sdk-go/v2.svg)](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2)
