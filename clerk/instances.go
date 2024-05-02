@@ -64,6 +64,7 @@ type InstanceRestrictionsResponse struct {
 	Blocklist                   bool   `json:"blocklist"`
 	BlockEmailSubaddresses      bool   `json:"block_email_subaddresses"`
 	BlockDisposableEmailDomains bool   `json:"block_disposable_email_domains"`
+	IgnoreDotsForGmailAddresses *bool  `json:"ignore_dots_for_gmail_addresses,omitempty"`
 }
 
 type UpdateRestrictionsParams struct {
@@ -71,6 +72,7 @@ type UpdateRestrictionsParams struct {
 	Blocklist                   *bool `json:"blocklist,omitempty"`
 	BlockEmailSubaddresses      *bool `json:"block_email_subaddresses,omitempty"`
 	BlockDisposableEmailDomains *bool `json:"block_disposable_email_domains,omitempty"`
+	IgnoreDotsForGmailAddresses *bool `json:"ignore_dots_for_gmail_addresses,omitempty"`
 }
 
 func (s *InstanceService) UpdateRestrictions(params UpdateRestrictionsParams) (*InstanceRestrictionsResponse, error) {
