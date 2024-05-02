@@ -64,7 +64,7 @@ type InstanceRestrictionsResponse struct {
 	Blocklist                   bool   `json:"blocklist"`
 	BlockEmailSubaddresses      bool   `json:"block_email_subaddresses"`
 	BlockDisposableEmailDomains bool   `json:"block_disposable_email_domains"`
-	IgnoreDotsForGmailAddresses *bool  `json:"ignore_dots_for_gmail_addresses,omitempty"`
+	IgnoreDotsForGmailAddresses bool   `json:"ignore_dots_for_gmail_addresses"`
 }
 
 type UpdateRestrictionsParams struct {
