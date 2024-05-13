@@ -41,6 +41,7 @@ func TestInstanceRestrictions(t *testing.T) {
 	assert.True(t, restrictionsResponse.Blocklist)
 	assert.False(t, restrictionsResponse.BlockEmailSubaddresses)
 	assert.False(t, restrictionsResponse.BlockDisposableEmailDomains)
+	assert.False(t, restrictionsResponse.IgnoreDotsForGmailAddresses)
 }
 
 func TestInstanceOrganizationSettings(t *testing.T) {

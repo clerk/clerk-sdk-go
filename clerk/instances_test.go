@@ -81,6 +81,7 @@ func TestInstanceService_UpdateRestrictions_happyPath(t *testing.T) {
 		Blocklist:                   &enabled,
 		BlockEmailSubaddresses:      &enabled,
 		BlockDisposableEmailDomains: &enabled,
+		IgnoreDotsForGmailAddresses: &enabled,
 	})
 
 	assert.Equal(t, &restrictionsResponse, got)
