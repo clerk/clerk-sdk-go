@@ -474,8 +474,8 @@ func NewClock() Clock {
 	return &defaultClock{}
 }
 
-// Regular expression that matches multiple backslashes in a row.
-var extraBackslashesRE = regexp.MustCompile("([^:])//+")
+// Regular expression that matches multiple forward slashes in a row.
+var extraForwardslashesRE = regexp.MustCompile("(^/+|([^:])//+)")
 
 // JoinPath returns a URL string with the provided path elements joined
 // with the base path.
@@ -487,11 +487,12 @@ func JoinPath(base string, elem ...string) (string, error) {
 		sb.WriteString("/")
 		sb.WriteString(el)
 	}
-	// Trim leading and trailing backslashes, replace all occurrences of
-	// multiple backslashes in a row with one backslash, preserve the
-	// protocol's two backslashes.
+	// Trim leading and trailing forward slashes, replace all occurrences of
+	// multiple forward slashes in a row with one forward slash, preserve the
+	// protocol's two forward slashes.
 	// e.g. http://foo.com//bar/ will become http://foo.com/bar
-	res := extraBackslashesRE.ReplaceAllString(strings.TrimRight(sb.String(), "/"), "$1/")
+	trimRightForwardSlashes := strings.TrimRight(sb.String(), "/")
+	res := extraForwardslashesRE.ReplaceAllString(trimRightForwardSlashes, "$2/")
 
 	// Make sure we have a valid URL.
 	u, err := url.Parse(res)
