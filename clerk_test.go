@@ -471,6 +471,11 @@ func TestJoinPath(t *testing.T) {
 		{base: "https://clerk.com", paths: []string{"//baz/", "/1/"}, want: "https://clerk.com/baz/1"},
 		{base: "https://clerk.com", paths: []string{"//baz/", "///1/"}, want: "https://clerk.com/baz/1"},
 		{base: "https://clerk.com", paths: []string{"/baz/", "/1?foo=bar&baz=bar/"}, want: "https://clerk.com/baz/1?foo=bar&baz=bar"},
+
+		// Tests an empty basepath, which should only be necessary when attempting
+		// to intercept the sdk's calls to the clerk API.
+		{base: "", paths: []string{"/baz"}, want: "/baz"},
+		{base: "/", paths: []string{"/baz"}, want: "/baz"},
 	} {
 		got, err := JoinPath(tc.base, tc.paths...)
 		require.NoError(t, err)
