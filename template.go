@@ -19,9 +19,11 @@ type Template struct {
 	Position           int          `json:"position"`
 	CanRevert          bool         `json:"can_revert"`
 	CanDelete          bool         `json:"can_delete"`
+	CanToggle          bool         `json:"can_toggle"`
 	FromEmailName      *string      `json:"from_email_name,omitempty"`
 	ReplyToEmailName   *string      `json:"reply_to_email_name,omitempty"`
 	DeliveredByClerk   bool         `json:"delivered_by_clerk"`
+	Enabled            bool         `json:"enabled"`
 	Subject            string       `json:"subject"`
 	Markup             string       `json:"markup"`
 	Body               string       `json:"body"`
