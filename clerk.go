@@ -160,7 +160,8 @@ type Params interface {
 // CustomRequestHeaders contains predefined values that can be
 // used as custom headers in Backend API requests.
 type CustomRequestHeaders struct {
-	Application string
+	Application  string
+	TrueClientIP string
 }
 
 // Apply the custom headers to the HTTP request.
@@ -169,6 +170,7 @@ func (h *CustomRequestHeaders) apply(req *http.Request) {
 		return
 	}
 	req.Header.Add("X-Clerk-Application", h.Application)
+	req.Header.Add("X-Clerk-True-Client-IP", h.TrueClientIP)
 }
 
 // BackendConfig is used to configure a new Clerk Backend.

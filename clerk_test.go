@@ -175,7 +175,8 @@ func TestBackendCall_RequestHeaders(t *testing.T) {
 	path := "/resources"
 	secretKey := "sk_test_123"
 	customHeaders := CustomRequestHeaders{
-		Application: "custom-application",
+		Application:  "custom-application",
+		TrueClientIP: "127.0.0.1",
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -193,6 +194,7 @@ func TestBackendCall_RequestHeaders(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("go/%s", sdkVersion), r.Header.Get("X-Clerk-SDK"))
 		// Custom headers are added correctly.
 		assert.Equal(t, customHeaders.Application, r.Header.Get("X-Clerk-Application"))
+		assert.Equal(t, customHeaders.TrueClientIP, r.Header.Get("X-Clerk-True-Client-IP"))
 
 		_, err := w.Write([]byte(`{}`))
 		require.NoError(t, err)
