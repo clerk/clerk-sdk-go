@@ -31,6 +31,7 @@ type User struct {
 	PhoneNumbers                  []PhoneNumber  `json:"phone_numbers"`
 	Web3Wallets                   []Web3Wallet   `json:"web3_wallets"`
 	ExternalAccounts              []interface{}  `json:"external_accounts"`
+	SAMLAccounts                  []*SAMLAccount `json:"saml_accounts"`
 	PublicMetadata                interface{}    `json:"public_metadata"`
 	PrivateMetadata               interface{}    `json:"private_metadata"`
 	UnsafeMetadata                interface{}    `json:"unsafe_metadata"`
@@ -59,6 +60,19 @@ type UserOAuthAccessToken struct {
 type IdentificationLink struct {
 	IdentType string `json:"type"`
 	IdentID   string `json:"id"`
+}
+
+type SAMLAccount struct {
+	Object         string          `json:"object"`
+	ID             string          `json:"id"`
+	Provider       string          `json:"provider"`
+	Active         bool            `json:"active"`
+	EmailAddress   string          `json:"email_address"`
+	FirstName      *string         `json:"first_name"`
+	LastName       *string         `json:"last_name"`
+	ProviderUserID *string         `json:"provider_user_id"`
+	PublicMetadata json.RawMessage `json:"public_metadata"`
+	Verification   *Verification   `json:"verification"`
 }
 
 type CreateUserParams struct {
