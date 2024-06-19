@@ -256,7 +256,7 @@ func TestSessionsService_CreateTokenFromTemplate_Success(t *testing.T) {
 	clerkClient, mux, _, teardown := setup(token)
 	defer teardown()
 
-	mux.HandleFunc(fmt.Sprintf("/%s/%s/token/%s", SessionsUrl, sessionID, templateSlug), func(w http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc(fmt.Sprintf("/%s/%s/tokens/%s", SessionsUrl, sessionID, templateSlug), func(w http.ResponseWriter, req *http.Request) {
 		testHttpMethod(t, req, "POST")
 		testHeader(t, req, "Authorization", fmt.Sprintf("Bearer %s", token))
 		w.WriteHeader(http.StatusOK)
