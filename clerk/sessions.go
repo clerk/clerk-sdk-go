@@ -120,7 +120,7 @@ func (s *SessionsService) Verify(sessionId, token string) (*Session, error) {
 }
 
 func (s *SessionsService) CreateTokenFromTemplate(sessionID, templateSlug string) (*SessionToken, error) {
-	sessionURL := fmt.Sprintf("%s/%s/token/%s", SessionsUrl, sessionID, templateSlug)
+	sessionURL := fmt.Sprintf("%s/%s/tokens/%s", SessionsUrl, sessionID, templateSlug)
 	req, _ := s.client.NewRequest("POST", sessionURL)
 
 	var sessionToken SessionToken
