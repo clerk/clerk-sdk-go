@@ -2,9 +2,12 @@
 package user
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -106,6 +109,45 @@ func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPatch, path)
+	req.SetParams(params)
+	resource := &clerk.User{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
+type UpdateProfileImageParams struct {
+	clerk.APIParams
+	File multipart.File `json:"-"`
+}
+
+func (params *UpdateProfileImageParams) ToMultipart() ([]byte, string, error) {
+	var buf bytes.Buffer
+	w := multipart.NewWriter(&buf)
+
+	file, err := w.CreateFormFile("file", "profileImage")
+	if err != nil {
+		return nil, "", err
+	}
+	defer params.File.Close()
+
+	_, err = io.Copy(file, params.File)
+	if err != nil {
+		return nil, "", err
+	}
+	err = w.Close()
+	if err != nil {
+		return nil, "", err
+	}
+	return buf.Bytes(), w.FormDataContentType(), nil
+}
+
+// UpdateProfileImage sets or replaces the users's profile image.
+func (c *Client) UpdateProfileImage(ctx context.Context, id string, params *UpdateProfileImageParams) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, id, "/profile_image")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewMultipartAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
 	resource := &clerk.User{}
 	err = c.Backend.Call(ctx, req, resource)

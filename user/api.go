@@ -23,6 +23,11 @@ func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.User, 
 	return getClient().Update(ctx, id, params)
 }
 
+// UpdateProfileImage sets or replaces the users's profile image.
+func UpdateProfileImage(ctx context.Context, id string, params *UpdateProfileImageParams) (*clerk.User, error) {
+	return getClient().UpdateProfileImage(ctx, id, params)
+}
+
 // UpdateMetadata updates the user's metadata by merging the
 // provided values with the existing ones.
 func UpdateMetadata(ctx context.Context, id string, params *UpdateMetadataParams) (*clerk.User, error) {
