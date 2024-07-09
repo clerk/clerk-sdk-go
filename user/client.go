@@ -141,7 +141,7 @@ func (params *UpdateProfileImageParams) ToMultipart() ([]byte, string, error) {
 	return buf.Bytes(), w.FormDataContentType(), nil
 }
 
-// UpdateProfileImage sets or replaces the users's profile image.
+// UpdateProfileImage sets or replaces the user's profile image.
 func (c *Client) UpdateProfileImage(ctx context.Context, id string, params *UpdateProfileImageParams) (*clerk.User, error) {
 	path, err := clerk.JoinPath(path, id, "/profile_image")
 	if err != nil {
