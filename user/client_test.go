@@ -1,6 +1,7 @@
 package user
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -180,6 +181,34 @@ func TestUserClientUpdate(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, user.ID)
 	require.Equal(t, username, *user.Username)
+}
+
+type testFile struct {
+	bytes.Reader
+}
+
+func (_ *testFile) Close() error {
+	return nil
+}
+
+func TestUserClientUpdateProfileImage(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, userID)),
+			Method: http.MethodPost,
+			Path:   "/v1/users/" + userID + "/profile_image",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.UpdateProfileImage(context.Background(), userID, &UpdateProfileImageParams{
+		File: &testFile{Reader: *bytes.NewReader([]byte{})},
+	})
+	require.NoError(t, err)
+	require.Equal(t, userID, user.ID)
 }
 
 func TestUserClientUpdateMetadata(t *testing.T) {
