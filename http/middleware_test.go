@@ -255,7 +255,7 @@ func TestAuthorizedPartyFunc(t *testing.T) {
 	}
 }
 
-func TestAuthorizedJWTExtractor(t *testing.T) {
+func TestAuthorizationJWTExtractor(t *testing.T) {
 	middleware := RequireHeaderAuthorization(AuthorizationJWTExtractor(func(r *http.Request) string {
 		return r.Header.Get("X-Clerk-JWT-Test")
 	}))
