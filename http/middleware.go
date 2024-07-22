@@ -52,14 +52,15 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 			if params.AuthorizationFailureHandler == nil {
 				params.AuthorizationFailureHandler = http.HandlerFunc(defaultAuthorizationFailureHandler)
 			}
+			if params.AuthorizationJWTExtractor == nil {
+				params.AuthorizationJWTExtractor = defaultAuthorizationJWTExtractor
+			}
 
-			authorization := strings.TrimSpace(r.Header.Get("Authorization"))
-			if authorization == "" {
+			token := params.AuthorizationJWTExtractor(r)
+			if token == "" {
 				next.ServeHTTP(w, r)
 				return
 			}
-
-			token := strings.TrimPrefix(authorization, "Bearer ")
 			decoded, err := jwt.Decode(r.Context(), &jwt.DecodeParams{Token: token})
 			if err != nil {
 				next.ServeHTTP(w, r)
@@ -88,6 +89,11 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 
 func defaultAuthorizationFailureHandler(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusUnauthorized)
+}
+
+func defaultAuthorizationJWTExtractor(r *http.Request) string {
+	authorization := strings.TrimSpace(r.Header.Get("Authorization"))
+	return strings.TrimPrefix(authorization, "Bearer ")
 }
 
 // Retrieve the JSON web key for the provided token from the JWKS set.
@@ -125,11 +131,23 @@ type AuthorizationParams struct {
 	// JSON Web Key Set. A default client will be used if none is
 	// provided.
 	JWKSClient *jwks.Client
+	// AuthorizationJWTExtractor is a custom function to extract the Clerk
+	// authorization JWT from the http.Request.
+	AuthorizationJWTExtractor func(r *http.Request) string
 }
 
 // AuthorizationOption is a functional parameter for configuring
 // authorization options.
 type AuthorizationOption func(*AuthorizationParams) error
+
+// AuthorizationJWTExtractor allows to provide a custom function
+// to extract the JWT from the http.Request.
+func AuthorizationJWTExtractor(extractor func(r *http.Request) string) AuthorizationOption {
+	return func(params *AuthorizationParams) error {
+		params.AuthorizationJWTExtractor = extractor
+		return nil
+	}
+}
 
 // AuthorizationFailureHandler allows to provide a handler that
 // writes the response in case of authorization failures.

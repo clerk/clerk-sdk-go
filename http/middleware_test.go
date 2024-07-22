@@ -254,3 +254,32 @@ func TestAuthorizedPartyFunc(t *testing.T) {
 		require.Equal(t, tc.want, options.AuthorizedPartyHandler(tc.azp))
 	}
 }
+
+func TestAuthorizationJWTExtractor(t *testing.T) {
+	middleware := RequireHeaderAuthorization(AuthorizationJWTExtractor(func(r *http.Request) string {
+		return r.Header.Get("X-Clerk-JWT-Test")
+	}))
+	ts := httptest.NewServer(middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := w.Write([]byte("{}"))
+		require.NoError(t, err)
+	})))
+	defer ts.Close()
+
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: ts.Client(),
+		URL:        &ts.URL,
+	}))
+
+	// Request without JWT
+	req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+	require.NoError(t, err)
+	res, err := ts.Client().Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusForbidden, res.StatusCode)
+
+	// Request with invalid JWT
+	req.Header.Add("X-Clerk-JWT-Test", "whatever")
+	res, err = ts.Client().Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusForbidden, res.StatusCode)
+}
