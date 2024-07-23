@@ -47,17 +47,19 @@ func TestUserClientList_Request(t *testing.T) {
 			T:      t,
 			Method: http.MethodGet,
 			Query: &url.Values{
-				"limit":         []string{"1"},
-				"offset":        []string{"2"},
-				"order_by":      []string{"-created_at"},
-				"email_address": []string{"foo@bar.com", "baz@bar.com"},
+				"limit":           []string{"1"},
+				"offset":          []string{"2"},
+				"order_by":        []string{"-created_at"},
+				"email_address":   []string{"foo@bar.com", "baz@bar.com"},
+				"organization_id": []string{"org_123", "org_456"},
 			},
 		},
 	}
 	client := NewClient(config)
 	params := &ListParams{
-		EmailAddresses: []string{"foo@bar.com", "baz@bar.com"},
-		OrderBy:        clerk.String("-created_at"),
+		EmailAddresses:  []string{"foo@bar.com", "baz@bar.com"},
+		OrderBy:         clerk.String("-created_at"),
+		OrganizationIDs: []string{"org_123", "org_456"},
 	}
 	params.Limit = clerk.Int64(1)
 	params.Offset = clerk.Int64(2)

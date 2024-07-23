@@ -190,14 +190,18 @@ func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource,
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	OrderBy           *string  `json:"order_by,omitempty"`
-	Query             *string  `json:"query,omitempty"`
-	EmailAddresses    []string `json:"email_address,omitempty"`
-	ExternalIDs       []string `json:"external_id,omitempty"`
-	PhoneNumbers      []string `json:"phone_number,omitempty"`
-	Web3Wallets       []string `json:"web3_wallet,omitempty"`
-	Usernames         []string `json:"username,omitempty"`
-	UserIDs           []string `json:"user_id,omitempty"`
+	OrderBy        *string  `json:"order_by,omitempty"`
+	Query          *string  `json:"query,omitempty"`
+	EmailAddresses []string `json:"email_address,omitempty"`
+	ExternalIDs    []string `json:"external_id,omitempty"`
+	PhoneNumbers   []string `json:"phone_number,omitempty"`
+	Web3Wallets    []string `json:"web3_wallet,omitempty"`
+	Usernames      []string `json:"username,omitempty"`
+	UserIDs        []string `json:"user_id,omitempty"`
+	// OrganizationIDs filters users that have memberships to the given organizations. For each organization ID, the
+	// + and - can be prepended to the ID, which denote whether the respective organization should be included or
+	// excluded from the result set. Accepts up to 100 organization IDs.
+	OrganizationIDs   []string `json:"organization_id,omitempty"`
 	LastActiveAtSince *int64   `json:"last_active_at_since,omitempty"`
 }
 
@@ -227,6 +231,9 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	for _, v := range params.UserIDs {
 		q.Add("user_id", v)
+	}
+	for _, v := range params.OrganizationIDs {
+		q.Add("organization_id", v)
 	}
 	if params.LastActiveAtSince != nil {
 		q.Add("last_active_at_since", strconv.FormatInt(*params.LastActiveAtSince, 10))
