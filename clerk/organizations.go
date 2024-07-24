@@ -215,6 +215,11 @@ type OrganizationInvitation struct {
 	UpdatedAt      int64           `json:"updated_at"`
 }
 
+type OrganizationInvitationResponse struct {
+	Data       []OrganizationInvitation `json:"data"`
+	TotalCount int64                    `json:"total_count"`
+}
+
 type CreateOrganizationInvitationParams struct {
 	EmailAddress   string          `json:"email_address"`
 	InviterUserID  string          `json:"inviter_user_id"`
@@ -230,6 +235,62 @@ func (s *OrganizationsService) CreateInvitation(params CreateOrganizationInvitat
 	var organizationInvitation OrganizationInvitation
 	_, err := s.client.Do(req, &organizationInvitation)
 	return &organizationInvitation, err
+}
+
+type ListAllOrganizationInvitationParams struct {
+	OrganizationID string   `json:"organization_id"`
+	Limit          *int     `json:"limit,omitempty"`
+	Offset         *int     `json:"offset,omitempty"`
+	Status         []string `json:"status,omitempty"`
+}
+
+func (s *OrganizationsService) ListInvitations(params ListAllOrganizationInvitationParams) (*OrganizationInvitationResponse, error) {
+	endpoint := fmt.Sprintf("%s/%s/%s", OrganizationsUrl, params.OrganizationID, InvitationsURL)
+	req, _ := s.client.NewRequest(http.MethodGet, endpoint)
+
+	query := req.URL.Query()
+	if params.Limit != nil {
+		query.Set("limit", strconv.Itoa(*params.Limit))
+	}
+	if params.Offset != nil {
+		query.Set("offset", strconv.Itoa(*params.Offset))
+	}
+	for _, status := range params.Status {
+		query.Add("status", status)
+	}
+	req.URL.RawQuery = query.Encode()
+
+	var organizationInvitations OrganizationInvitationResponse
+	_, err := s.client.Do(req, &organizationInvitations)
+	if err != nil {
+		return nil, err
+	}
+	return &organizationInvitations, nil
+}
+
+type DeleteOrganizationInvitationParams struct {
+	OrganizationID   string `json:"organization_id"`
+	InvitationID     string `json:"invitation_id"`
+	RequestingUserID string `json:"requesting_user_id"`
+}
+
+func (s *OrganizationsService) DeleteInvitation(params DeleteOrganizationInvitationParams) (*OrganizationInvitation, error) {
+	endpoint := fmt.Sprintf("%s/%s/%s/%s", OrganizationsUrl, params.OrganizationID, InvitationsURL, params.InvitationID)
+	req, err := s.client.NewRequest(http.MethodDelete, endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	q := req.URL.Query()
+	q.Add("requesting_user_id", params.RequestingUserID)
+	req.URL.RawQuery = q.Encode()
+
+	var organizationInvitation OrganizationInvitation
+	_, err = s.client.Do(req, &organizationInvitation)
+	if err != nil {
+		return nil, err
+	}
+	return &organizationInvitation, nil
 }
 
 type ListOrganizationMembershipsParams struct {
