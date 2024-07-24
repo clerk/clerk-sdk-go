@@ -98,6 +98,7 @@ type UpdateParams struct {
 	BackupCodes                      *[]string        `json:"backup_codes,omitempty"`
 	DeleteSelfEnabled                *bool            `json:"delete_self_enabled,omitempty"`
 	CreateOrganizationEnabled        *bool            `json:"create_organization_enabled,omitempty"`
+	CreateOrganizationsLimit         *int             `json:"create_organizations_limit,omitempty"`
 	// Specified in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
 }
