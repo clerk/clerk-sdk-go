@@ -202,7 +202,87 @@ func TestOrganizationsService_ListAll_invalidServer(t *testing.T) {
 		t.Errorf("Was not expecting any organizations to be returned, instead got %v", organizations)
 	}
 }
+func TestOrganizationsService_ListAllInvitations_happyPath(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
 
+	expectedResponse := fmt.Sprintf(`{
+			"data": %s,
+			"total_count": 2
+	}`, dummyOrganizationInvitationListJson)
+
+	organizationID := "org_1mebQggrD3xO5JfuHk7clQ94ysA"
+
+	mux.HandleFunc(fmt.Sprintf("/organizations/%s/invitations", organizationID), func(w http.ResponseWriter, req *http.Request) {
+		testHttpMethod(t, req, "GET")
+		testHeader(t, req, "Authorization", "Bearer token")
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	got, err := client.Organizations().ListInvitations(ListAllOrganizationInvitationParams{
+		OrganizationID: organizationID,
+	})
+	if err != nil {
+		t.Fatalf("Organizations.ListInvitations returned error: %v", err)
+	}
+
+	var want OrganizationInvitationResponse
+	err = json.Unmarshal([]byte(expectedResponse), &want)
+	if err != nil {
+		t.Fatalf("Error unmarshaling expected response: %v", err)
+	}
+
+	if len(got.Data) != len(want.Data) {
+		t.Errorf("Organizations.ListInvitations returned %d invitations, want %d", len(got.Data), len(want.Data))
+	}
+
+	if got.TotalCount != want.TotalCount {
+		t.Errorf("Organizations.ListInvitations returned total_count %d, want %d", got.TotalCount, want.TotalCount)
+	}
+}
+
+func TestOrganizationsService_DeleteInvitation(t *testing.T) {
+	client, mux, _, teardown := setup("token")
+	defer teardown()
+
+	organizationID := "org_123"
+	invitationID := "inv_456"
+	requestingUserID := "user_789"
+
+	expectedResponse := dummyOrganizationRevokedInvitationJson
+
+	mux.HandleFunc(fmt.Sprintf("/organizations/%s/invitations/%s", organizationID, invitationID), func(w http.ResponseWriter, r *http.Request) {
+		testHttpMethod(t, r, "DELETE")
+		testHeader(t, r, "Authorization", "Bearer token")
+
+		if got := r.URL.Query().Get("requesting_user_id"); got != requestingUserID {
+			t.Errorf("Request URL query 'requesting_user_id' = %v, want %v", got, requestingUserID)
+		}
+
+		fmt.Fprint(w, expectedResponse)
+	})
+
+	params := DeleteOrganizationInvitationParams{
+		OrganizationID:   organizationID,
+		InvitationID:     invitationID,
+		RequestingUserID: requestingUserID,
+	}
+
+	invitation, err := client.Organizations().DeleteInvitation(params)
+	if err != nil {
+		t.Errorf("Organizations.DeleteInvitation returned error: %v", err)
+	}
+
+	want := &OrganizationInvitation{}
+	err = json.Unmarshal([]byte(expectedResponse), want)
+	if err != nil {
+		t.Fatalf("Error unmarshaling expected response: %v", err)
+	}
+
+	if !reflect.DeepEqual(invitation, want) {
+		t.Errorf("Organizations.DeleteInvitation returned %+v, want %+v", invitation, want)
+	}
+}
 func TestOrganizationsService_UpdateLogo(t *testing.T) {
 	client, mux, _, teardown := setup("token")
 	defer teardown()
@@ -340,4 +420,44 @@ const dummyUpdateOrganizationJson = `{
 	"private_metadata": {
 		"app_id": 8,
 	}
+}`
+
+const dummyOrganizationInvitationListJson = `[
+	{
+	"object": "organization_invitation",
+	"id": "orginv_1mebQggrD3xO5JfuHk7clQ94ysA",
+	"email_address": "test1@test.com",
+	"role": "admin",
+	"organization_id": "org_1mebQggrD3xO5JfuHk7clQ94ysA",
+	"status": "pending",
+	"public_metadata": { },
+	"private_metadata": { },
+	"created_at": 1721806882553,
+	"updated_at": 1721806882553
+	},
+	{
+	"object": "organization_invitation",
+	"id": "orginv_1mebQggrD3xO5JfuHk7clQ94ysA",
+	"email_address": "test2@test.com",
+	"role": "admin",
+	"organization_id": "org_1mebQggrD3xO5JfuHk7clQ94ysA",
+	"status": "pending",
+	"public_metadata": { },
+	"private_metadata": { },
+	"created_at": 1721806882553,
+	"updated_at": 1721806882553
+	}
+]`
+
+const dummyOrganizationRevokedInvitationJson = `{
+			"object": "organization_invitation",
+			"id": "orginv_1mebQggrD3xO5JfuHk7clQ94ysA",
+			"email_address": "test@example.com",
+			"role": "admin",
+			"organization_id": "org_1mebQggrD3xO5JfuHk7clQ94ysA",
+			"status": "revoked",
+			"public_metadata": {},
+			"private_metadata": {},
+			"created_at": 1621234567890,
+			"updated_at": 1621234567890
 }`
