@@ -42,8 +42,9 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Domai
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name     *string `json:"name,omitempty"`
-	ProxyURL *string `json:"proxy_url,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	ProxyURL    *string `json:"proxy_url,omitempty"`
+	IsSecondary *bool   `json:"is_secondary,omitempty"`
 }
 
 // Update updates a domain's properties.
