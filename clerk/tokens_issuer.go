@@ -1,6 +1,9 @@
 package clerk
 
-import "strings"
+import (
+	"net/url"
+	"strings"
+)
 
 type issuer struct {
 	iss         string
@@ -33,6 +36,11 @@ func (iss *issuer) IsValid() bool {
 		return iss.iss == iss.proxyURL
 	}
 
-	return strings.HasPrefix(iss.iss, "https://clerk.") ||
-		strings.Contains(iss.iss, ".clerk.accounts")
+	parsedURL, err := url.Parse(iss.iss)
+	if err != nil {
+		return false
+	}
+
+	host := parsedURL.Hostname()
+	return host == "clerk.com" || strings.HasSuffix(host, ".clerk.com")
 }
