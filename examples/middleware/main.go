@@ -31,7 +31,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	injectActiveSession := clerk.WithSessionV2(client)
+	injectActiveSession := clerk.WithSessionV2(client, clerk.WithSkipCookieVerification())
 	mux.Handle("/session", injectActiveSession(http.HandlerFunc(returnActiveSession)))
 
 	err = http.ListenAndServe(":3000", mux)
