@@ -40,12 +40,29 @@ func SessionFromContext(ctx context.Context) (*SessionClaims, bool) {
 	return c, ok
 }
 
+// Options struct to hold middleware options
+type Options struct {
+	SkipCookieVerification bool
+}
+
+// WithSkipCookieVerification sets the SkipCookieVerification option to true
+func WithSkipCookieVerification() func(*Options) {
+	return func(o *Options) {
+		o.SkipCookieVerification = true
+	}
+}
+
 // WithSessionV2 is the de-facto authentication middleware and should be
 // preferred to WithSession. If the session is authenticated, it adds the corresponding
 // session claims found in the JWT to request's context.
 func WithSessionV2(client Client, verifyTokenOptions ...VerifyTokenOption) func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			options := &Options{}
+			for _, opt := range verifyTokenOptions {
+				opt(options)
+			}
+
 			// ****************************************************
 			//                                                    *
 			//                HEADER AUTHENTICATION               *
@@ -98,56 +115,58 @@ func WithSessionV2(client Client, verifyTokenOptions ...VerifyTokenOption) func(
 			//                COOKIE AUTHENTICATION               *
 			//                                                    *
 			// ****************************************************
-			cookieToken, _ := r.Cookie("__session")
-			clientUat, _ := r.Cookie("__client_uat")
+			if !options.SkipCookieVerification {
+				cookieToken, _ := r.Cookie("__session")
+				clientUat, _ := r.Cookie("__client_uat")
 
-			if isDevelopmentOrStaging(client) && (r.Referer() == "" || isCrossOrigin(r)) {
-				renderInterstitial(client, w)
-				return
-			}
-
-			if isProduction(client) && clientUat == nil {
-				next.ServeHTTP(w, r)
-				return
-			}
-
-			if clientUat != nil && clientUat.Value == "0" {
-				next.ServeHTTP(w, r)
-				return
-			}
-
-			if clientUat == nil {
-				renderInterstitial(client, w)
-				return
-			}
-
-			var clientUatTs int64
-			ts, err := strconv.ParseInt(clientUat.Value, 10, 64)
-			if err == nil {
-				clientUatTs = ts
-			}
-
-			if cookieToken == nil {
-				renderInterstitial(client, w)
-				return
-			}
-
-			claims, err := client.VerifyToken(cookieToken.Value, verifyTokenOptions...)
-
-			if err == nil {
-				if claims.IssuedAt != nil && clientUatTs <= int64(*claims.IssuedAt) {
-					ctx := context.WithValue(r.Context(), ActiveSessionClaims, claims)
-					next.ServeHTTP(w, r.WithContext(ctx))
+				if isDevelopmentOrStaging(client) && (r.Referer() == "" || isCrossOrigin(r)) {
+					renderInterstitial(client, w)
 					return
 				}
 
-				renderInterstitial(client, w)
-				return
-			}
+				if isProduction(client) && clientUat == nil {
+					next.ServeHTTP(w, r)
+					return
+				}
 
-			if errors.Is(err, jwt.ErrExpired) || errors.Is(err, jwt.ErrIssuedInTheFuture) {
-				renderInterstitial(client, w)
-				return
+				if clientUat != nil && clientUat.Value == "0" {
+					next.ServeHTTP(w, r)
+					return
+				}
+
+				if clientUat == nil {
+					renderInterstitial(client, w)
+					return
+				}
+
+				var clientUatTs int64
+				ts, err := strconv.ParseInt(clientUat.Value, 10, 64)
+				if err == nil {
+					clientUatTs = ts
+				}
+
+				if cookieToken == nil {
+					renderInterstitial(client, w)
+					return
+				}
+
+				claims, err := client.VerifyToken(cookieToken.Value, verifyTokenOptions...)
+
+				if err == nil {
+					if claims.IssuedAt != nil && clientUatTs <= int64(*claims.IssuedAt) {
+						ctx := context.WithValue(r.Context(), ActiveSessionClaims, claims)
+						next.ServeHTTP(w, r.WithContext(ctx))
+						return
+					}
+
+					renderInterstitial(client, w)
+					return
+				}
+
+				if errors.Is(err, jwt.ErrExpired) || errors.Is(err, jwt.ErrIssuedInTheFuture) {
+					renderInterstitial(client, w)
+					return
+				}
 			}
 
 			// signed out
