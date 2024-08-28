@@ -155,6 +155,18 @@ func (c *Client) UpdateProfileImage(ctx context.Context, id string, params *Upda
 	return resource, err
 }
 
+// DeleteProfileImage sets or replaces the user's profile image.
+func (c *Client) DeleteProfileImage(ctx context.Context, id string) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, id, "/profile_image")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	resource := &clerk.User{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
 type UpdateMetadataParams struct {
 	clerk.APIParams
 	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`

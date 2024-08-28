@@ -28,6 +28,11 @@ func UpdateProfileImage(ctx context.Context, id string, params *UpdateProfileIma
 	return getClient().UpdateProfileImage(ctx, id, params)
 }
 
+// DeleteProfileImage removes the users's profile image.
+func DeleteProfileImage(ctx context.Context, id string) (*clerk.User, error) {
+	return getClient().DeleteProfileImage(ctx, id)
+}
+
 // UpdateMetadata updates the user's metadata by merging the
 // provided values with the existing ones.
 func UpdateMetadata(ctx context.Context, id string, params *UpdateMetadataParams) (*clerk.User, error) {

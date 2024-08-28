@@ -213,6 +213,24 @@ func TestUserClientUpdateProfileImage(t *testing.T) {
 	require.Equal(t, userID, user.ID)
 }
 
+func TestUserClientDeleteProfileImage(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, userID)),
+			Method: http.MethodDelete,
+			Path:   "/v1/users/" + userID + "/profile_image",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.DeleteProfileImage(context.Background(), userID)
+	require.NoError(t, err)
+	require.Equal(t, userID, user.ID)
+}
+
 func TestUserClientUpdateMetadata(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
