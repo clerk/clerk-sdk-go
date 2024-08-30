@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/clerk/clerk-sdk-go/v2"
 )
@@ -26,11 +27,18 @@ func NewClient(config *clerk.ClientConfig) *Client {
 
 type ListParams struct {
 	clerk.APIParams
+	clerk.ListParams
+}
+
+// ToQuery returns query string values from the params.
+func (params *ListParams) ToQuery() url.Values {
+	return params.ListParams.ToQuery()
 }
 
 // List returns all invitations.
 func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.InvitationList, error) {
 	req := clerk.NewAPIRequest(http.MethodGet, fmt.Sprintf("%s?paginated=true", path))
+	req.SetParams(params)
 	list := &clerk.InvitationList{}
 	err := c.Backend.Call(ctx, req, list)
 	return list, err
