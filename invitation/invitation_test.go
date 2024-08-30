@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/clerk/clerk-sdk-go/v2"
@@ -33,6 +34,46 @@ func TestInvitationList(t *testing.T) {
 	require.Equal(t, 1, len(list.Invitations))
 	require.Equal(t, "inv_123", list.Invitations[0].ID)
 	require.Equal(t, "foo@bar.com", list.Invitations[0].EmailAddress)
+}
+
+func TestInvitationListWithParams(t *testing.T) {
+	limit := int64(10)
+	offset := int64(20)
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T: t,
+				Out: json.RawMessage(`{
+	"data": [
+		{"id":"inv_123","email_address":"foo@bar.com"},
+		{"id":"inv_124","email_address":"baz@qux.com"}
+	],
+	"total_count": 2
+}`),
+				Path:   "/v1/invitations",
+				Method: http.MethodGet,
+				Query: &url.Values{
+					"limit":     []string{fmt.Sprintf("%d", limit)},
+					"offset":    []string{fmt.Sprintf("%d", offset)},
+					"paginated": []string{"true"},
+				},
+			},
+		},
+	}))
+
+	list, err := List(context.Background(), &ListParams{
+		ListParams: clerk.ListParams{
+			Limit:  &limit,
+			Offset: &offset,
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, int64(2), list.TotalCount)
+	require.Equal(t, 2, len(list.Invitations))
+	require.Equal(t, "inv_123", list.Invitations[0].ID)
+	require.Equal(t, "foo@bar.com", list.Invitations[0].EmailAddress)
+	require.Equal(t, "inv_124", list.Invitations[1].ID)
+	require.Equal(t, "baz@qux.com", list.Invitations[1].EmailAddress)
 }
 
 func TestInvitationCreate(t *testing.T) {
