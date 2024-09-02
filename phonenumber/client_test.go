@@ -45,8 +45,8 @@ func TestPhoneNumberClientUpdate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"verified":true}`),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","verification":{"status":"verified"}}`, id)),
+			In:     json.RawMessage(`{"verified":true, "reserved_for_second_factor":true}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","reserved_for_second_factor":true,"verification":{"status":"verified"}}`, id)),
 			Method: http.MethodPatch,
 			Path:   "/v1/phone_numbers/" + id,
 		},
@@ -59,6 +59,7 @@ func TestPhoneNumberClientUpdate(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, phoneNumber.ID)
 	require.Equal(t, "verified", phoneNumber.Verification.Status)
+	require.Equal(t, true, phoneNumber.ReservedForSecondFactor)
 }
 
 func TestPhoneNumberClientGet(t *testing.T) {
