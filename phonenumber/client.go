@@ -54,8 +54,9 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.PhoneNumber, error)
 
 type UpdateParams struct {
 	clerk.APIParams
-	Verified *bool `json:"verified,omitempty"`
-	Primary  *bool `json:"primary,omitempty"`
+	Verified                *bool `json:"verified,omitempty"`
+	Primary                 *bool `json:"primary,omitempty"`
+	ReservedForSecondFactor *bool `json:"reserved_for_second_factor,omitempty"`
 }
 
 // Update updates the phone number specified by id.
