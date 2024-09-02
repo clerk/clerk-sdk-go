@@ -53,7 +53,8 @@ func TestPhoneNumberClientUpdate(t *testing.T) {
 	}
 	client := NewClient(config)
 	phoneNumber, err := client.Update(context.Background(), "idn_123", &UpdateParams{
-		Verified: clerk.Bool(true),
+		Verified:                clerk.Bool(true),
+		ReservedForSecondFactor: clerk.Bool(true),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, phoneNumber.ID)
