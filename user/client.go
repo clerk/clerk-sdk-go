@@ -428,3 +428,15 @@ func (c *Client) ListOrganizationMemberships(ctx context.Context, id string, par
 	err = c.Backend.Call(ctx, req, list)
 	return list, err
 }
+
+// DeletePasskey deletes a passkey by it's identification ID.
+func (c *Client) DeletePasskey(ctx context.Context, userID, identificationID string) (*clerk.DeletedResource, error) {
+	path, err := clerk.JoinPath(path, userID, "/passkeys", identificationID)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	resource := &clerk.DeletedResource{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
