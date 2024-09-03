@@ -422,3 +422,22 @@ func TestUserClientListOrganizationMemberships(t *testing.T) {
 	require.Equal(t, organizationID, list.OrganizationMemberships[0].Organization.ID)
 	require.Equal(t, userID, list.OrganizationMemberships[0].PublicUserData.UserID)
 }
+
+func TestUserClientDeletePasskey(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	passkeyIdentificationID := "idn_345"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, passkeyIdentificationID)),
+			Method: http.MethodDelete,
+			Path:   "/v1/users/" + userID + "/passkeys/" + passkeyIdentificationID,
+		},
+	}
+	client := NewClient(config)
+	passkey, err := client.DeletePasskey(context.Background(), userID, passkeyIdentificationID)
+	require.NoError(t, err)
+	require.Equal(t, passkeyIdentificationID, passkey.ID)
+}
