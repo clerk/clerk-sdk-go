@@ -90,7 +90,7 @@ func ListOrganizationMemberships(ctx context.Context, id string, params *ListOrg
 	return getClient().ListOrganizationMemberships(ctx, id, params)
 }
 
-// DeletePasskey deletes a passkey by it's identification ID.
+// DeletePasskey deletes a passkey by its identification ID.
 func DeletePasskey(ctx context.Context, userID, identificationID string) (*clerk.DeletedResource, error) {
 	return getClient().DeletePasskey(ctx, userID, identificationID)
 }
