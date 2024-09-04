@@ -28,11 +28,24 @@ func NewClient(config *clerk.ClientConfig) *Client {
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
+	OrderBy *string `json:"order_by,omitempty"`
+	Query   *string `json:"query,omitempty"`
+	Status  *string `json:"status,omitempty"`
 }
 
 // ToQuery returns query string values from the params.
 func (params *ListParams) ToQuery() url.Values {
-	return params.ListParams.ToQuery()
+	q := params.ListParams.ToQuery()
+	if params.OrderBy != nil {
+		q.Set("order_by", *params.OrderBy)
+	}
+	if params.Query != nil {
+		q.Set("query", *params.Query)
+	}
+	if params.Status != nil {
+		q.Set("status", *params.Status)
+	}
+	return q
 }
 
 // List returns all invitations.
