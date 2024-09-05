@@ -155,7 +155,7 @@ func (c *Client) UpdateProfileImage(ctx context.Context, id string, params *Upda
 	return resource, err
 }
 
-// DeleteProfileImage sets or replaces the user's profile image.
+// DeleteProfileImage deletes the user's profile image.
 func (c *Client) DeleteProfileImage(ctx context.Context, id string) (*clerk.User, error) {
 	path, err := clerk.JoinPath(path, id, "/profile_image")
 	if err != nil {
@@ -449,6 +449,18 @@ func (c *Client) DeleteWeb3Wallet(ctx context.Context, userID, identificationID 
 	}
 	req := clerk.NewAPIRequest(http.MethodDelete, path)
 	resource := &clerk.DeletedResource{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
+// CreateTOTP creates a TOTP (Time-based One-Time Password) for the user.
+func (c *Client) CreateTOTP(ctx context.Context, userID string) (*clerk.TOTP, error) {
+	path, err := clerk.JoinPath(path, userID, "/totp")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	resource := &clerk.TOTP{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }

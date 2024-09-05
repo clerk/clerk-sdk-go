@@ -23,12 +23,12 @@ func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.User, 
 	return getClient().Update(ctx, id, params)
 }
 
-// UpdateProfileImage sets or replaces the users's profile image.
+// UpdateProfileImage sets or replaces the user's profile image.
 func UpdateProfileImage(ctx context.Context, id string, params *UpdateProfileImageParams) (*clerk.User, error) {
 	return getClient().UpdateProfileImage(ctx, id, params)
 }
 
-// DeleteProfileImage removes the users's profile image.
+// DeleteProfileImage deletes the user's profile image.
 func DeleteProfileImage(ctx context.Context, id string) (*clerk.User, error) {
 	return getClient().DeleteProfileImage(ctx, id)
 }
@@ -98,6 +98,11 @@ func DeletePasskey(ctx context.Context, userID, identificationID string) (*clerk
 // DeleteWeb3Wallet deletes a web3 wallet by its identification ID.
 func DeleteWeb3Wallet(ctx context.Context, userID, identificationID string) (*clerk.DeletedResource, error) {
 	return getClient().DeleteWeb3Wallet(ctx, userID, identificationID)
+}
+
+// CreateTOTP creates a TOTP (Time-based One-Time Password) for the user.
+func CreateTOTP(ctx context.Context, userID string) (*clerk.TOTP, error) {
+	return getClient().CreateTOTP(ctx, userID)
 }
 
 func getClient() *Client {
