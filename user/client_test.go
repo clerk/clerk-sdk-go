@@ -441,3 +441,22 @@ func TestUserClientDeletePasskey(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, passkeyIdentificationID, passkey.ID)
 }
+
+func TestUserClientDeleteWeb3Wallet(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	web3WalletIdentificationID := "idn_345"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, web3WalletIdentificationID)),
+			Method: http.MethodDelete,
+			Path:   "/v1/users/" + userID + "/web3_wallets/" + web3WalletIdentificationID,
+		},
+	}
+	client := NewClient(config)
+	web3Wallet, err := client.DeleteWeb3Wallet(context.Background(), userID, web3WalletIdentificationID)
+	require.NoError(t, err)
+	require.Equal(t, web3WalletIdentificationID, web3Wallet.ID)
+}
