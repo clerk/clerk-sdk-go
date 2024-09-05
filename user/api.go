@@ -28,7 +28,7 @@ func UpdateProfileImage(ctx context.Context, id string, params *UpdateProfileIma
 	return getClient().UpdateProfileImage(ctx, id, params)
 }
 
-// DeleteProfileImage sets or replaces the user's profile image.
+// DeleteProfileImage deletes the user's profile image.
 func DeleteProfileImage(ctx context.Context, id string) (*clerk.User, error) {
 	return getClient().DeleteProfileImage(ctx, id)
 }

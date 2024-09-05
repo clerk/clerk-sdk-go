@@ -155,7 +155,7 @@ func (c *Client) UpdateProfileImage(ctx context.Context, id string, params *Upda
 	return resource, err
 }
 
-// DeleteProfileImage sets or replaces the user's profile image.
+// DeleteProfileImage deletes the user's profile image.
 func (c *Client) DeleteProfileImage(ctx context.Context, id string) (*clerk.User, error) {
 	path, err := clerk.JoinPath(path, id, "/profile_image")
 	if err != nil {
