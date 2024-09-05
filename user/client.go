@@ -440,3 +440,15 @@ func (c *Client) DeletePasskey(ctx context.Context, userID, identificationID str
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
+
+// DeleteWeb3Wallet deletes a web3 wallet by its identification ID.
+func (c *Client) DeleteWeb3Wallet(ctx context.Context, userID, identificationID string) (*clerk.DeletedResource, error) {
+	path, err := clerk.JoinPath(path, userID, "/web3_wallets", identificationID)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	resource := &clerk.DeletedResource{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}

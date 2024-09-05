@@ -95,6 +95,11 @@ func DeletePasskey(ctx context.Context, userID, identificationID string) (*clerk
 	return getClient().DeletePasskey(ctx, userID, identificationID)
 }
 
+// DeleteWeb3Wallet deletes a web3 wallet by its identification ID.
+func DeleteWeb3Wallet(ctx context.Context, userID, identificationID string) (*clerk.DeletedResource, error) {
+	return getClient().DeleteWeb3Wallet(ctx, userID, identificationID)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
