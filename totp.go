@@ -1,6 +1,6 @@
 package clerk
 
-// TOTP describes a TOTP (Time-based One-Time Password) for a user.
+// Describes a Time-based One-time Password (TOTP) for a user.
 type TOTP struct {
 	APIResource
 	Object      string   `json:"object"`
