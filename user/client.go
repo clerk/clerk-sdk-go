@@ -452,3 +452,15 @@ func (c *Client) DeleteWeb3Wallet(ctx context.Context, userID, identificationID 
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
+
+// CreateTOTP creates a TOTP (Time-based One-Time Password) for the user.
+func (c *Client) CreateTOTP(ctx context.Context, userID string) (*clerk.TOTP, error) {
+	path, err := clerk.JoinPath(path, userID, "/totp")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	resource := &clerk.TOTP{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
