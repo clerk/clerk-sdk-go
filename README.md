@@ -324,7 +324,7 @@ func TestWithCustomBackend(t *testing.T) {
 
 type customBackend struct {}
 // Implement the Backend interface
-func (b *customBackend) Call(ctx context.Context, r *clerk.APIRequest, reader *clerk.ResponseReader) error {
+func (b *customBackend) Call(ctx context.Context, r *clerk.APIRequest, reader clerk.ResponseReader) error {
     // Construct a clerk.APIResponse and use the reader's Read method.
     reader.Read(&clerk.APIResponse{})
 }
