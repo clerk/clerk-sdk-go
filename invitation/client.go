@@ -28,9 +28,9 @@ func NewClient(config *clerk.ClientConfig) *Client {
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	OrderBy *string `json:"order_by,omitempty"`
-	Query   *string `json:"query,omitempty"`
-	Status  *string `json:"status,omitempty"`
+	OrderBy  *string  `json:"order_by,omitempty"`
+	Query    *string  `json:"query,omitempty"`
+	Statuses []string `json:"status,omitempty"`
 }
 
 // ToQuery returns query string values from the params.
@@ -42,8 +42,8 @@ func (params *ListParams) ToQuery() url.Values {
 	if params.Query != nil {
 		q.Set("query", *params.Query)
 	}
-	if params.Status != nil {
-		q.Set("status", *params.Status)
+	for _, status := range params.Statuses {
+		q.Add("status", status)
 	}
 	return q
 }
