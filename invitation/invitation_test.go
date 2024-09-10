@@ -41,7 +41,8 @@ func TestInvitationListWithParams(t *testing.T) {
 	offset := int64(20)
 	orderBy := "-created_at"
 	query := "example@email.com"
-	status := "pending"
+	status1 := "pending"
+	status2 := "accepted"
 
 	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
 		HTTPClient: &http.Client{
@@ -61,7 +62,7 @@ func TestInvitationListWithParams(t *testing.T) {
 					"offset":    []string{fmt.Sprintf("%d", offset)},
 					"order_by":  []string{orderBy},
 					"query":     []string{query},
-					"status":    []string{status},
+					"status":    []string{status1, status2},
 					"paginated": []string{"true"},
 				},
 			},
@@ -73,9 +74,9 @@ func TestInvitationListWithParams(t *testing.T) {
 			Limit:  &limit,
 			Offset: &offset,
 		},
-		OrderBy: &orderBy,
-		Query:   &query,
-		Status:  &status,
+		OrderBy:  &orderBy,
+		Query:    &query,
+		Statuses: []string{status1, status2},
 	})
 	require.NoError(t, err)
 	require.Equal(t, int64(2), list.TotalCount)
