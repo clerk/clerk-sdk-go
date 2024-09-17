@@ -102,7 +102,7 @@ func (params *ListParams) ToQuery() url.Values {
 		q.Set("verified", strconv.FormatBool(*params.Verified))
 	}
 
-	if params.EnrollmentModes != nil && len(params.EnrollmentModes) > 0 {
+	if len(params.EnrollmentModes) > 0 {
 		q["enrollment_mode"] = params.EnrollmentModes
 	}
 	return q
