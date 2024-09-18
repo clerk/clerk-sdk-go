@@ -1,6 +1,6 @@
 package clerk
 
-type organizationDomainVerificationResponse struct {
+type OrganizationDomainVerification struct {
 	Status   string `json:"status"`
 	Strategy string `json:"strategy"`
 	Attempts *int   `json:"attempts"`
@@ -19,7 +19,7 @@ type OrganizationDomain struct {
 	TotalPendingInvitations int                                     `json:"total_pending_invitations"`
 	TotalPendingSuggestions int                                     `json:"total_pending_suggestions"`
 	CreatedAt               int64                                   `json:"created_at"`
-	UpdatedAt               int64
+	UpdatedAt               int64 `json:"updated_at"`
 }
 
 type OrganizationDomainList struct {
