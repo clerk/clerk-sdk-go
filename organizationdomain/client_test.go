@@ -85,8 +85,10 @@ func TestOrganizationDomainClientUpdate(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	domain, err := client.Update(context.Background(), organizationID, id, &UpdateParams{
-		Verified: clerk.Bool(verified),
+	domain, err := client.Update(context.Background(), &UpdateParams{
+		OrganizationID: organizationID,
+		DomainID:       id,
+		Verified:       clerk.Bool(verified),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, domain.ID)
@@ -109,7 +111,7 @@ func TestOrganizationDomainClientUpdate_Error(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	_, err := client.Update(context.Background(), "org_123", "orgdm_123", &UpdateParams{})
+	_, err := client.Update(context.Background(), &UpdateParams{})
 	require.Error(t, err)
 	apiErr, ok := err.(*clerk.APIErrorResponse)
 	require.True(t, ok)

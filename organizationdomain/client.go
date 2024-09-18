@@ -47,13 +47,15 @@ func (c *Client) Create(ctx context.Context, organizationID string, params *Crea
 
 type UpdateParams struct {
 	clerk.APIParams
+	OrganizationID string  `json:"-"`
+	DomainID       string  `json:"-"`
 	EnrollmentMode *string `json:"enrollment_mode,omitempty"`
 	Verified       *bool   `json:"verified,omitempty"`
 }
 
 // Update updates an organization domain.
-func (c *Client) Update(ctx context.Context, organizationID, domainID string, params *UpdateParams) (*clerk.OrganizationDomain, error) {
-	path, err := clerk.JoinPath(path, organizationID, "/domains", domainID)
+func (c *Client) Update(ctx context.Context, params *UpdateParams) (*clerk.OrganizationDomain, error) {
+	path, err := clerk.JoinPath(path, params.OrganizationID, "/domains", params.DomainID)
 	if err != nil {
 		return nil, err
 	}

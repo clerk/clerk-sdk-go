@@ -14,8 +14,8 @@ func Create(ctx context.Context, organizationID string, params *CreateParams) (*
 }
 
 // Update updates an organization domain.
-func Update(ctx context.Context, organizationID, domainID string, params *UpdateParams) (*clerk.OrganizationDomain, error) {
-	return getClient().Update(ctx, organizationID, domainID, params)
+func Update(ctx context.Context, params *UpdateParams) (*clerk.OrganizationDomain, error) {
+	return getClient().Update(ctx, params)
 }
 
 // Delete removes a domain from an organization.
