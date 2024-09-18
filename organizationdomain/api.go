@@ -9,13 +9,13 @@ import (
 )
 
 // Create adds a new domain to the organization.
-func Create(ctx context.Context, params *CreateParams) (*clerk.OrganizationDomain, error) {
-	return getClient().Create(ctx, params)
+func Create(ctx context.Context, organizationID string, params *CreateParams) (*clerk.OrganizationDomain, error) {
+	return getClient().Create(ctx, organizationID, params)
 }
 
 // Update updates an organization domain.
-func Update(ctx context.Context, params *UpdateParams) (*clerk.OrganizationDomain, error) {
-	return getClient().Update(ctx, params)
+func Update(ctx context.Context, organizationID, domainID string, params *UpdateParams) (*clerk.OrganizationDomain, error) {
+	return getClient().Update(ctx, organizationID, domainID, params)
 }
 
 // Delete removes a domain from an organization.
@@ -24,8 +24,8 @@ func Delete(ctx context.Context, params *DeleteParams) (*clerk.DeletedResource, 
 }
 
 // List returns a list of organization domains.
-func List(ctx context.Context, params *ListParams) (*clerk.OrganizationDomainList, error) {
-	return getClient().List(ctx, params)
+func List(ctx context.Context, organizationID string, params *ListParams) (*clerk.OrganizationDomainList, error) {
+	return getClient().List(ctx, organizationID, params)
 }
 
 func getClient() *Client {

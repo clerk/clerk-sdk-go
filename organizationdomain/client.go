@@ -27,15 +27,14 @@ func NewClient(config *clerk.ClientConfig) *Client {
 
 type CreateParams struct {
 	clerk.APIParams
-	Name           string `json:"name" form:"name"`
-	OrganizationID string `json:"-" form:"-"`
-	EnrollmentMode string `json:"enrollment_mode" form:"enrollment_mode"`
-	Verified       *bool  `json:"verified" form:"verified"`
+	Name           *string `json:"name,omitempty"`
+	EnrollmentMode *string `json:"enrollment_mode,omitempty"`
+	Verified       *bool   `json:"verified,omitempty"`
 }
 
 // Create adds a new domain to the organization.
-func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.OrganizationDomain, error) {
-	path, err := clerk.JoinPath(path, params.OrganizationID, "/domains")
+func (c *Client) Create(ctx context.Context, organizationID string, params *CreateParams) (*clerk.OrganizationDomain, error) {
+	path, err := clerk.JoinPath(path, organizationID, "/domains")
 	if err != nil {
 		return nil, err
 	}
@@ -48,15 +47,13 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Organ
 
 type UpdateParams struct {
 	clerk.APIParams
-	OrganizationID string  `json:"-" form:"-"`
-	DomainID       string  `json:"-" form:"-"`
-	EnrollmentMode *string `json:"enrollment_mode" form:"enrollment_mode"`
-	Verified       *bool   `json:"verified" form:"verified"`
+	EnrollmentMode *string `json:"enrollment_mode,omitempty"`
+	Verified       *bool   `json:"verified,omitempty"`
 }
 
 // Update updates an organization domain.
-func (c *Client) Update(ctx context.Context, params *UpdateParams) (*clerk.OrganizationDomain, error) {
-	path, err := clerk.JoinPath(path, params.OrganizationID, "/domains", params.DomainID)
+func (c *Client) Update(ctx context.Context, organizationID, domainID string, params *UpdateParams) (*clerk.OrganizationDomain, error) {
+	path, err := clerk.JoinPath(path, organizationID, "/domains", domainID)
 	if err != nil {
 		return nil, err
 	}
@@ -88,9 +85,8 @@ func (c *Client) Delete(ctx context.Context, params *DeleteParams) (*clerk.Delet
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	OrganizationID  string   `json:"-" form:"-"`
-	Verified        *bool    `json:"verified" form:"verified"`
-	EnrollmentModes []string `json:"enrollment_mode" form:"enrollment_mode"`
+	Verified        *bool     `json:"verified,omitempty"`
+	EnrollmentModes *[]string `json:"enrollment_mode,omitempty"`
 }
 
 // ToQuery returns the parameters as url.Values so they can be used
@@ -102,15 +98,15 @@ func (params *ListParams) ToQuery() url.Values {
 		q.Set("verified", strconv.FormatBool(*params.Verified))
 	}
 
-	if len(params.EnrollmentModes) > 0 {
-		q["enrollment_mode"] = params.EnrollmentModes
+	if params.EnrollmentModes != nil && len(*params.EnrollmentModes) > 0 {
+		q["enrollment_mode"] = *params.EnrollmentModes
 	}
 	return q
 }
 
 // List returns a list of organization domains.
-func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.OrganizationDomainList, error) {
-	path, err := clerk.JoinPath(path, params.OrganizationID, "/domains")
+func (c *Client) List(ctx context.Context, organizationID string, params *ListParams) (*clerk.OrganizationDomainList, error) {
+	path, err := clerk.JoinPath(path, organizationID, "/domains")
 	if err != nil {
 		return nil, err
 	}

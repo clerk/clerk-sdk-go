@@ -32,11 +32,10 @@ func TestOrganizationDomainClientCreate(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	response, err := client.Create(context.Background(), &CreateParams{
-		OrganizationID: organizationID,
-		Name:           domain,
-		EnrollmentMode: "automatic_invitation",
-		Verified:       &verified,
+	response, err := client.Create(context.Background(), organizationID, &CreateParams{
+		Name:           clerk.String(domain),
+		EnrollmentMode: clerk.String("automatic_invitation"),
+		Verified:       clerk.Bool(verified),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, response.ID)
@@ -61,7 +60,7 @@ func TestOrganizationDomainClientCreate_Error(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	_, err := client.Create(context.Background(), &CreateParams{})
+	_, err := client.Create(context.Background(), "org_123", &CreateParams{})
 	require.Error(t, err)
 	apiErr, ok := err.(*clerk.APIErrorResponse)
 	require.True(t, ok)
@@ -79,18 +78,15 @@ func TestOrganizationDomainClientUpdate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"verified": %s, "enrollment_mode": null}`, strconv.FormatBool(verified))),
+			In:     json.RawMessage(fmt.Sprintf(`{"verified": %s}`, strconv.FormatBool(verified))),
 			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","verification":{"status": "verified"}}`, id)),
 			Method: http.MethodPatch,
 			Path:   "/v1/organizations/" + organizationID + "/domains/" + id,
 		},
 	}
 	client := NewClient(config)
-	domain, err := client.Update(context.Background(), &UpdateParams{
-		OrganizationID: organizationID,
-		DomainID:       id,
-		Verified:       &verified,
-		EnrollmentMode: nil,
+	domain, err := client.Update(context.Background(), organizationID, id, &UpdateParams{
+		Verified: clerk.Bool(verified),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, domain.ID)
@@ -113,7 +109,7 @@ func TestOrganizationDomainClientUpdate_Error(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	_, err := client.Update(context.Background(), &UpdateParams{})
+	_, err := client.Update(context.Background(), "org_123", "orgdm_123", &UpdateParams{})
 	require.Error(t, err)
 	apiErr, ok := err.(*clerk.APIErrorResponse)
 	require.True(t, ok)
@@ -174,13 +170,12 @@ func TestOrganizationDomainClientList(t *testing.T) {
 	}
 	client := NewClient(config)
 	params := &ListParams{
-		OrganizationID:  organizationID,
 		Verified:        &verified,
-		EnrollmentModes: []string{"automatic_invitation"},
+		EnrollmentModes: &[]string{"automatic_invitation"},
 	}
 	params.Limit = clerk.Int64(1)
 	params.Offset = clerk.Int64(2)
-	list, err := client.List(context.Background(), params)
+	list, err := client.List(context.Background(), organizationID, params)
 	require.NoError(t, err)
 	require.Equal(t, id, list.OrganizationDomains[0].ID)
 	require.Equal(t, organizationID, list.OrganizationDomains[0].OrganizationID)
