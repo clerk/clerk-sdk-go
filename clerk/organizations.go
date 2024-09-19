@@ -124,6 +124,10 @@ type UpdateOrganizationMetadataParams struct {
 	PrivateMetadata json.RawMessage `json:"private_metadata,omitempty"`
 }
 
+type GetParams struct {
+	IncludeMembersCount bool
+}
+
 func (s *OrganizationsService) UpdateMetadata(organizationID string, params UpdateOrganizationMetadataParams) (*Organization, error) {
 	req, _ := s.client.NewRequest(http.MethodPatch, fmt.Sprintf("%s/%s/metadata", OrganizationsUrl, organizationID), &params)
 
@@ -143,7 +147,7 @@ func (s *OrganizationsService) Delete(organizationID string) (*DeleteResponse, e
 	return &deleteResponse, nil
 }
 
-func (s *OrganizationsService) Read(organizationIDOrSlug string) (*Organization, error) {
+func (s *OrganizationsService) Read(organizationIDOrSlug string, params *GetParams) (*Organization, error) {
 	req, err := s.client.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", OrganizationsUrl, organizationIDOrSlug))
 	if err != nil {
 		return nil, err

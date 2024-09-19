@@ -28,7 +28,9 @@ func TestOrganizationsService_Read(t *testing.T) {
 		fmt.Fprint(w, expectedResponse)
 	})
 
-	got, err := client.Organizations().Read(orgID)
+	got, err := client.Organizations().Read(orgID, &GetParams{
+		IncludeMembersCount: true,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
