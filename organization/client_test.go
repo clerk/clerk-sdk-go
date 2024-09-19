@@ -76,7 +76,7 @@ func TestOrganizationClientGet(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	organization, err := client.Get(context.Background(), id)
+	organization, err := client.Get(context.Background(), id, &GetParams{})
 	require.NoError(t, err)
 	require.Equal(t, id, organization.ID)
 	require.Equal(t, name, organization.Name)

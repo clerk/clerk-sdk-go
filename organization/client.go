@@ -48,14 +48,20 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Organ
 	return organization, err
 }
 
+type GetParams struct {
+	clerk.APIParams
+	IncludeMembersCount *bool `json:"include_members_count,omitempty"`
+}
+
 // Get retrieves details for an organization.
 // The organization can be fetched by either the ID or its slug.
-func (c *Client) Get(ctx context.Context, idOrSlug string) (*clerk.Organization, error) {
+func (c *Client) Get(ctx context.Context, idOrSlug string, params *GetParams) (*clerk.Organization, error) {
 	path, err := clerk.JoinPath(path, idOrSlug)
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
 	organization := &clerk.Organization{}
 	err = c.Backend.Call(ctx, req, organization)
 	return organization, err
