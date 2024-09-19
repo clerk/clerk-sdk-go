@@ -11,6 +11,7 @@ type Invitation struct {
 	Revoked        bool            `json:"revoked,omitempty"`
 	Status         string          `json:"status"`
 	URL            string          `json:"url,omitempty"`
+	ExpiresAt      *int64          `json:"expires_at"`
 	CreatedAt      int64           `json:"created_at"`
 	UpdatedAt      int64           `json:"updated_at"`
 }
