@@ -64,6 +64,7 @@ type CreateParams struct {
 	RedirectURL    *string          `json:"redirect_url,omitempty"`
 	Notify         *bool            `json:"notify,omitempty"`
 	IgnoreExisting *bool            `json:"ignore_existing,omitempty"`
+	ExpiresInDays  *int64           `json:"expires_in_days,omitempty"`
 }
 
 // Create adds a new identifier to the allowlist.
