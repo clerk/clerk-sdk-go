@@ -73,11 +73,12 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	name := "the-name"
 	domain := "example.com"
 	provider := "saml_custom"
+	disableAdditionalIdentifications := true
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:   t,
-			Out: json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s"}`, id, name, domain, provider)), Method: http.MethodGet,
+			Out: json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t}`, id, name, domain, provider, disableAdditionalIdentifications)), Method: http.MethodGet,
 			Path: "/v1/saml_connections/" + id,
 		},
 	}
@@ -88,6 +89,7 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	require.Equal(t, name, samlConnection.Name)
 	require.Equal(t, domain, samlConnection.Domain)
 	require.Equal(t, provider, samlConnection.Provider)
+	require.Equal(t, disableAdditionalIdentifications, samlConnection.DisableAdditionalIdentifications)
 }
 
 func TestSAMLConnectionClientUpdate(t *testing.T) {
@@ -96,23 +98,26 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	name := "the-name"
 	domain := "example.com"
 	provider := "saml_custom"
+	disableAdditionalIdentifications := true
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s"}`, name)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s"}`, id, name, domain, provider)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t}`, name, disableAdditionalIdentifications)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t}`, id, name, domain, provider, disableAdditionalIdentifications)),
 			Method: http.MethodPatch,
 			Path:   "/v1/saml_connections/" + id,
 		},
 	}
 	client := NewClient(config)
 	samlConnection, err := client.Update(context.Background(), id, &UpdateParams{
-		Name: clerk.String(name),
+		Name:                             clerk.String(name),
+		DisableAdditionalIdentifications: clerk.Bool(disableAdditionalIdentifications),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
 	require.Equal(t, name, samlConnection.Name)
+	require.Equal(t, disableAdditionalIdentifications, samlConnection.DisableAdditionalIdentifications)
 }
 
 func TestSAMLConnectionClientUpdate_Error(t *testing.T) {
