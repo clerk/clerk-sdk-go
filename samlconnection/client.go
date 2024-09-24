@@ -67,18 +67,19 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.SAMLConnection, err
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name               *string                 `json:"name,omitempty"`
-	Domain             *string                 `json:"domain,omitempty"`
-	IdpEntityID        *string                 `json:"idp_entity_id,omitempty"`
-	IdpSsoURL          *string                 `json:"idp_sso_url,omitempty"`
-	IdpCertificate     *string                 `json:"idp_certificate,omitempty"`
-	IdpMetadataURL     *string                 `json:"idp_metadata_url,omitempty"`
-	IdpMetadata        *string                 `json:"idp_metadata,omitempty"`
-	AttributeMapping   *AttributeMappingParams `json:"attribute_mapping,omitempty"`
-	Active             *bool                   `json:"active,omitempty"`
-	SyncUserAttributes *bool                   `json:"sync_user_attributes,omitempty"`
-	AllowSubdomains    *bool                   `json:"allow_subdomains,omitempty"`
-	AllowIdpInitiated  *bool                   `json:"allow_idp_initiated,omitempty"`
+	Name                             *string                 `json:"name,omitempty"`
+	Domain                           *string                 `json:"domain,omitempty"`
+	IdpEntityID                      *string                 `json:"idp_entity_id,omitempty"`
+	IdpSsoURL                        *string                 `json:"idp_sso_url,omitempty"`
+	IdpCertificate                   *string                 `json:"idp_certificate,omitempty"`
+	IdpMetadataURL                   *string                 `json:"idp_metadata_url,omitempty"`
+	IdpMetadata                      *string                 `json:"idp_metadata,omitempty"`
+	AttributeMapping                 *AttributeMappingParams `json:"attribute_mapping,omitempty"`
+	Active                           *bool                   `json:"active,omitempty"`
+	SyncUserAttributes               *bool                   `json:"sync_user_attributes,omitempty"`
+	AllowSubdomains                  *bool                   `json:"allow_subdomains,omitempty"`
+	AllowIdpInitiated                *bool                   `json:"allow_idp_initiated,omitempty"`
+	DisableAdditionalIdentifications *bool                   `json:"disable_additional_identifications,omitempty"`
 }
 
 // Update updates the SAML Connection specified by id.
