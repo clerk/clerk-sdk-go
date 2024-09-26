@@ -464,3 +464,27 @@ func (c *Client) CreateTOTP(ctx context.Context, userID string) (*clerk.TOTP, er
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
+
+// DeleteTOTP deletes all the TOTPs from a given user.
+func (c *Client) DeleteTOTP(ctx context.Context, userID string) (*MultifactorAuthentication, error) {
+	path, err := clerk.JoinPath(path, userID, "/totp")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	resource := &MultifactorAuthentication{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
+// DeleteBackupCode deletes all the backup codes from a given user.
+func (c *Client) DeleteBackupCode(ctx context.Context, userID string) (*MultifactorAuthentication, error) {
+	path, err := clerk.JoinPath(path, userID, "/backup_code")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	resource := &MultifactorAuthentication{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
