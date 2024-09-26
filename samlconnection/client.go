@@ -72,9 +72,9 @@ type UpdateParams struct {
 	Domain      *string `json:"domain,omitempty"`
 	IdpEntityID *string `json:"idp_entity_id,omitempty"`
 	// OrganizationID is a nullable optional field.
-	// - If nil or unset, the backend will not take any action.
-	// - If an empty value (""), the backend will unset the organization_id.
-	// - If a valid ID is provided, the backend will update the organization_id.
+	// - If nil or unset, no action will be taken.
+	// - If an empty value (""), the organization_id will be unset.
+	// - If a valid ID is provided, the organization_id will be updated.
 	OrganizationID                   *string                 `json:"organization_id,omitempty"`
 	IdpSsoURL                        *string                 `json:"idp_sso_url,omitempty"`
 	IdpCertificate                   *string                 `json:"idp_certificate,omitempty"`
