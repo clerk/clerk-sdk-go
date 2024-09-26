@@ -480,3 +480,39 @@ func TestUserClientCreateTOTP(t *testing.T) {
 	require.NotNil(t, totp.URI)
 	require.Equal(t, totp.Object, "totp")
 }
+
+func TestUserClientDeleteTOTP(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Method: http.MethodDelete,
+			Out:    json.RawMessage(fmt.Sprintf(`{"user_id": "%s"}`, userID)),
+			Path:   fmt.Sprintf("/v1/users/%s/totp", userID),
+		},
+	}
+	client := NewClient(config)
+	totp, err := client.DeleteTOTP(context.Background(), userID)
+	require.NoError(t, err)
+	require.Equal(t, totp.UserID, userID)
+}
+
+func TestUserClientDeleteBackupCode(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Method: http.MethodDelete,
+			Out:    json.RawMessage(fmt.Sprintf(`{"user_id": "%s"}`, userID)),
+			Path:   fmt.Sprintf("/v1/users/%s/backup_code", userID),
+		},
+	}
+	client := NewClient(config)
+	totp, err := client.DeleteBackupCode(context.Background(), userID)
+	require.NoError(t, err)
+	require.Equal(t, totp.UserID, userID)
+}

@@ -105,6 +105,16 @@ func CreateTOTP(ctx context.Context, userID string) (*clerk.TOTP, error) {
 	return getClient().CreateTOTP(ctx, userID)
 }
 
+// DeleteTOTP deletes all the TOTPs from a given user.
+func DeleteTOTP(ctx context.Context, userID string) (*MultifactorAuthentication, error) {
+	return getClient().DeleteTOTP(ctx, userID)
+}
+
+// DeleteBackupCode deletes all the backup codes from a given user.
+func DeleteBackupCode(ctx context.Context, userID string) (*MultifactorAuthentication, error) {
+	return getClient().DeleteBackupCode(ctx, userID)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
