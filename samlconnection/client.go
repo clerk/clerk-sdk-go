@@ -34,6 +34,7 @@ type AttributeMappingParams struct {
 type CreateParams struct {
 	clerk.APIParams
 	Name             *string                 `json:"name,omitempty"`
+	OrganizationID   *string                 `json:"organization_id,omitempty"`
 	Domain           *string                 `json:"domain,omitempty"`
 	Provider         *string                 `json:"provider,omitempty"`
 	IdpEntityID      *string                 `json:"idp_entity_id,omitempty"`
@@ -67,9 +68,14 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.SAMLConnection, err
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name                             *string                 `json:"name,omitempty"`
-	Domain                           *string                 `json:"domain,omitempty"`
-	IdpEntityID                      *string                 `json:"idp_entity_id,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	Domain      *string `json:"domain,omitempty"`
+	IdpEntityID *string `json:"idp_entity_id,omitempty"`
+	// OrganizationID is a nullable optional field.
+	// - If nil or unset, no action will be taken.
+	// - If an empty value (""), the organization_id will be unset.
+	// - If a valid ID is provided, the organization_id will be updated.
+	OrganizationID                   *string                 `json:"organization_id,omitempty"`
 	IdpSsoURL                        *string                 `json:"idp_sso_url,omitempty"`
 	IdpCertificate                   *string                 `json:"idp_certificate,omitempty"`
 	IdpMetadataURL                   *string                 `json:"idp_metadata_url,omitempty"`
