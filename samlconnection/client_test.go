@@ -103,7 +103,7 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t}`, name, disableAdditionalIdentifications)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": ""}`, name, disableAdditionalIdentifications)),
 			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t}`, id, name, domain, provider, disableAdditionalIdentifications)),
 			Method: http.MethodPatch,
 			Path:   "/v1/saml_connections/" + id,
@@ -113,6 +113,7 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	samlConnection, err := client.Update(context.Background(), id, &UpdateParams{
 		Name:                             clerk.String(name),
 		DisableAdditionalIdentifications: clerk.Bool(disableAdditionalIdentifications),
+		OrganizationID:                   clerk.String(""),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
