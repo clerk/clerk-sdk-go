@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
 
 	"github.com/clerk/clerk-sdk-go/v2"
 )
@@ -43,6 +44,59 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Organ
 	}
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
+	invitation := &clerk.OrganizationInvitation{}
+	err = c.Backend.Call(ctx, req, invitation)
+	return invitation, err
+}
+
+type ListParams struct {
+	clerk.APIParams
+	clerk.ListParams
+	Statuses *[]string
+}
+
+func (p *ListParams) ToQuery() url.Values {
+	q := p.ListParams.ToQuery()
+
+	if p.Statuses != nil && len(*p.Statuses) > 0 {
+		q["status"] = *p.Statuses
+	}
+
+	return q
+}
+
+// List returns a list of organization invitations
+func (c *Client) List(ctx context.Context, organizationID string, params *ListParams) (*clerk.OrganizationInvitationList, error) {
+	path, err := clerk.JoinPath(path, organizationID, "/invitations")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
+	invitation := &clerk.OrganizationInvitationList{}
+	err = c.Backend.Call(ctx, req, invitation)
+	return invitation, err
+}
+
+// Get retrieves the detail for an organization invitation.
+func (c *Client) Get(ctx context.Context, organizationID, id string) (*clerk.OrganizationInvitation, error) {
+	path, err := clerk.JoinPath(path, organizationID, "/invitations", id)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	invitation := &clerk.OrganizationInvitation{}
+	err = c.Backend.Call(ctx, req, invitation)
+	return invitation, err
+}
+
+// Revoke marks the organization invitation as revoked.
+func (c *Client) Revoke(ctx context.Context, organizationID, id string) (*clerk.OrganizationInvitation, error) {
+	path, err := clerk.JoinPath(path, organizationID, "/invitations", id, "/revoke")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
 	invitation := &clerk.OrganizationInvitation{}
 	err = c.Backend.Call(ctx, req, invitation)
 	return invitation, err
