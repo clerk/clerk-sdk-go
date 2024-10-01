@@ -52,7 +52,8 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Organ
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	Statuses *[]string
+	OrganizationID string
+	Statuses       *[]string
 }
 
 func (p *ListParams) ToQuery() url.Values {
@@ -66,8 +67,8 @@ func (p *ListParams) ToQuery() url.Values {
 }
 
 // List returns a list of organization invitations
-func (c *Client) List(ctx context.Context, organizationID string, params *ListParams) (*clerk.OrganizationInvitationList, error) {
-	path, err := clerk.JoinPath(path, organizationID, "/invitations")
+func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.OrganizationInvitationList, error) {
+	path, err := clerk.JoinPath(path, params.OrganizationID, "/invitations")
 	if err != nil {
 		return nil, err
 	}
@@ -78,9 +79,14 @@ func (c *Client) List(ctx context.Context, organizationID string, params *ListPa
 	return invitation, err
 }
 
+type GetParams struct {
+	OrganizationID string
+	ID             string
+}
+
 // Get retrieves the detail for an organization invitation.
-func (c *Client) Get(ctx context.Context, organizationID, id string) (*clerk.OrganizationInvitation, error) {
-	path, err := clerk.JoinPath(path, organizationID, "/invitations", id)
+func (c *Client) Get(ctx context.Context, params *GetParams) (*clerk.OrganizationInvitation, error) {
+	path, err := clerk.JoinPath(path, params.OrganizationID, "/invitations", params.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -90,9 +96,14 @@ func (c *Client) Get(ctx context.Context, organizationID, id string) (*clerk.Org
 	return invitation, err
 }
 
+type RevokeParams struct {
+	OrganizationID string
+	ID             string
+}
+
 // Revoke marks the organization invitation as revoked.
-func (c *Client) Revoke(ctx context.Context, organizationID, id string) (*clerk.OrganizationInvitation, error) {
-	path, err := clerk.JoinPath(path, organizationID, "/invitations", id, "/revoke")
+func (c *Client) Revoke(ctx context.Context, params *RevokeParams) (*clerk.OrganizationInvitation, error) {
+	path, err := clerk.JoinPath(path, params.OrganizationID, "/invitations", params.ID, "/revoke")
 	if err != nil {
 		return nil, err
 	}

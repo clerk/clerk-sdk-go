@@ -14,18 +14,18 @@ func Create(ctx context.Context, params *CreateParams) (*clerk.OrganizationInvit
 }
 
 // List returns a list of organization invitations
-func List(ctx context.Context, organizationID string, params *ListParams) (*clerk.OrganizationInvitationList, error) {
-	return getClient().List(ctx, organizationID, params)
+func List(ctx context.Context, params *ListParams) (*clerk.OrganizationInvitationList, error) {
+	return getClient().List(ctx, params)
 }
 
 // Get retrieves the detail for an organization invitation.
-func Get(ctx context.Context, organizationID, id string) (*clerk.OrganizationInvitation, error) {
-	return getClient().Get(ctx, organizationID, id)
+func Get(ctx context.Context, params *GetParams) (*clerk.OrganizationInvitation, error) {
+	return getClient().Get(ctx, params)
 }
 
 // Revoke marks the organization invitation as revoked.
-func Revoke(ctx context.Context, organizationID, id string) (*clerk.OrganizationInvitation, error) {
-	return getClient().Revoke(ctx, organizationID, id)
+func Revoke(ctx context.Context, params *RevokeParams) (*clerk.OrganizationInvitation, error) {
+	return getClient().Revoke(ctx, params)
 }
 
 func getClient() *Client {

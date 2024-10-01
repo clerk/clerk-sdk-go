@@ -2,12 +2,12 @@ package clerk
 
 import "encoding/json"
 
-type publicOrganizationData struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Slug     string `json:"slug"`
-	ImageURL string `json:"image_url,omitempty"`
-	HasImage bool   `json:"has_image"`
+type PublicOrganizationData struct {
+	ID       string  `json:"id"`
+	Name     string  `json:"name"`
+	Slug     string  `json:"slug"`
+	ImageURL *string `json:"image_url,omitempty"`
+	HasImage bool    `json:"has_image"`
 }
 
 type OrganizationInvitation struct {
@@ -17,7 +17,7 @@ type OrganizationInvitation struct {
 	EmailAddress           string                  `json:"email_address"`
 	Role                   string                  `json:"role"`
 	OrganizationID         string                  `json:"organization_id"`
-	PublicOrganizationData *publicOrganizationData `json:"public_organization_data,omitempty"`
+	PublicOrganizationData *PublicOrganizationData `json:"public_organization_data,omitempty"`
 	Status                 string                  `json:"status"`
 	PublicMetadata         json.RawMessage         `json:"public_metadata"`
 	PrivateMetadata        json.RawMessage         `json:"private_metadata"`
