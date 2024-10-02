@@ -97,8 +97,10 @@ func (c *Client) Get(ctx context.Context, params *GetParams) (*clerk.Organizatio
 }
 
 type RevokeParams struct {
-	OrganizationID string
-	ID             string
+	clerk.APIParams
+	RequestingUserID *string `json:"requesting_user_id,omitempty"`
+	OrganizationID   string  `json:"-"`
+	ID               string  `json:"-"`
 }
 
 // Revoke marks the organization invitation as revoked.
@@ -108,6 +110,7 @@ func (c *Client) Revoke(ctx context.Context, params *RevokeParams) (*clerk.Organ
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
 	invitation := &clerk.OrganizationInvitation{}
 	err = c.Backend.Call(ctx, req, invitation)
 	return invitation, err
