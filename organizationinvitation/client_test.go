@@ -184,6 +184,7 @@ func TestOrganizationInvitationClientRevoke(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
+			In:     json.RawMessage(`{"requesting_user_id": "user_123"}`),
 			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"organization_invitation","email_address":"string","role":"string","organization_id":"%s","status":"string","public_metadata":{},"private_metadata":{},"created_at":0,"updated_at":0}`, id, organizationID)),
 			Method: http.MethodPost,
 			Path:   "/v1/organizations/" + organizationID + "/invitations/" + id + "/revoke",
@@ -191,8 +192,9 @@ func TestOrganizationInvitationClientRevoke(t *testing.T) {
 	}
 	client := NewClient(config)
 	response, err := client.Revoke(context.Background(), &RevokeParams{
-		OrganizationID: organizationID,
-		ID:             id,
+		OrganizationID:   organizationID,
+		RequestingUserID: clerk.String("user_123"),
+		ID:               id,
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, response.ID)
