@@ -429,6 +429,37 @@ func (c *Client) ListOrganizationMemberships(ctx context.Context, id string, par
 	return list, err
 }
 
+type ListOrganizationInvitationsParams struct {
+	clerk.APIParams
+	clerk.ListParams
+	UserID   string    `json:"-"`
+	Statuses *[]string `json:"statuses,omitempty"`
+}
+
+// ToQuery returns url.Values from the params.
+func (params *ListOrganizationInvitationsParams) ToQuery() url.Values {
+	query := params.ListParams.ToQuery()
+
+	if params.Statuses != nil {
+		query["status"] = *params.Statuses
+	}
+
+	return query
+}
+
+// ListOrganizationInvitations lists all the user's organization invitations.
+func (c *Client) ListOrganizationInvitations(ctx context.Context, params *ListOrganizationInvitationsParams) (*clerk.OrganizationInvitationList, error) {
+	path, err := clerk.JoinPath(path, params.UserID, "/organization_invitations")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
+	list := &clerk.OrganizationInvitationList{}
+	err = c.Backend.Call(ctx, req, list)
+	return list, err
+}
+
 // DeletePasskey deletes a passkey by its identification ID.
 func (c *Client) DeletePasskey(ctx context.Context, userID, identificationID string) (*clerk.DeletedResource, error) {
 	path, err := clerk.JoinPath(path, userID, "/passkeys", identificationID)
