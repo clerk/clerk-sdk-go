@@ -423,6 +423,45 @@ func TestUserClientListOrganizationMemberships(t *testing.T) {
 	require.Equal(t, userID, list.OrganizationMemberships[0].PublicUserData.UserID)
 }
 
+func TestUserClientListOrganizationInvitations(t *testing.T) {
+	t.Parallel()
+	invitationID := "orginv_123"
+	organizationID := "org_123"
+	userID := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T: t,
+			Out: json.RawMessage(fmt.Sprintf(`{
+				"data": [{
+					"id":"%s",
+					"organization_id":"%s"
+				}],
+				"total_count": 1
+				}`,
+				invitationID, organizationID)),
+			Method: http.MethodGet,
+			Path:   "/v1/users/" + userID + "/organization_invitations",
+			Query: &url.Values{
+				"limit":  []string{"1"},
+				"offset": []string{"2"},
+				"status": []string{"accepted"},
+			},
+		},
+	}
+	client := NewClient(config)
+	params := &ListOrganizationInvitationsParams{
+		Statuses: &[]string{"accepted"},
+		UserID:   userID,
+	}
+	params.Limit = clerk.Int64(1)
+	params.Offset = clerk.Int64(2)
+	list, err := client.ListOrganizationInvitations(context.Background(), params)
+	require.NoError(t, err)
+	require.Equal(t, invitationID, list.OrganizationInvitations[0].ID)
+	require.Equal(t, organizationID, list.OrganizationInvitations[0].OrganizationID)
+}
+
 func TestUserClientDeletePasskey(t *testing.T) {
 	t.Parallel()
 	userID := "user_123"

@@ -90,6 +90,11 @@ func ListOrganizationMemberships(ctx context.Context, id string, params *ListOrg
 	return getClient().ListOrganizationMemberships(ctx, id, params)
 }
 
+// ListOrganizationInvitations lists all the user's organization invitations.
+func ListOrganizationInvitations(ctx context.Context, params *ListOrganizationInvitationsParams) (*clerk.OrganizationInvitationList, error) {
+	return getClient().ListOrganizationInvitations(ctx, params)
+}
+
 // DeletePasskey deletes a passkey by its identification ID.
 func DeletePasskey(ctx context.Context, userID, identificationID string) (*clerk.DeletedResource, error) {
 	return getClient().DeletePasskey(ctx, userID, identificationID)
