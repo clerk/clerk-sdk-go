@@ -142,7 +142,7 @@ func (p *ListFromInstanceParams) ToQuery() url.Values {
 	return q
 }
 
-// ListAllFromInstance lists all the organization invitations from the given instanceID
+// ListAllFromInstance lists all the organization invitations from the current instance
 func (c *Client) ListFromInstance(ctx context.Context, params *ListFromInstanceParams) (*clerk.OrganizationInvitationList, error) {
 	path, err := clerk.JoinPath("/organization_invitations")
 	if err != nil {
