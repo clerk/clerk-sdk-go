@@ -28,6 +28,11 @@ func Revoke(ctx context.Context, params *RevokeParams) (*clerk.OrganizationInvit
 	return getClient().Revoke(ctx, params)
 }
 
+// ListAllFromInstance lists all the organization invitations from the given instanceID
+func ListFromInstance(ctx context.Context, params *ListFromInstanceParams) (*clerk.OrganizationInvitationList, error) {
+	return getClient().ListFromInstance(ctx, params)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
