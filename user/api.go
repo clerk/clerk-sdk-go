@@ -120,6 +120,11 @@ func DeleteBackupCode(ctx context.Context, userID string) (*MultifactorAuthentic
 	return getClient().DeleteBackupCode(ctx, userID)
 }
 
+// DeleteExternalAccount deletes an external account by its ID.
+func DeleteExternalAccount(ctx context.Context, params *DeleteExternalAccountParams) (*clerk.DeletedResource, error) {
+	return getClient().DeleteExternalAccount(ctx, params)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
