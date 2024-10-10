@@ -230,3 +230,60 @@ func TestOrganizationInvitationClientRevoke_Error(t *testing.T) {
 	require.Equal(t, 1, len(apiErr.Errors))
 	require.Equal(t, "revoke-error-code", apiErr.Errors[0].Code)
 }
+
+func TestOrganizationInvitationClientListFromInstance(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(`{"data":[{"id":"orginv_123","object":"organization_invitation","email_address":"string","role":"string","organization_id":"org_123","status":"string","public_metadata":{},"private_metadata":{},"created_at":0,"updated_at":0}],"total_count":1}`),
+			Method: http.MethodGet,
+			Path:   "/v1/organization_invitations",
+			Query: &url.Values{
+				"limit":    []string{"10"},
+				"order_by": []string{"-created_at"},
+				"query":    []string{"query"},
+				"status":   []string{"pending", "accepted"},
+			},
+		},
+	}
+	client := NewClient(config)
+	response, err := client.ListFromInstance(context.Background(), &ListFromInstanceParams{
+		Statuses: &[]string{"pending", "accepted"},
+		Query:    clerk.String("query"),
+		OrderBy:  clerk.String("-created_at"),
+		ListParams: clerk.ListParams{
+			Limit: clerk.Int64(10),
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, response.OrganizationInvitations, 1)
+	require.Equal(t, int64(1), response.TotalCount)
+	require.Equal(t, "orginv_123", response.OrganizationInvitations[0].ID)
+}
+
+func TestOrganizationInvitationClientListFromInstance_Error(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Status: http.StatusBadRequest,
+			Out: json.RawMessage(`{
+				"errors":[{
+					"code":"list-from-instance-error-code"
+				}],
+				"clerk_trace_id":"list-from-instance-trace-id"
+			}`),
+		},
+	}
+	client := NewClient(config)
+	_, err := client.ListFromInstance(context.Background(), &ListFromInstanceParams{})
+	require.Error(t, err)
+	apiErr, ok := err.(*clerk.APIErrorResponse)
+	require.True(t, ok)
+	require.Equal(t, "list-from-instance-trace-id", apiErr.TraceID)
+	require.Equal(t, 1, len(apiErr.Errors))
+	require.Equal(t, "list-from-instance-error-code", apiErr.Errors[0].Code)
+}

@@ -115,3 +115,42 @@ func (c *Client) Revoke(ctx context.Context, params *RevokeParams) (*clerk.Organ
 	err = c.Backend.Call(ctx, req, invitation)
 	return invitation, err
 }
+
+type ListFromInstanceParams struct {
+	clerk.APIParams
+	clerk.ListParams
+	Statuses *[]string `json:"statuses,omitempty"`
+	Query    *string   `json:"query,omitempty"`
+	OrderBy  *string   `json:"order_by,omitempty"`
+}
+
+func (p *ListFromInstanceParams) ToQuery() url.Values {
+	q := p.ListParams.ToQuery()
+
+	if p.Statuses != nil && len(*p.Statuses) > 0 {
+		q["status"] = *p.Statuses
+	}
+
+	if p.Query != nil {
+		q.Add("query", *p.Query)
+	}
+
+	if p.OrderBy != nil {
+		q.Add("order_by", *p.OrderBy)
+	}
+
+	return q
+}
+
+// ListAllFromInstance lists all the organization invitations from the current instance
+func (c *Client) ListFromInstance(ctx context.Context, params *ListFromInstanceParams) (*clerk.OrganizationInvitationList, error) {
+	path, err := clerk.JoinPath("/organization_invitations")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
+	invitation := &clerk.OrganizationInvitationList{}
+	err = c.Backend.Call(ctx, req, invitation)
+	return invitation, err
+}
