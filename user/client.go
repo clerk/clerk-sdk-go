@@ -519,3 +519,21 @@ func (c *Client) DeleteBackupCode(ctx context.Context, userID string) (*Multifac
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
+
+type DeleteExternalAccountParams struct {
+	clerk.APIParams
+	UserID string `json:"-"`
+	ID     string `json:"-"`
+}
+
+// DeleteExternalAccount deletes an external account by its ID.
+func (c *Client) DeleteExternalAccount(ctx context.Context, params *DeleteExternalAccountParams) (*clerk.DeletedResource, error) {
+	path, err := clerk.JoinPath(path, params.UserID, "/external_accounts", params.ID)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	resource := &clerk.DeletedResource{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
