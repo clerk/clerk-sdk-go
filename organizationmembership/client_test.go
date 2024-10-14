@@ -176,7 +176,9 @@ func TestOrganizationMembershipClientList(t *testing.T) {
 "data": [{
 	"id":"%s",
 	"organization":{"id":"%s"},
-	"public_user_data":{"user_id":"%s"}
+	"public_user_data":{"user_id":"%s"},
+	"role": "string",
+	"role_name": "string"
 }],
 "total_count": 1
 }`,
@@ -204,4 +206,6 @@ func TestOrganizationMembershipClientList(t *testing.T) {
 	require.Equal(t, id, list.OrganizationMemberships[0].ID)
 	require.Equal(t, organizationID, list.OrganizationMemberships[0].Organization.ID)
 	require.Equal(t, userID, list.OrganizationMemberships[0].PublicUserData.UserID)
+	require.Equal(t, "string", list.OrganizationMemberships[0].RoleName)
+	require.Equal(t, "string", list.OrganizationMemberships[0].Role)
 }

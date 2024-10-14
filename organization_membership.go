@@ -11,6 +11,7 @@ type OrganizationMembership struct {
 	PublicMetadata  json.RawMessage                       `json:"public_metadata"`
 	PrivateMetadata json.RawMessage                       `json:"private_metadata"`
 	Role            string                                `json:"role"`
+	RoleName        string                                `json:"role_name"`
 	CreatedAt       int64                                 `json:"created_at"`
 	UpdatedAt       int64                                 `json:"updated_at"`
 	PublicUserData  *OrganizationMembershipPublicUserData `json:"public_user_data,omitempty"`

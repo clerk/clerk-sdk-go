@@ -131,7 +131,7 @@ func TestOrganizationInvitationClientGet(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"organization_invitation","email_address":"string","role":"string","organization_id":"%s","status":"string","public_metadata":{},"private_metadata":{},"created_at":0,"updated_at":0}`, id, organizationID)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"organization_invitation","email_address":"string","role":"string","role_name":"string","organization_id":"%s","status":"string","public_metadata":{},"private_metadata":{},"created_at":0,"updated_at":0}`, id, organizationID)),
 			Method: http.MethodGet,
 			Path:   "/v1/organizations/" + organizationID + "/invitations/" + id,
 		},
@@ -144,6 +144,8 @@ func TestOrganizationInvitationClientGet(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, response.ID)
 	require.Equal(t, organizationID, response.OrganizationID)
+	require.Equal(t, "string", response.RoleName)
+	require.Equal(t, "string", response.Role)
 }
 
 func TestOrganizationInvitationClientGet_Error(t *testing.T) {
