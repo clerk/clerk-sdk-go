@@ -50,6 +50,9 @@ type CreateParams struct {
 	TOTPSecret              *string          `json:"totp_secret,omitempty"`
 	BackupCodes             *[]string        `json:"backup_codes,omitempty"`
 	// Specified in RFC3339 format
+	LegalAcceptedAt *string `json:"legal_accepted_at,omitempty"`
+	SkipLegalChecks *bool   `json:"skip_legal_checks,omitempty"`
+	// Specified in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
 }
 
@@ -99,6 +102,9 @@ type UpdateParams struct {
 	DeleteSelfEnabled                *bool            `json:"delete_self_enabled,omitempty"`
 	CreateOrganizationEnabled        *bool            `json:"create_organization_enabled,omitempty"`
 	CreateOrganizationsLimit         *int             `json:"create_organizations_limit,omitempty"`
+	// Specified in RFC3339 format
+	LegalAcceptedAt *string `json:"legal_accepted_at,omitempty"`
+	SkipLegalChecks *bool   `json:"skip_legal_checks,omitempty"`
 	// Specified in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
 }

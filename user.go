@@ -37,6 +37,7 @@ type User struct {
 	CreateOrganizationEnabled     bool               `json:"create_organization_enabled"`
 	CreateOrganizationsLimit      *int               `json:"create_organizations_limit,omitempty"`
 	LastActiveAt                  *int64             `json:"last_active_at"`
+	LegalAcceptedAt               *int64             `json:"legal_accepted_at"`
 	CreatedAt                     int64              `json:"created_at"`
 	UpdatedAt                     int64              `json:"updated_at"`
 }
