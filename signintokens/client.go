@@ -1,4 +1,4 @@
-// Package session provides the Sessions API.
+// Package session provides the Sign In Token API.
 package signintokens
 
 import (
