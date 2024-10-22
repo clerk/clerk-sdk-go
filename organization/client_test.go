@@ -66,40 +66,20 @@ func TestOrganizationClientGet(t *testing.T) {
 	t.Parallel()
 	id := "org_123"
 	name := "Acme Inc"
-	membersCount := int64(1)
-	hasMemberWithElevatedPermissions := true
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
-			T: t,
-			Out: json.RawMessage(fmt.Sprintf(
-				`{"id":"%s","name":"%s","members_count":%d,"has_member_with_elevated_permissions":%t}`,
-				id,
-				name,
-				membersCount,
-				hasMemberWithElevatedPermissions,
-			)),
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s"}`, id, name)),
 			Method: http.MethodGet,
 			Path:   "/v1/organizations/" + id,
-			Query: &url.Values{
-				"include_members_count":                        []string{"true"},
-				"include_has_member_with_elevated_permissions": []string{"true"},
-			},
 		},
 	}
-	params := &GetParams{
-		IncludeMembersCount:                     clerk.Bool(true),
-		IncludeHasMemberWithElevatedPermissions: clerk.Bool(true),
-	}
 	client := NewClient(config)
-	organization, err := client.Get(context.Background(), id, params)
+	organization, err := client.Get(context.Background(), id)
 	require.NoError(t, err)
 	require.Equal(t, id, organization.ID)
 	require.Equal(t, name, organization.Name)
-	require.Equal(t, membersCount, *organization.MembersCount)
-	require.NotNil(t, organization.HasMemberWithElevatedPermissions)
-	require.Equal(t, hasMemberWithElevatedPermissions, *organization.HasMemberWithElevatedPermissions)
-
 }
 
 func TestOrganizationClientUpdate(t *testing.T) {
@@ -176,29 +156,25 @@ func TestOrganizationClientList(t *testing.T) {
 		Transport: &clerktest.RoundTripper{
 			T: t,
 			Out: json.RawMessage(`{
-"data": [{"id":"org_123","name":"Acme Inc","members_count":1,"has_member_with_elevated_permissions":true}],
+"data": [{"id":"org_123","name":"Acme Inc"}],
 "total_count": 1
 }`),
 			Method: http.MethodGet,
 			Path:   "/v1/organizations",
 			Query: &url.Values{
-				"limit":                 []string{"1"},
-				"offset":                []string{"2"},
-				"order_by":              []string{"-created_at"},
-				"query":                 []string{"Acme"},
-				"user_id":               []string{"user_123", "user_456"},
-				"include_members_count": []string{"true"},
-				"include_has_member_with_elevated_permissions": []string{"true"},
+				"limit":    []string{"1"},
+				"offset":   []string{"2"},
+				"order_by": []string{"-created_at"},
+				"query":    []string{"Acme"},
+				"user_id":  []string{"user_123", "user_456"},
 			},
 		},
 	}
 	client := NewClient(config)
 	params := &ListParams{
-		OrderBy:                                 clerk.String("-created_at"),
-		Query:                                   clerk.String("Acme"),
-		UserIDs:                                 []string{"user_123", "user_456"},
-		IncludeMembersCount:                     clerk.Bool(true),
-		IncludeHasMemberWithElevatedPermissions: clerk.Bool(true),
+		OrderBy: clerk.String("-created_at"),
+		Query:   clerk.String("Acme"),
+		UserIDs: []string{"user_123", "user_456"},
 	}
 	params.Limit = clerk.Int64(1)
 	params.Offset = clerk.Int64(2)
@@ -208,10 +184,6 @@ func TestOrganizationClientList(t *testing.T) {
 	require.Equal(t, 1, len(list.Organizations))
 	require.Equal(t, "org_123", list.Organizations[0].ID)
 	require.Equal(t, "Acme Inc", list.Organizations[0].Name)
-	require.NotNil(t, list.Organizations[0].MembersCount)
-	require.Equal(t, int64(1), *list.Organizations[0].MembersCount)
-	require.NotNil(t, *list.Organizations[0].HasMemberWithElevatedPermissions)
-	require.Equal(t, true, *list.Organizations[0].HasMemberWithElevatedPermissions)
 }
 
 type testFile struct {
