@@ -15,8 +15,8 @@ func Create(ctx context.Context, params *CreateParams) (*clerk.Organization, err
 
 // Get retrieves details for an organization.
 // The organization can be fetched by either the ID or its slug.
-func Get(ctx context.Context, idOrSlug string) (*clerk.Organization, error) {
-	return getClient().Get(ctx, idOrSlug)
+func Get(ctx context.Context, idOrSlug string, params *GetParams) (*clerk.Organization, error) {
+	return getClient().Get(ctx, idOrSlug, params)
 }
 
 // Update updates an organization.
