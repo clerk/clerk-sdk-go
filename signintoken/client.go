@@ -1,5 +1,5 @@
-// Package session provides the Sign In Token API.
-package signintokens
+// Package signintoken provides the Sign-In Token API.
+package signintoken
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 
 const path = "/sign_in_tokens"
 
-// Client is used to invoke the sign-in Token API.
+// Client is used to invoke the Sign-In Token API.
 type Client struct {
 	Backend clerk.Backend
 }

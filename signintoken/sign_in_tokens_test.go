@@ -1,4 +1,4 @@
-package signintokens
+package signintoken
 
 import (
 	"context"
