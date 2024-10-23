@@ -66,40 +66,20 @@ func TestOrganizationClientGet(t *testing.T) {
 	t.Parallel()
 	id := "org_123"
 	name := "Acme Inc"
-	membersCount := int64(1)
-	hasMemberWithElevatedPermissions := true
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
-			T: t,
-			Out: json.RawMessage(fmt.Sprintf(
-				`{"id":"%s","name":"%s","members_count":%d,"has_member_with_elevated_permissions":%t}`,
-				id,
-				name,
-				membersCount,
-				hasMemberWithElevatedPermissions,
-			)),
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s"}`, id, name)),
 			Method: http.MethodGet,
 			Path:   "/v1/organizations/" + id,
-			Query: &url.Values{
-				"include_members_count":                        []string{"true"},
-				"include_has_member_with_elevated_permissions": []string{"true"},
-			},
 		},
 	}
-	params := &GetParams{
-		IncludeMembersCount:                     clerk.Bool(true),
-		IncludeHasMemberWithElevatedPermissions: clerk.Bool(true),
-	}
 	client := NewClient(config)
-	organization, err := client.Get(context.Background(), id, params)
+	organization, err := client.Get(context.Background(), id)
 	require.NoError(t, err)
 	require.Equal(t, id, organization.ID)
 	require.Equal(t, name, organization.Name)
-	require.Equal(t, membersCount, *organization.MembersCount)
-	require.NotNil(t, organization.HasMemberWithElevatedPermissions)
-	require.Equal(t, hasMemberWithElevatedPermissions, *organization.HasMemberWithElevatedPermissions)
-
 }
 
 func TestOrganizationClientUpdate(t *testing.T) {
