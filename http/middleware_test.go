@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -365,7 +366,7 @@ func TestNeedsSessionReverification(t *testing.T) {
 				})
 			}
 
-			// This is the user's server, guarded by Clerk's middleware.
+			// This is the user's server, using the NeedsSessionReverification middleware.
 			ts := httptest.NewServer(includeSessionClaims(NeedsSessionReverification(tc.policy)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				_, err := w.Write([]byte("{}"))
 				require.NoError(t, err)
@@ -382,6 +383,16 @@ func TestNeedsSessionReverification(t *testing.T) {
 
 			// Verify the response status
 			require.Equal(t, tc.expectedStatus, resp.StatusCode)
+
+			if resp.StatusCode == http.StatusOK {
+				return
+			}
+
+			// Verify the error response has the expected structure and reason
+			var errResp ClerkErrorResponse
+			err = json.NewDecoder(resp.Body).Decode(&errResp)
+			require.NoError(t, err)
+			require.Equal(t, "reverification-error", errResp.ClerkError.Reason)
 		})
 	}
 }
