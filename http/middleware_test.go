@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -282,4 +283,116 @@ func TestAuthorizationJWTExtractor(t *testing.T) {
 	res, err = ts.Client().Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusForbidden, res.StatusCode)
+}
+
+func TestNeedsSessionReverification(t *testing.T) {
+	for _, tc := range []struct {
+		name           string
+		factorAges     [2]int64
+		policy         clerk.SessionReverificationPolicy
+		expectedStatus int
+	}{
+		{
+			name:       "first factor - valid",
+			factorAges: [2]int64{5, -1},
+			policy: clerk.SessionReverificationPolicy{
+				AfterMinutes: 10,
+				Level:        clerk.SessionReverificationLevelFirstFactor,
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:       "first factor - needs reverification",
+			factorAges: [2]int64{15, -1},
+			policy: clerk.SessionReverificationPolicy{
+				AfterMinutes: 10,
+				Level:        clerk.SessionReverificationLevelFirstFactor,
+			},
+			expectedStatus: http.StatusForbidden,
+		},
+		{
+			name:       "second factor - valid",
+			factorAges: [2]int64{20, 5},
+			policy: clerk.SessionReverificationPolicy{
+				AfterMinutes: 10,
+				Level:        clerk.SessionReverificationLevelSecondFactor,
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:       "second factor - needs reverification",
+			factorAges: [2]int64{20, 15},
+			policy: clerk.SessionReverificationPolicy{
+				AfterMinutes: 10,
+				Level:        clerk.SessionReverificationLevelSecondFactor,
+			},
+			expectedStatus: http.StatusForbidden,
+		},
+		{
+			name:       "multi factor - valid",
+			factorAges: [2]int64{5, -1},
+			policy: clerk.SessionReverificationPolicy{
+				AfterMinutes: 10,
+				Level:        clerk.SessionReverificationLevelSecondFactor,
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:       "multi factor - needs reverification",
+			factorAges: [2]int64{5, 15},
+			policy: clerk.SessionReverificationPolicy{
+				AfterMinutes: 10,
+				Level:        clerk.SessionReverificationLevelMultiFactor,
+			},
+			expectedStatus: http.StatusForbidden,
+		},
+		{
+			name:           "using predefined policy",
+			factorAges:     [2]int64{15, 15},
+			policy:         clerk.SessionReverificationStrictMFA,
+			expectedStatus: http.StatusForbidden,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			includeSessionClaims := func(next http.Handler) http.Handler {
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					claims := &clerk.SessionClaims{
+						Claims: clerk.Claims{
+							FactorVerificationAge: tc.factorAges,
+						},
+					}
+					ctx := clerk.ContextWithSessionClaims(r.Context(), claims)
+					next.ServeHTTP(w, r.WithContext(ctx))
+				})
+			}
+
+			// This is the user's server, using the NeedsSessionReverification middleware.
+			ts := httptest.NewServer(includeSessionClaims(NeedsSessionReverification(tc.policy)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				_, err := w.Write([]byte("{}"))
+				require.NoError(t, err)
+			}))))
+			defer ts.Close()
+
+			req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+			require.NoError(t, err)
+
+			// Send the request
+			resp, err := ts.Client().Do(req)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			// Verify the response status
+			require.Equal(t, tc.expectedStatus, resp.StatusCode)
+
+			if resp.StatusCode == http.StatusOK {
+				return
+			}
+
+			// Verify the error response has the expected structure and reason
+			var errResp ClerkErrorResponse
+			err = json.NewDecoder(resp.Body).Decode(&errResp)
+			require.NoError(t, err)
+			require.Equal(t, "reverification-error", errResp.ClerkError.Reason)
+		})
+	}
 }
