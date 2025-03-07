@@ -89,6 +89,13 @@ func TestNeedsReverification(t *testing.T) {
 			policyMinutes:  10,
 			expectedResult: true,
 		},
+		{
+			name:           "first factor - invalid state",
+			factorAges:     [2]int64{-1, -1},
+			policyLevel:    SessionReverificationLevelFirstFactor,
+			policyMinutes:  10,
+			expectedResult: true,
+		},
 
 		// SecondFactor
 		{
@@ -115,6 +122,13 @@ func TestNeedsReverification(t *testing.T) {
 		{
 			name:           "second factor not enabled",
 			factorAges:     [2]int64{15, -1},
+			policyLevel:    SessionReverificationLevelSecondFactor,
+			policyMinutes:  10,
+			expectedResult: true,
+		},
+		{
+			name:           "second factor - invalid state",
+			factorAges:     [2]int64{-1, -1},
 			policyLevel:    SessionReverificationLevelSecondFactor,
 			policyMinutes:  10,
 			expectedResult: true,
@@ -155,6 +169,13 @@ func TestNeedsReverification(t *testing.T) {
 			policyLevel:    SessionReverificationLevelMultiFactor,
 			policyMinutes:  10,
 			expectedResult: false,
+		},
+		{
+			name:           "multi factor - invalid state",
+			factorAges:     [2]int64{-1, -1},
+			policyLevel:    SessionReverificationLevelMultiFactor,
+			policyMinutes:  10,
+			expectedResult: true,
 		},
 
 		// Edge cases
