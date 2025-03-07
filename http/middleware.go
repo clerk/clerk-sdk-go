@@ -362,3 +362,22 @@ func getCache() *jwkCache {
 	})
 	return cache
 }
+
+func NeedsSessionReverification(policy clerk.SessionReverificationPolicy) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			claims, ok := clerk.SessionClaimsFromContext(r.Context())
+			if !ok || claims == nil {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			if claims.NeedsReverification(policy) {
+				WriteNeedsReverificationResponse(w, policy)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}

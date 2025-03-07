@@ -146,6 +146,7 @@ func TestVerify_PublicClaims(t *testing.T) {
 		"org_role":        "org:admin",
 		"org_permissions": []string{"org:create"},
 		"org_slug":        "acmeinc",
+		"fva":             [2]int64{10, -1},
 		"sid":             "sess_123",
 		"sub":             "user_123",
 		"iss":             "https://clerk.com",
@@ -171,6 +172,8 @@ func TestVerify_PublicClaims(t *testing.T) {
 	require.Equal(t, 1, len(claims.ActiveOrganizationPermissions))
 	require.Equal(t, "org:create", claims.ActiveOrganizationPermissions[0])
 	require.NotNil(t, claims.NotBefore)
+	require.Equal(t, int64(10), claims.FactorVerificationAge[0])
+	require.Equal(t, int64(-1), claims.FactorVerificationAge[1])
 }
 
 // TestVerify_TimeValues tests that Verify validates that the token's
