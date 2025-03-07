@@ -74,7 +74,8 @@ func (s *SessionClaims) HasRole(role string) bool {
 func (s *SessionClaims) NeedsReverification(policy SessionReverificationPolicy) bool {
 	firstFactorAgeMinutes, secondFactorAgeMinutes := s.FactorVerificationAge[0], s.FactorVerificationAge[1]
 
-	firstFactorNeedsReverification := policy.AfterMinutes < firstFactorAgeMinutes
+	firstFactorNeedsReverification := firstFactorAgeMinutes == -1 ||
+		policy.AfterMinutes < firstFactorAgeMinutes
 	isSecondFactorEnabled := secondFactorAgeMinutes != -1
 	secondFactorNeedsReverification := isSecondFactorEnabled &&
 		policy.AfterMinutes < secondFactorAgeMinutes
