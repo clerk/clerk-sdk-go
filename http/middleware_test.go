@@ -347,9 +347,9 @@ func TestNeedsSessionReverification(t *testing.T) {
 			expectedStatus: http.StatusForbidden,
 		},
 		{
-			name:           "using predefined policy - very strict",
+			name:           "using predefined policy",
 			factorAges:     [2]int64{15, 15},
-			policy:         clerk.SessionReverificationVeryStrict,
+			policy:         clerk.SessionReverificationStrictMFA,
 			expectedStatus: http.StatusForbidden,
 		},
 	} {

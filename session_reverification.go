@@ -25,7 +25,7 @@ type SessionReverificationPolicy struct {
 }
 
 var (
-	SessionReverificationVeryStrict = SessionReverificationPolicy{
+	SessionReverificationStrictMFA = SessionReverificationPolicy{
 		AfterMinutes: 10,
 		Level:        SessionReverificationLevelMultiFactor,
 	}
