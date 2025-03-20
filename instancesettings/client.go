@@ -108,6 +108,9 @@ type UpdateOrganizationSettingsParams struct {
 	DomainsEnabled         *bool     `json:"domains_enabled,omitempty"`
 	DomainsEnrollmentModes *[]string `json:"domains_enrollment_modes,omitempty"`
 	DomainsDefaultRoleID   *string   `json:"domains_default_role_id,omitempty"`
+	// This feature is currently in beta and is not yet available for all instances.
+	// do not use this feature in production.
+	ForceOrganizationSelection *bool `json:"force_organization_selection,omitempty"`
 }
 
 // UpdateOrganizationSettings updates the organization settings of the instance.
