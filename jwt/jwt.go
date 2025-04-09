@@ -5,6 +5,7 @@ package jwt
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -64,6 +65,19 @@ type VerifyParams struct {
 	AuthorizedPartyHandler AuthorizedPartyHandler
 }
 
+type version2Claims struct {
+	Features     string                     `json:"fea"`
+	Organization version2OrganizationClaims `json:"o"`
+}
+
+type version2OrganizationClaims struct {
+	ID                        string `json:"id"`
+	Slug                      string `json:"slg"`
+	Role                      string `json:"rol"`
+	Permissions               string `json:"per"`
+	FeaturePermissionMappings string `json:"fpm"`
+}
+
 // Verify verifies a Clerk session JWT and returns the parsed
 // clerk.SessionClaims.
 func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, error) {
@@ -93,7 +107,8 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 	}
 
 	claims := &clerk.SessionClaims{}
-	allClaims := []any{claims}
+	v2Claims := &version2Claims{}
+	allClaims := []any{claims, v2Claims}
 	if params.CustomClaimsConstructor != nil {
 		claims.Custom = params.CustomClaimsConstructor(ctx)
 		allClaims = append(allClaims, claims.Custom)
@@ -112,6 +127,17 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 		return nil, err
 	}
 
+	if claims.Version == 0 {
+		// In the older version (i.e. version 1), we were not including the
+		// `v` claim, so we expect it to have Go's zero value.
+		claims.Version = 1
+	} else {
+		claims.ActiveOrganizationID = v2Claims.Organization.ID
+		claims.ActiveOrganizationSlug = v2Claims.Organization.Slug
+		claims.ActiveOrganizationRole = "org:" + v2Claims.Organization.Role
+		claims.ActiveOrganizationPermissions = extractOrganizationPermissions(v2Claims)
+	}
+
 	// Non-satellite domains must validate the issuer.
 	if !params.IsSatellite && !isValidIssuer(claims.Issuer, params.ProxyURL) {
 		return nil, fmt.Errorf("invalid issuer %s", claims.Issuer)
@@ -122,6 +148,57 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 	}
 
 	return claims, nil
+}
+
+func extractOrganizationPermissions(claims *version2Claims) []string {
+	if claims.Organization.ID == "" {
+		return nil
+	}
+	permissions := strings.Split(claims.Organization.Permissions, ",")
+	mappings := strings.Split(claims.Organization.FeaturePermissionMappings, ",")
+	organizationPermissions := make([]string, 0)
+	for i, feature := range strings.Split(claims.Features, ",") {
+		scopeAndFeature := strings.Split(feature, ":")
+		if len(scopeAndFeature) < 2 {
+			// This shouldn't happen, something is wrong with the session token.
+			continue
+		}
+		if !strings.Contains(scopeAndFeature[0], "o") {
+			// This is not an organization feature, ignore.
+			continue
+		}
+		if i >= len(mappings) {
+			// No mappings for this feature.
+			continue
+		}
+		mapping, err := strconv.Atoi(mappings[i])
+		if err != nil {
+			continue
+		}
+		mappingToBits := toBits(mapping)
+		if len(mappingToBits) > len(permissions) {
+			// Malformed token
+			continue
+		}
+		for j, bit := range mappingToBits {
+			if bit == 0 {
+				// Disabled
+				continue
+			}
+			organizationPermission := fmt.Sprintf("org:%s:%s", scopeAndFeature[1], permissions[j])
+			organizationPermissions = append(organizationPermissions, organizationPermission)
+		}
+	}
+	return organizationPermissions
+}
+
+func toBits(n int) []int {
+	bits := make([]int, 0)
+	for n > 0 {
+		bits = append(bits, n&1)
+		n = n >> 1
+	}
+	return bits
 }
 
 func isValidIssuer(iss string, proxyURL *string) bool {

@@ -12,6 +12,7 @@ import (
 	"github.com/clerk/clerk-sdk-go/v3/clerktest"
 	"github.com/clerk/clerk-sdk-go/v3/jwks"
 	"github.com/go-jose/go-jose/v3"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -164,6 +165,7 @@ func TestVerify_PublicClaims(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
+	require.Equal(t, 1, claims.Version)
 	require.Equal(t, "sess_123", claims.SessionID)
 	require.Equal(t, "user_123", claims.Subject)
 	require.Equal(t, "org_123", claims.ActiveOrganizationID)
@@ -171,6 +173,53 @@ func TestVerify_PublicClaims(t *testing.T) {
 	require.Equal(t, "org:admin", claims.ActiveOrganizationRole)
 	require.Equal(t, 1, len(claims.ActiveOrganizationPermissions))
 	require.Equal(t, "org:create", claims.ActiveOrganizationPermissions[0])
+	require.NotNil(t, claims.NotBefore)
+	require.Equal(t, int64(10), claims.FactorVerificationAge[0])
+	require.Equal(t, int64(-1), claims.FactorVerificationAge[1])
+}
+
+func TestVerify_PublicClaimsVersion2(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	kid := "kid"
+
+	exp := time.Now().Add(10 * time.Hour).Unix()
+	nbf := time.Now().Add(-10 * time.Hour).Unix()
+	// Generate a JWT for the following custom claims.
+	tokenClaims := map[string]any{
+		"v":   2,
+		"fea": "o:repositories,o:projects,o:impersonation",
+		"o": map[string]string{
+			"id":  "org_123",
+			"slg": "acmeinc",
+			"rol": "admin",
+			"per": "read,manage",
+			"fpm": "1,2",
+		},
+		"fva": [2]int64{10, -1},
+		"sid": "sess_123",
+		"sub": "user_123",
+		"iss": "https://clerk.com",
+		"nbf": nbf,
+		"exp": exp,
+	}
+	token, pubKey := clerktest.GenerateJWT(t, tokenClaims, kid)
+	claims, err := Verify(ctx, &VerifyParams{
+		Token: token,
+		JWK: &clerk.JSONWebKey{
+			Key:       pubKey,
+			KeyID:     kid,
+			Algorithm: string(jose.RS256),
+			Use:       "sig",
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "sess_123", claims.SessionID)
+	require.Equal(t, "user_123", claims.Subject)
+	require.Equal(t, "org_123", claims.ActiveOrganizationID)
+	require.Equal(t, "acmeinc", claims.ActiveOrganizationSlug)
+	require.Equal(t, "org:admin", claims.ActiveOrganizationRole)
+	require.Equal(t, []string{"org:repositories:read", "org:projects:manage"}, claims.ActiveOrganizationPermissions)
 	require.NotNil(t, claims.NotBefore)
 	require.Equal(t, int64(10), claims.FactorVerificationAge[0])
 	require.Equal(t, int64(-1), claims.FactorVerificationAge[1])
@@ -462,4 +511,100 @@ func TestGetJSONWebKey_UsesTheJWKSClient(t *testing.T) {
 	})
 	// A request was made to fetch the JWKS
 	require.Equal(t, 1, totalJWKSRequests)
+}
+
+func TestToBits(t *testing.T) {
+	t.Parallel()
+	testCases := map[int][]int{
+		0: {},
+		1: {1},
+		2: {0, 1},
+		3: {1, 1},
+		4: {0, 0, 1},
+	}
+	for input, expected := range testCases {
+		assert.Equal(t, expected, toBits(input))
+	}
+}
+
+func TestExtractOrganizationPermissions(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		Input    version2Claims
+		Expected []string
+	}{{
+		Input: version2Claims{
+			Features: "u:impersonation,u:repositories",
+		},
+		Expected: nil,
+	}, {
+		Input: version2Claims{
+			Features: "",
+			Organization: version2OrganizationClaims{
+				ID:   "org_xxx",
+				Slug: "foobar",
+				Role: "admin",
+			},
+		},
+		Expected: []string{},
+	}, {
+		Input: version2Claims{
+			Features: "o:impersonation,o:repositories",
+			Organization: version2OrganizationClaims{
+				ID:   "org_xxx",
+				Slug: "foobar",
+				Role: "admin",
+			},
+		},
+		Expected: []string{},
+	}, {
+		Input: version2Claims{
+			Features: "uo:impersonation,uo:repositories",
+			Organization: version2OrganizationClaims{
+				ID:   "org_xxx",
+				Slug: "foobar",
+				Role: "admin",
+			},
+		},
+		Expected: []string{},
+	}, {
+		Input: version2Claims{
+			Features: "o:repositories,o:projects,o:webhooks,o:impersonation",
+			Organization: version2OrganizationClaims{
+				ID:                        "org_xxx",
+				Slug:                      "foobar",
+				Role:                      "admin",
+				Permissions:               "read,manage",
+				FeaturePermissionMappings: "1,2,3",
+			},
+		},
+		Expected: []string{"org:repositories:read", "org:projects:manage", "org:webhooks:read", "org:webhooks:manage"},
+	}, {
+		Input: version2Claims{
+			Features: "o:repositories,o:projects",
+			Organization: version2OrganizationClaims{
+				ID:                        "org_xxx",
+				Slug:                      "foobar",
+				Role:                      "admin",
+				Permissions:               "read,create,update,delete,revoke",
+				FeaturePermissionMappings: "7,21",
+			},
+		},
+		Expected: []string{"org:repositories:read", "org:repositories:create", "org:repositories:update", "org:projects:read", "org:projects:update", "org:projects:revoke"},
+	}, {
+		Input: version2Claims{
+			Features: "o:repositories,uo:projects,u:goldprofileborder",
+			Organization: version2OrganizationClaims{
+				ID:                        "org_xxx",
+				Slug:                      "foobar",
+				Role:                      "admin",
+				Permissions:               "read,create,update,delete,revoke",
+				FeaturePermissionMappings: "7,21",
+			},
+		},
+		Expected: []string{"org:repositories:read", "org:repositories:create", "org:repositories:update", "org:projects:read", "org:projects:update", "org:projects:revoke"},
+	}}
+	for _, testCase := range testCases {
+		assert.Equal(t, testCase.Expected, extractOrganizationPermissions(&testCase.Input))
+	}
 }
