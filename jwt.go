@@ -145,6 +145,7 @@ func (c *RegisteredClaims) ValidateWithLeeway(expected time.Time, leeway time.Du
 // Claims represents private JWT claims that are defined and used
 // by Clerk.
 type Claims struct {
+	Version                       int             `json:"v"`
 	SessionID                     string          `json:"sid"`
 	AuthorizedParty               string          `json:"azp"`
 	ActiveOrganizationID          string          `json:"org_id"`
