@@ -127,15 +127,15 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 		return nil, err
 	}
 
-	if claims.Version == 0 {
-		// In the older version (i.e. version 1), we were not including the
-		// `v` claim, so we expect it to have Go's zero value.
-		claims.Version = 1
-	} else {
+	if claims.Version == 2 && v2Claims.Organization.ID != "" {
 		claims.ActiveOrganizationID = v2Claims.Organization.ID
 		claims.ActiveOrganizationSlug = v2Claims.Organization.Slug
 		claims.ActiveOrganizationRole = "org:" + v2Claims.Organization.Role
 		claims.ActiveOrganizationPermissions = extractOrganizationPermissions(v2Claims)
+	} else {
+		// In the older version (i.e. version 1), we were not including the
+		// `v` claim, so we expect it to have Go's zero value.
+		claims.Version = 1
 	}
 
 	// Non-satellite domains must validate the issuer.
