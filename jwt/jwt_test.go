@@ -397,6 +397,121 @@ func TestVerify_DefaultJWKSClient(t *testing.T) {
 	require.Equal(t, 1, totalJWKSRequests)
 }
 
+func TestVerify_SessionTokenJWKv2(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		Name                   string
+		Claims                 map[string]any
+		ExpectedOrgID          string
+		ExpectedOrgRole        string
+		ExpectedOrgPermissions []string
+	}{
+		{
+			Name: "only feature claims",
+			Claims: map[string]any{
+				"fea": "u:impersonation,u:repositories",
+			},
+			ExpectedOrgRole:        "",
+			ExpectedOrgPermissions: nil,
+		},
+		{
+			Name: "only org claims",
+			Claims: map[string]any{
+				"fea": "",
+				"o": map[string]any{
+					"id":  "org_xxx",
+					"slg": "foobar",
+					"rol": "admin",
+				},
+			},
+			ExpectedOrgRole:        "org:admin",
+			ExpectedOrgPermissions: []string{},
+		},
+		{
+			Name: "org claims with only features",
+			Claims: map[string]any{
+				"fea": "o:impersonation,o:repositories",
+				"o": map[string]any{
+					"id":  "org_xxx",
+					"slg": "foobar",
+					"rol": "admin",
+				},
+			},
+			ExpectedOrgRole:        "org:admin",
+			ExpectedOrgPermissions: []string{},
+		},
+		{
+			Name: "org claims with features and permissions",
+			Claims: map[string]any{
+				"fea": "o:repositories,o:projects,o:webhooks,o:impersonation",
+				"o": map[string]any{
+					"id":  "org_xxx",
+					"slg": "foobar",
+					"rol": "admin",
+					"per": "read,manage",
+					"fpm": "1,2,3",
+				},
+			},
+			ExpectedOrgRole: "org:admin",
+			ExpectedOrgPermissions: []string{
+				"org:repositories:read",
+				"org:projects:manage",
+				"org:webhooks:read",
+				"org:webhooks:manage",
+			},
+		},
+		{
+			Name: "org claims with features and permissions and feature permission mappings",
+			Claims: map[string]any{
+				"fea": "o:repositories,o:projects,o:webhooks,o:impersonation",
+				"o": map[string]any{
+					"id":  "org_xxx",
+					"slg": "foobar",
+					"rol": "admin",
+					"per": "read,create,update,delete,revoke",
+					"fpm": "7,21",
+				},
+			},
+			ExpectedOrgRole: "org:admin",
+			ExpectedOrgPermissions: []string{
+				"org:repositories:read",
+				"org:repositories:create",
+				"org:repositories:update",
+				"org:projects:read",
+				"org:projects:update",
+				"org:projects:revoke",
+			},
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			ctx := context.Background()
+			kid := "kid"
+
+			claims := tc.Claims
+			claims["iss"] = "https://clerk.com"
+			claims["v"] = 2
+			token, pubKey := clerktest.GenerateJWT(t, claims, kid)
+
+			verifiedClaims, err := Verify(ctx, &VerifyParams{
+				Token: token,
+				JWK: &clerk.JSONWebKey{
+					Key:       pubKey,
+					KeyID:     kid,
+					Algorithm: string(jose.RS256),
+					Use:       "sig",
+				},
+			})
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.ExpectedOrgRole, verifiedClaims.ActiveOrganizationRole)
+			assert.Equal(t, tc.ExpectedOrgPermissions, verifiedClaims.ActiveOrganizationPermissions)
+		})
+	}
+}
+
 func TestDecode_KeyID(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
@@ -524,87 +639,5 @@ func TestToBits(t *testing.T) {
 	}
 	for input, expected := range testCases {
 		assert.Equal(t, expected, toBits(input))
-	}
-}
-
-func TestExtractOrganizationPermissions(t *testing.T) {
-	t.Parallel()
-	testCases := []struct {
-		Input    version2Claims
-		Expected []string
-	}{{
-		Input: version2Claims{
-			Features: "u:impersonation,u:repositories",
-		},
-		Expected: nil,
-	}, {
-		Input: version2Claims{
-			Features: "",
-			Organization: version2OrganizationClaims{
-				ID:   "org_xxx",
-				Slug: "foobar",
-				Role: "admin",
-			},
-		},
-		Expected: []string{},
-	}, {
-		Input: version2Claims{
-			Features: "o:impersonation,o:repositories",
-			Organization: version2OrganizationClaims{
-				ID:   "org_xxx",
-				Slug: "foobar",
-				Role: "admin",
-			},
-		},
-		Expected: []string{},
-	}, {
-		Input: version2Claims{
-			Features: "uo:impersonation,uo:repositories",
-			Organization: version2OrganizationClaims{
-				ID:   "org_xxx",
-				Slug: "foobar",
-				Role: "admin",
-			},
-		},
-		Expected: []string{},
-	}, {
-		Input: version2Claims{
-			Features: "o:repositories,o:projects,o:webhooks,o:impersonation",
-			Organization: version2OrganizationClaims{
-				ID:                        "org_xxx",
-				Slug:                      "foobar",
-				Role:                      "admin",
-				Permissions:               "read,manage",
-				FeaturePermissionMappings: "1,2,3",
-			},
-		},
-		Expected: []string{"org:repositories:read", "org:projects:manage", "org:webhooks:read", "org:webhooks:manage"},
-	}, {
-		Input: version2Claims{
-			Features: "o:repositories,o:projects",
-			Organization: version2OrganizationClaims{
-				ID:                        "org_xxx",
-				Slug:                      "foobar",
-				Role:                      "admin",
-				Permissions:               "read,create,update,delete,revoke",
-				FeaturePermissionMappings: "7,21",
-			},
-		},
-		Expected: []string{"org:repositories:read", "org:repositories:create", "org:repositories:update", "org:projects:read", "org:projects:update", "org:projects:revoke"},
-	}, {
-		Input: version2Claims{
-			Features: "o:repositories,uo:projects,u:goldprofileborder",
-			Organization: version2OrganizationClaims{
-				ID:                        "org_xxx",
-				Slug:                      "foobar",
-				Role:                      "admin",
-				Permissions:               "read,create,update,delete,revoke",
-				FeaturePermissionMappings: "7,21",
-			},
-		},
-		Expected: []string{"org:repositories:read", "org:repositories:create", "org:repositories:update", "org:projects:read", "org:projects:update", "org:projects:revoke"},
-	}}
-	for _, testCase := range testCases {
-		assert.Equal(t, testCase.Expected, extractOrganizationPermissions(&testCase.Input))
 	}
 }
