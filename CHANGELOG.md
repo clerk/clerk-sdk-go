@@ -2,11 +2,18 @@
 
 ## Next release
 
+## 2.3.1
+
+- Fix parsing the org claims in the new JWT session token version.
+
+## 2.3.0
+
 - Add support for the OAuth Applications API. Added the oauthapplication package for API operations and a clerk.OAuthApplication type.
 - Add support for multiple invitation templates with the `TemplateSlug` field in `invitation.Create`.
 - Add support for listing and creating waitlist entries with the `waitlistentry.List` and `waitlistentry.Create` methods.
 - Add support for fetching an organization with its members count, via a new `organizations.GetWithParams` method.
 - Add support for session reverification with `SessionClaims.NeedsReverification()`, `SessionReverificationPolicy`, predefined policies like `SessionReverificationStrict`, and middleware via `http.NeedsSessionReverification()`.
+- Handles new JWT session token version
 
 ## 2.2.0
 
