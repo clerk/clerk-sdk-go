@@ -85,6 +85,43 @@ func (c *Client) Revoke(ctx context.Context, params *RevokeParams) (*clerk.Sessi
 	return session, err
 }
 
+type CreateTokenParams struct {
+	clerk.APIParams
+	ID               string `json:"-"`
+	TemplateName     string `json:"-"`
+	ExpiresInSeconds *int64 `json:"expires_in_seconds,omitempty"`
+}
+
+// Creates a session token for the specified session
+// If a template is provided, return a token created with the specified template
+func (c *Client) CreateToken(ctx context.Context, params *CreateTokenParams) (*clerk.SessionToken, error) {
+	path, err := clerk.JoinPath(path, params.ID, "/tokens", params.TemplateName)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	token := &clerk.SessionToken{}
+	err = c.Backend.Call(ctx, req, token)
+	return token, err
+}
+
+type CreateParams struct {
+	clerk.APIParams
+	UserID string `json:"user_id"`
+}
+
+// Creates a session for the specified user
+//
+// This operation is intended only for use in testing, and is not available for production instances.
+func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Session, error) {
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	session := &clerk.Session{}
+	err := c.Backend.Call(ctx, req, session)
+	return session, err
+}
+
 type VerifyParams struct {
 	ID    string  `json:"-"`
 	Token *string `json:"token,omitempty"`
