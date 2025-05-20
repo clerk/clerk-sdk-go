@@ -23,6 +23,19 @@ func Revoke(ctx context.Context, params *RevokeParams) (*clerk.Session, error) {
 	return getClient().Revoke(ctx, params)
 }
 
+// Creates a session token for the specified session
+// If a template is provided, return a token created with the specified template
+func CreateToken(ctx context.Context, params *CreateTokenParams) (*clerk.SessionToken, error) {
+	return getClient().CreateToken(ctx, params)
+}
+
+// Creates a session for the specified user
+//
+// This operation is intended only for use in testing, and is not available for production instances.
+func Create(ctx context.Context, params *CreateParams) (*clerk.Session, error) {
+	return getClient().Create(ctx, params)
+}
+
 // Verify verifies the session.
 //
 // Deprecated: The operation is deprecated and will be removed in future versions.
