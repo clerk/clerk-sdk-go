@@ -109,3 +109,71 @@ func TestSessionClientVerify(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, session.ID)
 }
+
+func TestSessionClientCreateToken(t *testing.T) {
+	t.Parallel()
+	sessionId := "sess_123"
+	jwt := "jwt-value"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"token", "jwt": "%s"}`, jwt)),
+			Method: http.MethodPost,
+			Path:   fmt.Sprintf("/v1/sessions/%s/tokens", sessionId),
+		},
+	}
+	client := NewClient(config)
+	token, err := client.CreateToken(context.Background(), &CreateTokenParams{
+		ID: sessionId,
+	})
+	require.NoError(t, err)
+	require.Equal(t, jwt, token.JWT)
+}
+
+func TestSessionClientCreateTokenWithTemplate(t *testing.T) {
+	t.Parallel()
+	sessionId := "sess_123"
+	jwt := "jwt-value"
+	templateName := "test-template"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"token", "jwt": "%s"}`, jwt)),
+			Method: http.MethodPost,
+			Path:   fmt.Sprintf("/v1/sessions/%s/tokens/%s", sessionId, templateName),
+		},
+	}
+	client := NewClient(config)
+	token, err := client.CreateToken(context.Background(), &CreateTokenParams{
+		ID:           sessionId,
+		TemplateName: templateName,
+	})
+
+	require.NoError(t, err)
+	require.Equal(t, jwt, token.JWT)
+}
+
+func TestSessionClientCreate(t *testing.T) {
+	t.Parallel()
+	userId := "user_123"
+	sessionId := "sess_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"session","id":"%s","status":"active", "user_id": "%s"}`, sessionId, userId)),
+			Method: http.MethodPost,
+			Path:   "/v1/sessions",
+		},
+	}
+	client := NewClient(config)
+	session, err := client.Create(context.Background(), &CreateParams{
+		UserID: userId,
+	})
+	require.NoError(t, err)
+	require.Equal(t, userId, session.UserID)
+	require.Equal(t, session.Object, "session")
+	require.Equal(t, session.ID, sessionId)
+}
