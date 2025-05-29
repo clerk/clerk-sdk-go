@@ -55,10 +55,11 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.OAuthAppl
 
 type CreateParams struct {
 	clerk.APIParams
-	Name        string `json:"name"`
-	CallbackURL string `json:"callback_url"`
-	Scopes      string `json:"scopes"`
-	Public      bool   `json:"public"`
+	Name                 string `json:"name"`
+	CallbackURL          string `json:"callback_url"`
+	Scopes               string `json:"scopes"`
+	Public               bool   `json:"public"`
+	ConsentScreenEnabled *bool  `json:"consent_screen_enabled"`
 }
 
 // Create creates a new OAuth application with the given parameters.
