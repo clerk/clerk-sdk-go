@@ -72,9 +72,10 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.OAuth
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name        *string `json:"name,omitempty"`
-	CallbackURL *string `json:"callback_url,omitempty"`
-	Scopes      *string `json:"scopes,omitempty"`
+	Name                 *string `json:"name,omitempty"`
+	CallbackURL          *string `json:"callback_url,omitempty"`
+	Scopes               *string `json:"scopes,omitempty"`
+	ConsentScreenEnabled *bool   `json:"consent_screen_enabled,omitempty"`
 }
 
 // Update updates an existing OAuth application.
