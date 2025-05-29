@@ -9,6 +9,8 @@ type OAuthApplication struct {
 	ClientID              string   `json:"client_id"`
 	ClientSecret          *string  `json:"client_secret,omitempty"`
 	Public                bool     `json:"public"`
+	DynamicallyRegistered bool     `json:"dynamically_registered"`
+	ConsentScreenEnabled  bool     `json:"consent_screen_enabled"`
 	Scopes                string   `json:"scopes"`
 	RedirectURIs          []string `json:"redirect_uris"`
 	DiscoveryURL          string   `json:"discovery_url"`

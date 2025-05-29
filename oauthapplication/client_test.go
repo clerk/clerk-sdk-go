@@ -117,8 +117,8 @@ func TestOAuthApplicationClientUpdate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","redirect_uris":["%s","%s"], "public":%t}`, updatedName, callbackURL1, callbackURL2, public)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","redirect_uris":["%s","%s"],"callback_url":"%s","public":%t}`, id, updatedName, callbackURL1, callbackURL2, callbackURL1, public)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","redirect_uris":["%s","%s"], "public":%t,"consent_screen_enabled":%t}`, updatedName, callbackURL1, callbackURL2, public, false)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","redirect_uris":["%s","%s"],"callback_url":"%s","public":%t,"consent_screen_enabled":%t}`, id, updatedName, callbackURL1, callbackURL2, callbackURL1, public, false)),
 			Method: http.MethodPatch,
 			Path:   fmt.Sprintf("/v1/oauth_applications/%s", id),
 		},
@@ -126,9 +126,10 @@ func TestOAuthApplicationClientUpdate(t *testing.T) {
 
 	client := NewClient(config)
 	params := &UpdateParams{
-		Name:         clerk.String(updatedName),
-		RedirectURIs: []string{callbackURL1, callbackURL2},
-		Public:       clerk.Bool(public),
+		Name:                 clerk.String(updatedName),
+		RedirectURIs:         []string{callbackURL1, callbackURL2},
+		Public:               clerk.Bool(public),
+		ConsentScreenEnabled: clerk.Bool(false),
 	}
 	oauthApp, err := client.Update(context.Background(), id, params)
 	require.NoError(t, err)
@@ -137,6 +138,7 @@ func TestOAuthApplicationClientUpdate(t *testing.T) {
 	//nolint:staticcheck
 	require.Equal(t, callbackURL1, oauthApp.CallbackURL)
 	require.Equal(t, []string{callbackURL1, callbackURL2}, oauthApp.RedirectURIs)
+	require.False(t, oauthApp.ConsentScreenEnabled)
 }
 
 func TestOrganizationClientUpdate_Error(t *testing.T) {
