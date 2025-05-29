@@ -583,3 +583,27 @@ func (c *Client) DeleteExternalAccount(ctx context.Context, params *DeleteExtern
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
+
+type VerifyPasswordParams struct {
+	clerk.APIParams
+	UserID   string `json:"-"`
+	Password string `json:"password"`
+}
+
+type VerifyPasswordResponse struct {
+	clerk.APIResource
+	Verified bool `json:"verified"`
+}
+
+// VerifyPassword verifies a user's password, returns an error if the password is incorrect.
+func (c *Client) VerifyPassword(ctx context.Context, params *VerifyPasswordParams) (*VerifyPasswordResponse, error) {
+	path, err := clerk.JoinPath(path, params.UserID, "/verify_password")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	resource := &VerifyPasswordResponse{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
