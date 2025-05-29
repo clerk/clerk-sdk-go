@@ -127,6 +127,11 @@ func DeleteExternalAccount(ctx context.Context, params *DeleteExternalAccountPar
 	return getClient().DeleteExternalAccount(ctx, params)
 }
 
+// VerifyPassword verifies a user's password, returns an error if the password is incorrect.
+func VerifyPassword(ctx context.Context, params *VerifyPasswordParams) (*VerifyPasswordResponse, error) {
+	return getClient().VerifyPassword(ctx, params)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),

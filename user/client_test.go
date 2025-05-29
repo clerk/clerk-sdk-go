@@ -592,3 +592,25 @@ func TestUserClientDeleteExternalAccount(t *testing.T) {
 	require.Equal(t, externalAccountID, externalAccount.ID)
 	require.Equal(t, "external_account", externalAccount.Object)
 }
+
+func TestUserClientVerifyPassword(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	password := "password"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Method: http.MethodPost,
+			Out:    json.RawMessage(`{"verified":true}`),
+			Path:   fmt.Sprintf("/v1/users/%s/verify_password", userID),
+		},
+	}
+	client := NewClient(config)
+	verified, err := client.VerifyPassword(context.Background(), &VerifyPasswordParams{
+		UserID:   userID,
+		Password: password,
+	})
+	require.NoError(t, err)
+	require.True(t, verified.Verified)
+}
