@@ -38,10 +38,17 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.OAuthApplication, e
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
+	OrderBy *string `json:"order_by,omitempty"`
 }
 
 func (params *ListParams) ToQuery() url.Values {
-	return params.ListParams.ToQuery()
+	q := params.ListParams.ToQuery()
+
+	if params.OrderBy != nil {
+		q.Set("order_by", *params.OrderBy)
+	}
+
+	return q
 }
 
 // List retrieves all OAuth applications.
