@@ -62,10 +62,11 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.OAuthAppl
 
 type CreateParams struct {
 	clerk.APIParams
-	Name         string   `json:"name"`
-	RedirectURIs []string `json:"redirect_uris,omitempty"`
-	Scopes       *string  `json:"scopes,omitempty"`
-	Public       *bool    `json:"public,omitempty"`
+	Name                 string   `json:"name"`
+	RedirectURIs         []string `json:"redirect_uris,omitempty"`
+	Scopes               *string  `json:"scopes,omitempty"`
+	Public               *bool    `json:"public,omitempty"`
+	ConsentScreenEnabled *bool    `json:"consent_screen_enabled"`
 
 	// Deprecated: Use RedirectURIs instead
 	CallbackURL *string `json:"callback_url,omitempty"`
