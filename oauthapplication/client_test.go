@@ -26,8 +26,8 @@ func TestOAuthApplicationClientCreate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","callback_url":"https://callback.url","scopes":"read,write","public":true}`, name)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","callback_url":"%s","scopes":"%s","public":%t,"client_secret":"%s"}`, id, name, callbackURL, scopes, public, clientSecret)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","callback_url":"https://callback.url","scopes":"read,write","public":true,"consent_screen_enabled":true}`, name)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","callback_url":"%s","scopes":"%s","public":%t,"client_secret":"%s","consent_screen_enabled":true}`, id, name, callbackURL, scopes, public, clientSecret)),
 			Method: http.MethodPost,
 			Path:   "/v1/oauth_applications",
 		},
@@ -35,10 +35,11 @@ func TestOAuthApplicationClientCreate(t *testing.T) {
 	client := NewClient(config)
 
 	params := &CreateParams{
-		Name:        name,
-		CallbackURL: callbackURL,
-		Scopes:      scopes,
-		Public:      public,
+		Name:                 name,
+		CallbackURL:          callbackURL,
+		Scopes:               scopes,
+		Public:               public,
+		ConsentScreenEnabled: clerk.Bool(true),
 	}
 	oauthApp, err := client.Create(context.Background(), params)
 	require.NoError(t, err)
@@ -48,6 +49,7 @@ func TestOAuthApplicationClientCreate(t *testing.T) {
 	require.Equal(t, scopes, oauthApp.Scopes)
 	require.Equal(t, public, oauthApp.Public)
 	require.Equal(t, clientSecret, *oauthApp.ClientSecret)
+	require.Equal(t, true, oauthApp.ConsentScreenEnabled)
 }
 
 func TestOrganizationClientCreate_Error(t *testing.T) {
