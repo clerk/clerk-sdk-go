@@ -38,7 +38,8 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.OAuthApplication, e
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	OrderBy *string `json:"order_by,omitempty"`
+	OrderBy   *string `json:"order_by,omitempty"`
+	NameQuery *string `json:"name_query,omitempty"`
 }
 
 func (params *ListParams) ToQuery() url.Values {
@@ -46,6 +47,10 @@ func (params *ListParams) ToQuery() url.Values {
 
 	if params.OrderBy != nil {
 		q.Set("order_by", *params.OrderBy)
+	}
+
+	if params.NameQuery != nil {
+		q.Set("name_query", *params.NameQuery)
 	}
 
 	return q
