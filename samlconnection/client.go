@@ -33,9 +33,11 @@ type AttributeMappingParams struct {
 
 type CreateParams struct {
 	clerk.APIParams
-	Name             *string                 `json:"name,omitempty"`
-	OrganizationID   *string                 `json:"organization_id,omitempty"`
+	Name           *string `json:"name,omitempty"`
+	OrganizationID *string `json:"organization_id,omitempty"`
+	// Deprecated: Use `domains` instead.
 	Domain           *string                 `json:"domain,omitempty"`
+	Domains          *[]string               `json:"domains,omitempty"`
 	Provider         *string                 `json:"provider,omitempty"`
 	IdpEntityID      *string                 `json:"idp_entity_id,omitempty"`
 	IdpSsoURL        *string                 `json:"idp_sso_url,omitempty"`
@@ -68,13 +70,27 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.SAMLConnection, err
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name        *string `json:"name,omitempty"`
-	Domain      *string `json:"domain,omitempty"`
-	IdpEntityID *string `json:"idp_entity_id,omitempty"`
+	Name *string `json:"name,omitempty"`
+	// Deprecated: Use `domains` instead.
+	Domain *string `json:"domain,omitempty"`
+	// Domains represents the complete, desired set of domains.
+	//   - If nil or an empty slice is provided, no changes will be made.
+	//   - Otherwise, the provided slice is treated as the full target list:
+	//     • Any existing domains not in this list will be removed.
+	//     • Any domains in this list not already present will be added.
+	//
+	// For example, if the current domains are ["b", "c"] and you set:
+	//     Domains: []string{"a", "c", "d"}
+	// then:
+	//     - "a" and "d" will be added
+	//     - "b" will be removed
+	//     - "c" will remain unchanged
+	Domains     *[]string `json:"domains,omitempty"`
+	IdpEntityID *string   `json:"idp_entity_id,omitempty"`
 	// OrganizationID is a nullable optional field.
-	// - If nil or unset, no action will be taken.
-	// - If an empty value (""), the organization_id will be unset.
-	// - If a valid ID is provided, the organization_id will be updated.
+	//   - If nil or unset, no action will be taken.
+	//   - If an empty value (""), the organization_id will be unset.
+	//   - If a valid ID is provided, the organization_id will be updated.
 	OrganizationID                   *string                 `json:"organization_id,omitempty"`
 	IdpSsoURL                        *string                 `json:"idp_sso_url,omitempty"`
 	IdpCertificate                   *string                 `json:"idp_certificate,omitempty"`
