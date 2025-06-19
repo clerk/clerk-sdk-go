@@ -42,6 +42,68 @@ func TestSAMLConnectionClientCreate(t *testing.T) {
 	require.Equal(t, provider, samlConnection.Provider)
 }
 
+// TestSAMLConnectionClientCreate_WithBothDomainAndDomains tests that the client can not create a SAML connection
+// When providing both domain and domains. An error is returned.
+func TestSAMLConnectionClientCreate_WithBothDomainAndDomains(t *testing.T) {
+	t.Parallel()
+	name := "the-name"
+	domain := "example.com"
+	provider := "saml_custom"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s", "domains": ["%s"], "provider":"%s"}`, name, domain, domain, provider)),
+			Out:    json.RawMessage(`{ "clerk_trace_id": "trace-id", "errors": [{"code": "form_conditional_param_disallowed", "short_message": "is not allowed", "long_message": "domain isn't allowed when domains is present.", "meta": {"param_name": "domain"}}]}`),
+			Method: http.MethodPost,
+			Path:   "/v1/saml_connections",
+			Status: http.StatusUnprocessableEntity,
+		},
+	}
+	client := NewClient(config)
+	samlConnection, err := client.Create(context.Background(), &CreateParams{
+		Name:     clerk.String(name),
+		Domain:   clerk.String(domain),
+		Domains:  &[]string{domain},
+		Provider: clerk.String(provider),
+	})
+	require.Error(t, err)
+	require.Empty(t, samlConnection.ID)
+}
+
+// TestSAMLConnectionClientCreate_WithDomains tests that the client can create a SAML connection
+// When providing only domains.
+func TestSAMLConnectionClientCreate_WithDomains(t *testing.T) {
+	t.Parallel()
+	id := "samlc__123"
+	name := "the-name"
+	domainA := "example.com"
+	domainB := "example.org"
+	provider := "saml_custom"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domains": ["%s", "%s"], "provider":"%s"}`, name, domainA, domainB, provider)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain": "%s", "domains": ["%s", "%s"],"provider":"%s"}`, id, name, domainA, domainA, domainB, provider)),
+			Method: http.MethodPost,
+			Path:   "/v1/saml_connections",
+		},
+	}
+	client := NewClient(config)
+	samlConnection, err := client.Create(context.Background(), &CreateParams{
+		Name:     clerk.String(name),
+		Domains:  &[]string{domainA, domainB},
+		Provider: clerk.String(provider),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, samlConnection.ID)
+	require.Equal(t, name, samlConnection.Name)
+	require.Equal(t, domainA, samlConnection.Domain)
+	require.Equal(t, []string{domainA, domainB}, samlConnection.Domains)
+	require.Equal(t, provider, samlConnection.Provider)
+}
+
 func TestSAMLConnectionClientCreate_Error(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
@@ -144,6 +206,66 @@ func TestSAMLConnectionClientUpdate_Error(t *testing.T) {
 	require.Equal(t, "update-trace-id", apiErr.TraceID)
 	require.Equal(t, 1, len(apiErr.Errors))
 	require.Equal(t, "update-error-code", apiErr.Errors[0].Code)
+}
+
+// TestSAMLConnectionClientUpdate_WithBothDomainAndDomains tests that the client can not update a SAML connection
+// When providing both domain and domains. An error is returned.
+func TestSAMLConnectionClientUpdate_WithBothDomainAndDomains(t *testing.T) {
+	t.Parallel()
+	id := "samlc__123"
+	name := "the-name"
+	domain := "example.com"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s", "domains": ["%s"]}`, name, domain, domain)),
+			Out:    json.RawMessage(`{ "clerk_trace_id": "trace-id", "errors": [{"code": "form_conditional_param_disallowed", "short_message": "is not allowed", "long_message": "domain isn't allowed when domains is present.", "meta": {"param_name": "domain"}}]}`),
+			Method: http.MethodPatch,
+			Path:   "/v1/saml_connections/" + id,
+			Status: http.StatusUnprocessableEntity,
+		},
+	}
+	client := NewClient(config)
+	samlConnection, err := client.Update(context.Background(), id, &UpdateParams{
+		Name:    clerk.String(name),
+		Domain:  clerk.String(domain),
+		Domains: &[]string{domain},
+	})
+	require.Error(t, err)
+	require.Empty(t, samlConnection.ID)
+}
+
+// TestSAMLConnectionClientUpdate_WithDomains tests that the client can update a SAML connection
+// When providing only domains.
+func TestSAMLConnectionClientUpdate_WithDomains(t *testing.T) {
+	t.Parallel()
+	id := "samlc__123"
+	name := "the-name"
+	domainA := "example.com"
+	domainB := "example.org"
+	provider := "saml_custom"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domains": ["%s", "%s"]}`, name, domainA, domainB)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain": "%s", "domains": ["%s", "%s"],"provider":"%s"}`, id, name, domainA, domainA, domainB, provider)),
+			Method: http.MethodPatch,
+			Path:   "/v1/saml_connections/" + id,
+		},
+	}
+	client := NewClient(config)
+	samlConnection, err := client.Update(context.Background(), id, &UpdateParams{
+		Name:    clerk.String(name),
+		Domains: &[]string{domainA, domainB},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, samlConnection.ID)
+	require.Equal(t, name, samlConnection.Name)
+	require.Equal(t, domainA, samlConnection.Domain)
+	require.Equal(t, []string{domainA, domainB}, samlConnection.Domains)
+	require.Equal(t, provider, samlConnection.Provider)
 }
 
 func TestSAMLConnectionClientDelete(t *testing.T) {

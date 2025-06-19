@@ -2,10 +2,12 @@ package clerk
 
 type SAMLConnection struct {
 	APIResource
-	ID                               string                         `json:"id"`
-	Object                           string                         `json:"object"`
-	Name                             string                         `json:"name"`
+	ID     string `json:"id"`
+	Object string `json:"object"`
+	Name   string `json:"name"`
+	// Deprecated: Use `domains` instead.
 	Domain                           string                         `json:"domain"`
+	Domains                          []string                       `json:"domains"`
 	IdpEntityID                      *string                        `json:"idp_entity_id"`
 	OrganizationID                   *string                        `json:"organization_id"`
 	IdpSsoURL                        *string                        `json:"idp_sso_url"`
