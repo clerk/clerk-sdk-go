@@ -38,6 +38,7 @@ func TestSAMLConnectionClientCreate(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
 	require.Equal(t, name, samlConnection.Name)
+	// nolint:staticcheck // we want to test the .Domain behavior when it's deprecated
 	require.Equal(t, domain, samlConnection.Domain)
 	require.Equal(t, provider, samlConnection.Provider)
 }
@@ -99,6 +100,7 @@ func TestSAMLConnectionClientCreate_WithDomains(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
 	require.Equal(t, name, samlConnection.Name)
+	// nolint:staticcheck // we want to test the .Domain behavior when it's deprecated
 	require.Equal(t, domainA, samlConnection.Domain)
 	require.Equal(t, []string{domainA, domainB}, samlConnection.Domains)
 	require.Equal(t, provider, samlConnection.Provider)
@@ -149,6 +151,7 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
 	require.Equal(t, name, samlConnection.Name)
+	// nolint:staticcheck // we want to test the .Domain behavior when it's deprecated
 	require.Equal(t, domain, samlConnection.Domain)
 	require.Equal(t, provider, samlConnection.Provider)
 	require.Equal(t, disableAdditionalIdentifications, samlConnection.DisableAdditionalIdentifications)
@@ -263,6 +266,7 @@ func TestSAMLConnectionClientUpdate_WithDomains(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
 	require.Equal(t, name, samlConnection.Name)
+	// nolint:staticcheck // we want to test the .Domain behavior when it's deprecated
 	require.Equal(t, domainA, samlConnection.Domain)
 	require.Equal(t, []string{domainA, domainB}, samlConnection.Domains)
 	require.Equal(t, provider, samlConnection.Provider)
@@ -298,9 +302,9 @@ func TestSAMLConnectionClientList(t *testing.T) {
 		Transport: &clerktest.RoundTripper{
 			T: t,
 			Out: json.RawMessage(fmt.Sprintf(`{
-	"data": [{"id":"%s","name":"%s","domain":"%s","provider":"%s"}],
+	"data": [{"id":"%s","name":"%s","domain":"%s","domains": ["%s"],"provider":"%s"}],
 	"total_count": 1
-}`, id, name, domain, provider)),
+}`, id, name, domain, domain, provider)),
 			Method: http.MethodGet,
 			Path:   "/v1/saml_connections",
 			Query: &url.Values{
@@ -324,6 +328,8 @@ func TestSAMLConnectionClientList(t *testing.T) {
 	require.Equal(t, 1, len(list.SAMLConnections))
 	require.Equal(t, id, list.SAMLConnections[0].ID)
 	require.Equal(t, name, list.SAMLConnections[0].Name)
+	// nolint:staticcheck // we want to test the .Domain behavior when it's deprecated
 	require.Equal(t, domain, list.SAMLConnections[0].Domain)
+	require.Equal(t, domain, list.SAMLConnections[0].Domains[0])
 	require.Equal(t, provider, list.SAMLConnections[0].Provider)
 }
