@@ -1,0 +1,104 @@
+// Package machine provides the Machines API.
+package machine
+
+import (
+	"context"
+	"net/http"
+	"net/url"
+
+	"github.com/clerk/clerk-sdk-go/v3"
+)
+
+//go:generate go run ../cmd/gen/main.go
+
+const path = "/machines"
+
+// Client is used to invoke the Machines API.
+type Client struct {
+	Backend clerk.Backend
+}
+
+func NewClient(config *clerk.ClientConfig) *Client {
+	return &Client{
+		Backend: clerk.NewBackend(&config.BackendConfig),
+	}
+}
+
+type CreateParams struct {
+	clerk.APIParams
+	Name *string `json:"name,omitempty"`
+}
+
+// Create creates a new machine.
+func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Machine, error) {
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	machine := &clerk.Machine{}
+	err := c.Backend.Call(ctx, req, machine)
+	return machine, err
+}
+
+// Get retrieves details for a machine.
+func (c *Client) Get(ctx context.Context, id string) (*clerk.Machine, error) {
+	path, err := clerk.JoinPath(path, id)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	machine := &clerk.Machine{}
+	err = c.Backend.Call(ctx, req, machine)
+	return machine, err
+}
+
+type UpdateParams struct {
+	clerk.APIParams
+	Name *string `json:"name,omitempty"`
+}
+
+// Update updates a machine.
+func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Machine, error) {
+	path, err := clerk.JoinPath(path, id)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPatch, path)
+	req.SetParams(params)
+	machine := &clerk.Machine{}
+	err = c.Backend.Call(ctx, req, machine)
+	return machine, err
+}
+
+// Delete deletes a machine.
+func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
+	path, err := clerk.JoinPath(path, id)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	deletedResource := &clerk.DeletedResource{}
+	err = c.Backend.Call(ctx, req, deletedResource)
+	return deletedResource, err
+}
+
+type ListParams struct {
+	clerk.APIParams
+	clerk.ListParams
+	Query *string `json:"query,omitempty"`
+}
+
+func (params *ListParams) ToQuery() url.Values {
+	q := params.ListParams.ToQuery()
+	if params.Query != nil {
+		q.Set("query", *params.Query)
+	}
+	return q
+}
+
+// List returns a list of machines.
+func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.MachineList, error) {
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
+	machineList := &clerk.MachineList{}
+	err := c.Backend.Call(ctx, req, machineList)
+	return machineList, err
+}
