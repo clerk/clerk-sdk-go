@@ -72,7 +72,7 @@ type CreateParams struct {
 	Scopes               *string  `json:"scopes,omitempty"`
 	Public               *bool    `json:"public,omitempty"`
 	ConsentScreenEnabled *bool    `json:"consent_screen_enabled"`
-    PKCERequired         *bool    `json:"pkce_required"`
+	PKCERequired         *bool    `json:"pkce_required"`
 
 	// Deprecated: Use RedirectURIs instead
 	CallbackURL *string `json:"callback_url,omitempty"`
@@ -93,7 +93,7 @@ type UpdateParams struct {
 	RedirectURIs         []string `json:"redirect_uris,omitempty"`
 	Scopes               *string  `json:"scopes,omitempty"`
 	Public               *bool    `json:"public,omitempty"`
-    PKCERequired         *bool    `json:"pkce_required,omitempty"`
+	PKCERequired         *bool    `json:"pkce_required,omitempty"`
 	ConsentScreenEnabled *bool    `json:"consent_screen_enabled,omitempty"`
 
 	// Deprecated: Use RedirectURIs instead
