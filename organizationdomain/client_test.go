@@ -182,3 +182,57 @@ func TestOrganizationDomainClientList(t *testing.T) {
 	require.Equal(t, id, list.OrganizationDomains[0].ID)
 	require.Equal(t, organizationID, list.OrganizationDomains[0].OrganizationID)
 }
+
+func TestOrganizationDomainClientListFromInstance(t *testing.T) {
+	t.Parallel()
+	id1 := "orgdm_123"
+	id2 := "orgdm_456"
+	domain1 := "mydomain.com"
+	domain2 := "anotherdomain.com"
+	organizationID1 := "org_123"
+	organizationID2 := "org_456"
+	verified := true
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T: t,
+			Out: json.RawMessage(fmt.Sprintf(`{
+"data": [
+  {"enrollment_mode":"automatic_suggestion","id":"%s","name":"%s","object":"organization_domain","organization_id":"%s","verification":{"status":"verified"}},
+  {"enrollment_mode":"automatic_invitation","id":"%s","name":"%s","object":"organization_domain","organization_id":"%s","verification":{"status":"unverified"}}
+],
+"total_count": 2
+}`,
+				id1, domain1, organizationID1, id2, domain2, organizationID2)),
+			Method: http.MethodGet,
+			Path:   "/v1/organization_domains",
+			Query: &url.Values{
+				"limit":           []string{"10"},
+				"offset":          []string{"0"},
+				"verified":        []string{"true"},
+				"enrollment_mode": []string{"automatic_invitation"},
+				"organization_id": []string{"org_123"},
+				"order_by":        []string{"-created_at"},
+			},
+		},
+	}
+	client := NewClient(config)
+	params := &ListAllFromInstanceParams{
+		Verified:       &verified,
+		EnrollmentMode: clerk.String("automatic_invitation"),
+		OrganizationID: clerk.String("org_123"),
+		OrderBy:        clerk.String("-created_at"),
+	}
+	params.Limit = clerk.Int64(10)
+	params.Offset = clerk.Int64(0)
+	list, err := client.ListAllFromInstance(context.Background(), params)
+	require.NoError(t, err)
+
+	require.Equal(t, int64(2), list.TotalCount)
+	require.Equal(t, 2, len(list.OrganizationDomains))
+	require.Equal(t, id1, list.OrganizationDomains[0].ID)
+	require.Equal(t, organizationID1, list.OrganizationDomains[0].OrganizationID)
+	require.Equal(t, id2, list.OrganizationDomains[1].ID)
+	require.Equal(t, organizationID2, list.OrganizationDomains[1].OrganizationID)
+}
