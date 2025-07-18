@@ -28,6 +28,11 @@ func List(ctx context.Context, organizationID string, params *ListParams) (*cler
 	return getClient().List(ctx, organizationID, params)
 }
 
+// ListFromInstance returns a list of organization domains from all organizations in the instance.
+func ListAllFromInstance(ctx context.Context, params *ListAllFromInstanceParams) (*clerk.OrganizationDomainList, error) {
+	return getClient().ListAllFromInstance(ctx, params)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
