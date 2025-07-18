@@ -9,17 +9,17 @@ import (
 )
 
 // Create creates a new machine.
-func Create(ctx context.Context, params *CreateParams) (*clerk.Machine, error) {
+func Create(ctx context.Context, params *CreateParams) (*clerk.MachineWithScopedMachinesAndSecretKey, error) {
 	return getClient().Create(ctx, params)
 }
 
 // Get retrieves details for a machine.
-func Get(ctx context.Context, id string) (*clerk.Machine, error) {
+func Get(ctx context.Context, id string) (*clerk.MachineWithScopedMachines, error) {
 	return getClient().Get(ctx, id)
 }
 
 // Update updates a machine.
-func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Machine, error) {
+func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.MachineWithScopedMachines, error) {
 	return getClient().Update(ctx, id, params)
 }
 
