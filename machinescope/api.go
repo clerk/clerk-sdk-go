@@ -7,7 +7,7 @@ import (
 
 	"github.com/clerk/clerk-sdk-go/v3"
 )
-//
+
 // CreateScope creates a new machine scope.
 func CreateScope(ctx context.Context, machineID string, params *CreateScopeParams) (*clerk.MachineScope, error) {
 	return getClient().CreateScope(ctx, machineID, params)
