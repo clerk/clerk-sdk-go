@@ -192,6 +192,7 @@ func TestOrganizationDomainClientListFromInstance(t *testing.T) {
 	organizationID1 := "org_123"
 	organizationID2 := "org_456"
 	verified := true
+	query := "mydomain.com"
 
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
@@ -214,6 +215,7 @@ func TestOrganizationDomainClientListFromInstance(t *testing.T) {
 				"enrollment_mode": []string{"automatic_invitation"},
 				"organization_id": []string{"org_123"},
 				"order_by":        []string{"-created_at"},
+				"query":           []string{"mydomain.com"},
 			},
 		},
 	}
@@ -223,6 +225,7 @@ func TestOrganizationDomainClientListFromInstance(t *testing.T) {
 		EnrollmentMode: clerk.String("automatic_invitation"),
 		OrganizationID: clerk.String("org_123"),
 		OrderBy:        clerk.String("-created_at"),
+		Query:          clerk.String(query),
 	}
 	params.Limit = clerk.Int64(10)
 	params.Offset = clerk.Int64(0)
