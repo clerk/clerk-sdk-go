@@ -126,6 +126,7 @@ type ListAllFromInstanceParams struct {
 	EnrollmentMode *string `json:"enrollment_mode,omitempty"`
 	OrganizationID *string `json:"organization_id,omitempty"`
 	OrderBy        *string `json:"order_by,omitempty"`
+	Query          *string `json:"query,omitempty"`
 }
 
 // ToQuery returns the parameters as url.Values so they can be used
@@ -147,6 +148,10 @@ func (params *ListAllFromInstanceParams) ToQuery() url.Values {
 
 	if params.OrderBy != nil {
 		q.Set("order_by", *params.OrderBy)
+	}
+
+	if params.Query != nil {
+		q.Set("query", *params.Query)
 	}
 
 	return q
