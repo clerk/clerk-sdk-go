@@ -26,44 +26,48 @@ func NewClient(config *clerk.ClientConfig) *Client {
 
 type CreateParams struct {
 	clerk.APIParams
-	Name *string `json:"name,omitempty"`
+	Name            string   `json:"name"`
+	ScopedMachines  []string `json:"scoped_machines,omitempty"`
+	DefaultTokenTTL *int64   `json:"default_token_ttl,omitempty"`
 }
 
 // Create creates a new machine.
-func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Machine, error) {
+func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.MachineWithScopedMachinesAndSecretKey, error) {
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
-	machine := &clerk.Machine{}
+	machine := &clerk.MachineWithScopedMachinesAndSecretKey{}
 	err := c.Backend.Call(ctx, req, machine)
 	return machine, err
 }
 
 // Get retrieves details for a machine.
-func (c *Client) Get(ctx context.Context, id string) (*clerk.Machine, error) {
+func (c *Client) Get(ctx context.Context, id string) (*clerk.MachineWithScopedMachines, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
-	machine := &clerk.Machine{}
+	machine := &clerk.MachineWithScopedMachines{}
 	err = c.Backend.Call(ctx, req, machine)
 	return machine, err
 }
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name *string `json:"name,omitempty"`
+	Name            *string  `json:"name,omitempty"`
+	ScopedMachines  []string `json:"scoped_machines,omitempty"`
+	DefaultTokenTTL *int64   `json:"default_token_ttl,omitempty"`
 }
 
 // Update updates a machine.
-func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Machine, error) {
+func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*clerk.MachineWithScopedMachines, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPatch, path)
 	req.SetParams(params)
-	machine := &clerk.Machine{}
+	machine := &clerk.MachineWithScopedMachines{}
 	err = c.Backend.Call(ctx, req, machine)
 	return machine, err
 }
