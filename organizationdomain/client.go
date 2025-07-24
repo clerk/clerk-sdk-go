@@ -118,3 +118,54 @@ func (c *Client) List(ctx context.Context, organizationID string, params *ListPa
 	err = c.Backend.Call(ctx, req, domains)
 	return domains, err
 }
+
+type ListAllFromInstanceParams struct {
+	clerk.APIParams
+	clerk.ListParams
+	Verified       *bool   `json:"verified,omitempty"`
+	EnrollmentMode *string `json:"enrollment_mode,omitempty"`
+	OrganizationID *string `json:"organization_id,omitempty"`
+	OrderBy        *string `json:"order_by,omitempty"`
+	Query          *string `json:"query,omitempty"`
+}
+
+// ToQuery returns the parameters as url.Values so they can be used
+// in a URL query string.
+func (params *ListAllFromInstanceParams) ToQuery() url.Values {
+	q := params.ListParams.ToQuery()
+
+	if params.Verified != nil {
+		q.Set("verified", strconv.FormatBool(*params.Verified))
+	}
+
+	if params.EnrollmentMode != nil {
+		q.Set("enrollment_mode", *params.EnrollmentMode)
+	}
+
+	if params.OrganizationID != nil {
+		q.Set("organization_id", *params.OrganizationID)
+	}
+
+	if params.OrderBy != nil {
+		q.Set("order_by", *params.OrderBy)
+	}
+
+	if params.Query != nil {
+		q.Set("query", *params.Query)
+	}
+
+	return q
+}
+
+// ListFromInstance returns a list of organization domains from all organizations in the instance.
+func (c *Client) ListAllFromInstance(ctx context.Context, params *ListAllFromInstanceParams) (*clerk.OrganizationDomainList, error) {
+	path, err := clerk.JoinPath("/organization_domains")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
+	domains := &clerk.OrganizationDomainList{}
+	err = c.Backend.Call(ctx, req, domains)
+	return domains, err
+}
