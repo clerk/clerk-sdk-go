@@ -79,12 +79,12 @@ func (c *Client) Update(ctx context.Context, params *UpdateParams) error {
 
 type UpdateRestrictionsParams struct {
 	clerk.APIParams
-	Allowlist                   *bool `json:"allowlist,omitempty"`
-	Blocklist                   *bool `json:"blocklist,omitempty"`
-	AllowlistBlocklistOnSignIn  *bool `json:"allowlist_blocklist_on_sign_in,omitempty"`
-	BlockEmailSubaddresses      *bool `json:"block_email_subaddresses,omitempty"`
-	BlockDisposableEmailDomains *bool `json:"block_disposable_email_domains,omitempty"`
-	IgnoreDotsForGmailAddresses *bool `json:"ignore_dots_for_gmail_addresses,omitempty"`
+	Allowlist                          *bool `json:"allowlist,omitempty"`
+	Blocklist                          *bool `json:"blocklist,omitempty"`
+	AllowlistBlocklistDisabledOnSignIn *bool `json:"allowlist_blocklist_disabled_on_sign_in,omitempty"`
+	BlockEmailSubaddresses             *bool `json:"block_email_subaddresses,omitempty"`
+	BlockDisposableEmailDomains        *bool `json:"block_disposable_email_domains,omitempty"`
+	IgnoreDotsForGmailAddresses        *bool `json:"ignore_dots_for_gmail_addresses,omitempty"`
 }
 
 // UpdateRestrictions updates the restriction settings of the instance.

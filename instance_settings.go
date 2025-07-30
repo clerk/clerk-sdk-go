@@ -2,13 +2,13 @@ package clerk
 
 type InstanceRestrictions struct {
 	APIResource
-	Object                      string `json:"object"`
-	Allowlist                   bool   `json:"allowlist"`
-	Blocklist                   bool   `json:"blocklist"`
-	AllowlistBlocklistOnSignIn  bool   `json:"allowlist_blocklist_on_sign_in"`
-	BlockEmailSubaddresses      bool   `json:"block_email_subaddresses"`
-	BlockDisposableEmailDomains bool   `json:"block_disposable_email_domains"`
-	IgnoreDotsForGmailAddresses bool   `json:"ignore_dots_for_gmail_addresses"`
+	Object                             string `json:"object"`
+	Allowlist                          bool   `json:"allowlist"`
+	Blocklist                          bool   `json:"blocklist"`
+	AllowlistBlocklistDisabledOnSignIn bool   `json:"allowlist_blocklist_disabled_on_sign_in"`
+	BlockEmailSubaddresses             bool   `json:"block_email_subaddresses"`
+	BlockDisposableEmailDomains        bool   `json:"block_disposable_email_domains"`
+	IgnoreDotsForGmailAddresses        bool   `json:"ignore_dots_for_gmail_addresses"`
 }
 
 type OrganizationSettings struct {
