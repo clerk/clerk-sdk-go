@@ -10,6 +10,7 @@ type OAuthApplication struct {
 	ClientSecret          *string  `json:"client_secret,omitempty"`
 	ClientImageURL        *string  `json:"client_image_url"`
 	ClientURL             *string  `json:"client_url"`
+	PKCERequired          bool     `json:"pkce_required"`
 	Public                bool     `json:"public"`
 	DynamicallyRegistered bool     `json:"dynamically_registered"`
 	ConsentScreenEnabled  bool     `json:"consent_screen_enabled"`

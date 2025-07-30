@@ -26,8 +26,8 @@ func TestOAuthApplicationClientCreate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","callback_url":"https://callback.url","scopes":"read,write","public":true,"consent_screen_enabled":true}`, name)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","callback_url":"%s","scopes":"%s","public":%t,"client_secret":"%s","consent_screen_enabled":true}`, id, name, callbackURL, scopes, public, clientSecret)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","callback_url":"https://callback.url","scopes":"read,write","public":true,"consent_screen_enabled":true,"pkce_required":true}`, name)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","callback_url":"%s","scopes":"%s","public":%t,"client_secret":"%s","consent_screen_enabled":true,"pkce_required":true}`, id, name, callbackURL, scopes, public, clientSecret)),
 			Method: http.MethodPost,
 			Path:   "/v1/oauth_applications",
 		},
@@ -40,6 +40,7 @@ func TestOAuthApplicationClientCreate(t *testing.T) {
 		Scopes:               clerk.String(scopes),
 		Public:               clerk.Bool(public),
 		ConsentScreenEnabled: clerk.Bool(true),
+		PKCERequired:         clerk.Bool(true),
 	}
 	oauthApp, err := client.Create(context.Background(), params)
 	require.NoError(t, err)
@@ -51,6 +52,7 @@ func TestOAuthApplicationClientCreate(t *testing.T) {
 	require.Equal(t, public, oauthApp.Public)
 	require.Equal(t, clientSecret, *oauthApp.ClientSecret)
 	require.Equal(t, true, oauthApp.ConsentScreenEnabled)
+	require.Equal(t, true, oauthApp.PKCERequired)
 }
 
 func TestOrganizationClientCreate_Error(t *testing.T) {
@@ -119,8 +121,8 @@ func TestOAuthApplicationClientUpdate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","redirect_uris":["%s","%s"], "public":%t,"consent_screen_enabled":%t}`, updatedName, callbackURL1, callbackURL2, public, false)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","redirect_uris":["%s","%s"],"callback_url":"%s","public":%t,"consent_screen_enabled":%t}`, id, updatedName, callbackURL1, callbackURL2, callbackURL1, public, false)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","redirect_uris":["%s","%s"], "public":%t,"consent_screen_enabled":%t,"pkce_required":true}`, updatedName, callbackURL1, callbackURL2, public, false)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","redirect_uris":["%s","%s"],"callback_url":"%s","public":%t,"consent_screen_enabled":%t,"pkce_required":true}`, id, updatedName, callbackURL1, callbackURL2, callbackURL1, public, false)),
 			Method: http.MethodPatch,
 			Path:   fmt.Sprintf("/v1/oauth_applications/%s", id),
 		},
@@ -132,6 +134,7 @@ func TestOAuthApplicationClientUpdate(t *testing.T) {
 		RedirectURIs:         []string{callbackURL1, callbackURL2},
 		Public:               clerk.Bool(public),
 		ConsentScreenEnabled: clerk.Bool(false),
+		PKCERequired:         clerk.Bool(true),
 	}
 	oauthApp, err := client.Update(context.Background(), id, params)
 	require.NoError(t, err)
@@ -141,6 +144,7 @@ func TestOAuthApplicationClientUpdate(t *testing.T) {
 	require.Equal(t, callbackURL1, oauthApp.CallbackURL)
 	require.Equal(t, []string{callbackURL1, callbackURL2}, oauthApp.RedirectURIs)
 	require.False(t, oauthApp.ConsentScreenEnabled)
+	require.Equal(t, true, oauthApp.PKCERequired)
 }
 
 func TestOrganizationClientUpdate_Error(t *testing.T) {
