@@ -11,26 +11,27 @@ const (
 
 type Template struct {
 	APIResource
-	Object             string       `json:"object"`
-	Slug               string       `json:"slug"`
-	ResourceType       string       `json:"resource_type"`
-	TemplateType       TemplateType `json:"template_type"`
-	Name               string       `json:"name"`
-	Position           int          `json:"position"`
-	CanRevert          bool         `json:"can_revert"`
-	CanDelete          bool         `json:"can_delete"`
-	CanToggle          bool         `json:"can_toggle"`
-	FromEmailName      *string      `json:"from_email_name,omitempty"`
-	ReplyToEmailName   *string      `json:"reply_to_email_name,omitempty"`
-	DeliveredByClerk   bool         `json:"delivered_by_clerk"`
-	Enabled            bool         `json:"enabled"`
-	Subject            string       `json:"subject"`
-	Markup             string       `json:"markup"`
-	Body               string       `json:"body"`
-	AvailableVariables []string     `json:"available_variables"`
-	RequiredVariables  []string     `json:"required_variables"`
-	CreatedAt          int64        `json:"created_at"`
-	UpdatedAt          int64        `json:"updated_at"`
+	Object              string       `json:"object"`
+	Slug                string       `json:"slug"`
+	ResourceType        string       `json:"resource_type"`
+	TemplateType        TemplateType `json:"template_type"`
+	Name                string       `json:"name"`
+	Position            int          `json:"position"`
+	CanRevert           bool         `json:"can_revert"`
+	CanDelete           bool         `json:"can_delete"`
+	CanToggle           bool         `json:"can_toggle"`
+	FromEmailName       *string      `json:"from_email_name,omitempty"`
+	ReplyToEmailName    *string      `json:"reply_to_email_name,omitempty"`
+	DeliveredByClerk    bool         `json:"delivered_by_clerk"`
+	Enabled             bool         `json:"enabled"`
+	Subject             string       `json:"subject"`
+	Markup              string       `json:"markup"`
+	Body                string       `json:"body"`
+	AvailableVariables  []string     `json:"available_variables"`
+	RequiredVariables   []string     `json:"required_variables"`
+	FlaggedAsSuspicious bool         `json:"flagged_as_suspicious"`
+	CreatedAt           int64        `json:"created_at"`
+	UpdatedAt           int64        `json:"updated_at"`
 }
 
 type TemplateList struct {
