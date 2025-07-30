@@ -194,18 +194,20 @@ func TestOrganizationDomainClientListFromInstance(t *testing.T) {
 	verified := true
 	query := "mydomain.com"
 
+	publicOrganizationData := `{"id": "org_123", "name": "My Organization", "slug": "my-organization", "image_url": "https://example.com/image.png", "has_image": true}`
+
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T: t,
 			Out: json.RawMessage(fmt.Sprintf(`{
 "data": [
-  {"enrollment_mode":"automatic_suggestion","id":"%s","name":"%s","object":"organization_domain","organization_id":"%s","verification":{"status":"verified"}},
-  {"enrollment_mode":"automatic_invitation","id":"%s","name":"%s","object":"organization_domain","organization_id":"%s","verification":{"status":"unverified"}}
+  {"enrollment_mode":"automatic_suggestion","id":"%s","name":"%s","object":"organization_domain","organization_id":"%s","verification":{"status":"verified"},"public_organization_data":%v},
+  {"enrollment_mode":"automatic_invitation","id":"%s","name":"%s","object":"organization_domain","organization_id":"%s","verification":{"status":"unverified"},"public_organization_data":%v}
 ],
 "total_count": 2
 }`,
-				id1, domain1, organizationID1, id2, domain2, organizationID2)),
+				id1, domain1, organizationID1, publicOrganizationData, id2, domain2, organizationID2, publicOrganizationData)),
 			Method: http.MethodGet,
 			Path:   "/v1/organization_domains",
 			Query: &url.Values{
@@ -238,4 +240,14 @@ func TestOrganizationDomainClientListFromInstance(t *testing.T) {
 	require.Equal(t, organizationID1, list.OrganizationDomains[0].OrganizationID)
 	require.Equal(t, id2, list.OrganizationDomains[1].ID)
 	require.Equal(t, organizationID2, list.OrganizationDomains[1].OrganizationID)
+	require.Equal(t, "My Organization", list.OrganizationDomains[0].PublicOrganizationData.Name)
+	require.Equal(t, "org_123", list.OrganizationDomains[0].PublicOrganizationData.ID)
+	require.Equal(t, "my-organization", list.OrganizationDomains[0].PublicOrganizationData.Slug)
+	require.Equal(t, clerk.String("https://example.com/image.png"), list.OrganizationDomains[0].PublicOrganizationData.ImageURL)
+	require.Equal(t, true, list.OrganizationDomains[0].PublicOrganizationData.HasImage)
+	require.Equal(t, "anotherdomain.com", list.OrganizationDomains[1].Name)
+	require.Equal(t, "org_123", list.OrganizationDomains[1].PublicOrganizationData.ID)
+	require.Equal(t, "my-organization", list.OrganizationDomains[1].PublicOrganizationData.Slug)
+	require.Equal(t, clerk.String("https://example.com/image.png"), list.OrganizationDomains[1].PublicOrganizationData.ImageURL)
+	require.Equal(t, true, list.OrganizationDomains[1].PublicOrganizationData.HasImage)
 }
