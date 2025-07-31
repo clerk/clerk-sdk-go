@@ -312,10 +312,7 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.UserList,
 	// The response is then synthesized from the individual responses.
 
 	// GET /v1/users
-	req := clerk.NewAPIRequest(http.MethodGet, path)
-	req.SetParams(params)
-	data := &userList{}
-	err := c.Backend.Call(ctx, req, data)
+	users, err := c.ListWithoutCount(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -326,7 +323,6 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.UserList,
 		return nil, err
 	}
 
-	users := []*clerk.User(*data)
 	return &clerk.UserList{
 		Users:      users,
 		TotalCount: totalCount.TotalCount,
