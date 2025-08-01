@@ -94,6 +94,26 @@ func TestMachineClientGet(t *testing.T) {
 	require.Equal(t, updatedAt, machine.UpdatedAt)
 }
 
+func TestMachineClientGetSecretKey(t *testing.T) {
+	t.Parallel()
+	id := "machine_123"
+	secret := "sk_test_123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"machine_secret_key","secret":"%s"}`, secret)),
+			Method: http.MethodGet,
+			Path:   "/v1/machines/" + id + "/secret_key",
+		},
+	}
+	client := NewClient(config)
+	secretKey, err := client.GetSecretKey(context.Background(), id)
+	require.NoError(t, err)
+	require.Equal(t, "machine_secret_key", secretKey.Object)
+	require.Equal(t, secret, secretKey.Secret)
+}
+
 func TestMachineClientUpdate(t *testing.T) {
 	t.Parallel()
 	id := "machine_123"
