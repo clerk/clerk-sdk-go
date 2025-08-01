@@ -50,8 +50,9 @@ func TestPackageCreate(t *testing.T) {
 	// Set the backend globally
 	clerk.SetBackend(clerk.NewBackend(backend))
 
+	claims := json.RawMessage(`{"foo":"bar"}`)
 	params := &CreateParams{
-		Claims:                 json.RawMessage(`{"foo":"bar"}`),
+		Claims:                 &claims,
 		SecondsUntilExpiration: clerk.Int64(3600),
 	}
 

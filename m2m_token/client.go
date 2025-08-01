@@ -28,8 +28,8 @@ func NewClient(config *clerk.ClientConfig) *Client {
 
 type CreateParams struct {
 	clerk.APIParams
-	SecondsUntilExpiration *int64          `json:"seconds_until_expiration,omitempty"`
-	Claims                 json.RawMessage `json:"claims,omitempty"`
+	SecondsUntilExpiration *int64           `json:"seconds_until_expiration,omitempty"`
+	Claims                 *json.RawMessage `json:"claims,omitempty"`
 }
 
 // Create creates a new M2M token.

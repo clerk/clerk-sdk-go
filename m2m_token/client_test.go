@@ -46,8 +46,9 @@ func TestCreate(t *testing.T) {
 	}
 
 	client := NewClient(config)
+	claims := json.RawMessage(`{"foo":"bar"}`)
 	params := &CreateParams{
-		Claims:                 json.RawMessage(`{"foo":"bar"}`),
+		Claims:                 &claims,
 		SecondsUntilExpiration: clerk.Int64(3600),
 	}
 
