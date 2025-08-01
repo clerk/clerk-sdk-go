@@ -107,6 +107,37 @@ func TestUserClientList_Response(t *testing.T) {
 	require.Equal(t, "user_123", list.Users[0].ID)
 }
 
+func TestUserClientListWithoutCount(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(`[{"object":"user","id":"user_123","username":"user1"},{"object":"user","id":"user_456","username":"user2"}]`),
+			Method: http.MethodGet,
+			Path:   "/v1/users",
+			Query: &url.Values{
+				"limit":         []string{"2"},
+				"order_by":      []string{"-created_at"},
+				"email_address": []string{"foo@bar.com"},
+			},
+		},
+	}
+	client := NewClient(config)
+	params := &ListParams{
+		EmailAddresses: []string{"foo@bar.com"},
+		OrderBy:        clerk.String("-created_at"),
+	}
+	params.Limit = clerk.Int64(2)
+	users, err := client.ListWithoutCount(context.Background(), params)
+	require.NoError(t, err)
+	require.Equal(t, 2, len(users))
+	require.Equal(t, "user_123", users[0].ID)
+	require.Equal(t, "user_456", users[1].ID)
+	require.Equal(t, "user1", *users[0].Username)
+	require.Equal(t, "user2", *users[1].Username)
+}
+
 func TestUserClientCount(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
