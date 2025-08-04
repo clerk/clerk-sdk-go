@@ -44,3 +44,9 @@ type DeletedMachineScope struct {
 	ToMachineID   string `json:"to_machine_id"`
 	Deleted       bool   `json:"deleted"`
 }
+
+type MachineSecretKey struct {
+	APIResource
+	Object string `json:"object"`
+	Secret string `json:"secret"`
+}
