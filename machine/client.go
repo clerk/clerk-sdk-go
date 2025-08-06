@@ -66,9 +66,8 @@ func (c *Client) GetSecretKey(ctx context.Context, id string) (*clerk.MachineSec
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name            *string  `json:"name,omitempty"`
-	ScopedMachines  []string `json:"scoped_machines,omitempty"`
-	DefaultTokenTTL *int64   `json:"default_token_ttl,omitempty"`
+	Name            *string `json:"name,omitempty"`
+	DefaultTokenTTL *int64  `json:"default_token_ttl,omitempty"`
 }
 
 // Update updates a machine.
