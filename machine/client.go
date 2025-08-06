@@ -52,6 +52,17 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.MachineWithScopedMa
 	return machine, err
 }
 
+func (c *Client) GetSecretKey(ctx context.Context, id string) (*clerk.MachineSecretKey, error) {
+	path, err := clerk.JoinPath(path, id, "secret_key")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	secretKey := &clerk.MachineSecretKey{}
+	err = c.Backend.Call(ctx, req, secretKey)
+	return secretKey, err
+}
+
 type UpdateParams struct {
 	clerk.APIParams
 	Name            *string  `json:"name,omitempty"`

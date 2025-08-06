@@ -37,6 +37,12 @@ type MachineScope struct {
 	CreatedAt     int64  `json:"created_at"`
 }
 
+type MachineSecretKey struct {
+	APIResource
+	Object string `json:"object"`
+	Secret string `json:"secret"`
+}
+
 type DeletedMachineScope struct {
 	APIResource
 	Object        string `json:"object"`

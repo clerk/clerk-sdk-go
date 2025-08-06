@@ -18,6 +18,10 @@ func Get(ctx context.Context, id string) (*clerk.MachineWithScopedMachines, erro
 	return getClient().Get(ctx, id)
 }
 
+func GetSecretKey(ctx context.Context, id string) (*clerk.MachineSecretKey, error) {
+	return getClient().GetSecretKey(ctx, id)
+}
+
 // Update updates a machine.
 func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.MachineWithScopedMachines, error) {
 	return getClient().Update(ctx, id, params)
