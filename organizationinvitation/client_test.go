@@ -71,6 +71,8 @@ func TestOrganizationInvitationClientList(t *testing.T) {
 	organizationID := "org_123"
 	id := "orginv_123"
 	statuses := []string{"pending", "accepted"}
+	emailAddress := "string"
+	orderBy := "-created_at"
 	limit := int64(10)
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
@@ -80,8 +82,10 @@ func TestOrganizationInvitationClientList(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/organizations/" + organizationID + "/invitations",
 			Query: &url.Values{
-				"limit":  []string{fmt.Sprintf("%d", limit)},
-				"status": statuses,
+				"limit":         []string{fmt.Sprintf("%d", limit)},
+				"status":        statuses,
+				"email_address": []string{emailAddress},
+				"order_by":      []string{orderBy},
 			},
 		},
 	}
@@ -91,7 +95,9 @@ func TestOrganizationInvitationClientList(t *testing.T) {
 		ListParams: clerk.ListParams{
 			Limit: clerk.Int64(limit),
 		},
-		Statuses: &statuses,
+		Statuses:     &statuses,
+		EmailAddress: &emailAddress,
+		OrderBy:      &orderBy,
 	})
 	require.NoError(t, err)
 	require.Len(t, response.OrganizationInvitations, 1)
