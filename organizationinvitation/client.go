@@ -55,6 +55,8 @@ type ListParams struct {
 	clerk.ListParams
 	OrganizationID string
 	Statuses       *[]string
+	EmailAddress   *string
+	OrderBy        *string
 }
 
 func (p *ListParams) ToQuery() url.Values {
@@ -62,6 +64,14 @@ func (p *ListParams) ToQuery() url.Values {
 
 	if p.Statuses != nil && len(*p.Statuses) > 0 {
 		q["status"] = *p.Statuses
+	}
+
+	if p.EmailAddress != nil && len(*p.EmailAddress) > 0 {
+		q.Add("email_address", *p.EmailAddress)
+	}
+
+	if p.OrderBy != nil && len(*p.OrderBy) > 0 {
+		q.Add("order_by", *p.OrderBy)
 	}
 
 	return q
