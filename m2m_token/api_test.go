@@ -22,7 +22,7 @@ func TestPackageCreate(t *testing.T) {
 		"subject":           "mch_2xhFjEI5X2qWRvtV13BzSj8H6Dk",
 		"claims":            map[string]interface{}{"foo": "bar"},
 		"scopes":            []string{"mch_2xhFjEI5X2qWRvtV13BzSj8H6Dk"},
-		"secret":            "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+		"token":             "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 		"revoked":           false,
 		"revocation_reason": nil,
 		"expired":           false,
@@ -60,7 +60,7 @@ func TestPackageCreate(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "mt_test123", token.ID)
 	assert.Equal(t, "mch_2xhFjEI5X2qWRvtV13BzSj8H6Dk", token.Subject)
-	assert.Equal(t, "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", token.Secret)
+	assert.Equal(t, "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", token.Token)
 }
 
 func TestPackageList(t *testing.T) {
@@ -190,7 +190,7 @@ func TestPackageVerify(t *testing.T) {
 		HTTPClient: &http.Client{
 			Transport: &clerktest.RoundTripper{
 				T:      t,
-				In:     json.RawMessage(`{"secret":"mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"}`),
+				In:     json.RawMessage(`{"token":"mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"}`),
 				Out:    json.RawMessage(responseJSON),
 				Method: http.MethodPost,
 				Path:   "/v1/m2m_tokens/verify",
@@ -202,7 +202,7 @@ func TestPackageVerify(t *testing.T) {
 	clerk.SetBackend(clerk.NewBackend(backend))
 
 	params := &VerifyParams{
-		Secret: "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+		Token: "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 	}
 
 	token, err := Verify(context.Background(), params)
