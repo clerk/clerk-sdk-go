@@ -20,11 +20,11 @@ type M2MToken struct {
 	UpdatedAt        int64           `json:"updated_at"`
 }
 
-// M2MTokenWithSecret represents a machine-to-machine token response that includes the secret field.
+// M2MTokenWithToken represents a machine-to-machine token response that includes the token field.
 // This is only used for the Create endpoint.
-type M2MTokenWithSecret struct {
+type M2MTokenWithToken struct {
 	M2MToken
-	Secret string `json:"secret"`
+	Token string `json:"token"`
 }
 
 // M2MTokenList represents a list of machine-to-machine tokens.
