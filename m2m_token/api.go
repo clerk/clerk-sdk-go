@@ -9,7 +9,7 @@ import (
 )
 
 // Create creates a new M2M token.
-func Create(ctx context.Context, params *CreateParams) (*clerk.M2MTokenWithSecret, error) {
+func Create(ctx context.Context, params *CreateParams) (*clerk.M2MTokenWithToken, error) {
 	return getClient().Create(ctx, params)
 }
 
