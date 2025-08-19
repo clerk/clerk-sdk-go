@@ -98,13 +98,17 @@ func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource,
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	Query *string `json:"query,omitempty"`
+	OrderBy *string `json:"order_by,omitempty"`
+	Query   *string `json:"query,omitempty"`
 }
 
 func (params *ListParams) ToQuery() url.Values {
 	q := params.ListParams.ToQuery()
 	if params.Query != nil {
 		q.Set("query", *params.Query)
+	}
+	if params.OrderBy != nil {
+		q.Set("order_by", *params.OrderBy)
 	}
 	return q
 }
