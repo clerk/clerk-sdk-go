@@ -191,6 +191,7 @@ func TestMachineClientDelete(t *testing.T) {
 
 func TestMachineClientList(t *testing.T) {
 	t.Parallel()
+	orderBy := "-created_at"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
@@ -199,15 +200,17 @@ func TestMachineClientList(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/machines",
 			Query: &url.Values{
-				"limit":  []string{"1"},
-				"offset": []string{"2"},
-				"query":  []string{"Test"},
+				"limit":    []string{"1"},
+				"offset":   []string{"2"},
+				"query":    []string{"Test"},
+				"order_by": []string{orderBy},
 			},
 		},
 	}
 	client := NewClient(config)
 	params := &ListParams{
-		Query: clerk.String("Test"),
+		Query:   clerk.String("Test"),
+		OrderBy: &orderBy,
 	}
 	params.Limit = clerk.Int64(1)
 	params.Offset = clerk.Int64(2)
