@@ -69,3 +69,33 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Waitl
 	err := c.Backend.Call(ctx, req, invitation)
 	return invitation, err
 }
+
+type InviteParams struct {
+	clerk.APIParams
+	IgnoreExisting *bool `json:"ignore_existing,omitempty"`
+}
+
+// Invite accepts a waitlist entry
+func (c *Client) Invite(ctx context.Context, id string, params *InviteParams) (*clerk.WaitlistEntry, error) {
+	path, err := clerk.JoinPath(path, id, "invite")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	invitation := &clerk.WaitlistEntry{}
+	err = c.Backend.Call(ctx, req, invitation)
+	return invitation, err
+}
+
+// Reject denies a waitlist entry
+func (c *Client) Reject(ctx context.Context, id string) (*clerk.WaitlistEntry, error) {
+	path, err := clerk.JoinPath(path, id, "reject")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	invitation := &clerk.WaitlistEntry{}
+	err = c.Backend.Call(ctx, req, invitation)
+	return invitation, err
+}

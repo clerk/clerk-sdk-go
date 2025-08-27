@@ -137,3 +137,95 @@ func TestWaitlistEntryCreate_Error(t *testing.T) {
 	require.Equal(t, 1, len(apiErr.Errors))
 	require.Equal(t, "create-error-code", apiErr.Errors[0].Code)
 }
+
+func TestWaitlistEntryInvite(t *testing.T) {
+	id := "wle_123"
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T:      t,
+				Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","status":"invited"}`, id)),
+				Method: http.MethodPost,
+				Path:   "/v1/waitlist_entries/" + id + "/invite",
+			},
+		},
+	}))
+
+	entry, err := Invite(context.Background(), id, &InviteParams{})
+	require.NoError(t, err)
+	require.Equal(t, id, entry.ID)
+	require.Equal(t, "invited", entry.Status)
+}
+
+func TestWaitlistEntryInvite_Error(t *testing.T) {
+	id := "wle_123"
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T:      t,
+				Status: http.StatusBadRequest,
+				Out: json.RawMessage(`{
+  "errors":[{
+		"code":"invite-error-code"
+	}],
+	"clerk_trace_id":"invite-trace-id"
+}`),
+				Path: "/v1/waitlist_entries/" + id + "/invite",
+			},
+		},
+	}))
+
+	_, err := Invite(context.Background(), id, &InviteParams{})
+	require.Error(t, err)
+	apiErr, ok := err.(*clerk.APIErrorResponse)
+	require.True(t, ok)
+	require.Equal(t, "invite-trace-id", apiErr.TraceID)
+	require.Equal(t, 1, len(apiErr.Errors))
+	require.Equal(t, "invite-error-code", apiErr.Errors[0].Code)
+}
+
+func TestWaitlistEntryReject(t *testing.T) {
+	id := "wle_123"
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T:      t,
+				Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","status":"rejected"}`, id)),
+				Method: http.MethodPost,
+				Path:   "/v1/waitlist_entries/" + id + "/reject",
+			},
+		},
+	}))
+
+	entry, err := Reject(context.Background(), id)
+	require.NoError(t, err)
+	require.Equal(t, id, entry.ID)
+	require.Equal(t, "rejected", entry.Status)
+}
+
+func TestWaitlistEntryReject_Error(t *testing.T) {
+	id := "wle_123"
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T:      t,
+				Status: http.StatusBadRequest,
+				Out: json.RawMessage(`{
+  "errors":[{
+		"code":"reject-error-code"
+	}],
+	"clerk_trace_id":"reject-trace-id"
+}`),
+				Path: "/v1/waitlist_entries/" + id + "/reject",
+			},
+		},
+	}))
+
+	_, err := Reject(context.Background(), id)
+	require.Error(t, err)
+	apiErr, ok := err.(*clerk.APIErrorResponse)
+	require.True(t, ok)
+	require.Equal(t, "reject-trace-id", apiErr.TraceID)
+	require.Equal(t, 1, len(apiErr.Errors))
+	require.Equal(t, "reject-error-code", apiErr.Errors[0].Code)
+}
