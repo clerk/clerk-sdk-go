@@ -104,10 +104,11 @@ type APIKeySecret struct {
 
 type UpdateParams struct {
 	clerk.APIParams
-	Claims      json.RawMessage `json:"claims,omitempty"`
-	Scopes      []string        `json:"scopes,omitempty"`
-	Description *string         `json:"description,omitempty"`
-	Subject     *string         `json:"subject,omitempty"`
+	Claims                 json.RawMessage `json:"claims,omitempty"`
+	Scopes                 []string        `json:"scopes,omitempty"`
+	Description            *string         `json:"description,omitempty"`
+	Subject                *string         `json:"subject,omitempty"`
+	SecondsUntilExpiration *int64          `json:"seconds_until_expiration,omitempty"`
 }
 
 // Update updates an API key.

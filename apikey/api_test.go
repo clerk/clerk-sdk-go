@@ -198,6 +198,103 @@ func TestPackageUpdate(t *testing.T) {
 	assert.Equal(t, "Updated description", *apiKey.Description)
 }
 
+func TestPackageUpdateWithSecondsUntilExpiration(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":            "api_key",
+		"id":                "ak_test123",
+		"type":              "api_key",
+		"subject":           "user_123",
+		"name":              "test_key",
+		"description":       "Updated with expiration",
+		"claims":            map[string]interface{}{},
+		"scopes":            []string{},
+		"revoked":           false,
+		"revocation_reason": nil,
+		"expired":           false,
+		"expiration":        1716883200,
+		"created_by":        "user_123",
+		"last_used_at":      nil,
+		"created_at":        1640995200,
+		"updated_at":        1640995200,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	backend := &clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T:      t,
+				In:     json.RawMessage(`{"description":"Updated with expiration","seconds_until_expiration":3600}`),
+				Out:    json.RawMessage(responseJSON),
+				Method: http.MethodPatch,
+				Path:   "/v1/api_keys/ak_test123",
+			},
+		},
+	}
+
+	clerk.SetBackend(clerk.NewBackend(backend))
+
+	params := &UpdateParams{
+		Description:            clerk.String("Updated with expiration"),
+		SecondsUntilExpiration: clerk.Int64(3600),
+	}
+
+	apiKey, err := Update(context.Background(), "ak_test123", params)
+	require.NoError(t, err)
+	assert.Equal(t, "Updated with expiration", *apiKey.Description)
+	assert.Equal(t, int64(1716883200), *apiKey.Expiration)
+}
+
+func TestPackageUpdateSecondsUntilExpirationOnly(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":            "api_key",
+		"id":                "ak_test123",
+		"type":              "api_key",
+		"subject":           "user_123",
+		"name":              "test_key",
+		"description":       "Test API key",
+		"claims":            map[string]interface{}{},
+		"scopes":            []string{},
+		"revoked":           false,
+		"revocation_reason": nil,
+		"expired":           false,
+		"expiration":        1716883200,
+		"created_by":        "user_123",
+		"last_used_at":      nil,
+		"created_at":        1640995200,
+		"updated_at":        1640995200,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	backend := &clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T:      t,
+				In:     json.RawMessage(`{"seconds_until_expiration":3600}`),
+				Out:    json.RawMessage(responseJSON),
+				Method: http.MethodPatch,
+				Path:   "/v1/api_keys/ak_test123",
+			},
+		},
+	}
+
+	clerk.SetBackend(clerk.NewBackend(backend))
+
+	params := &UpdateParams{
+		SecondsUntilExpiration: clerk.Int64(3600),
+	}
+
+	apiKey, err := Update(context.Background(), "ak_test123", params)
+	require.NoError(t, err)
+	assert.Equal(t, "ak_test123", apiKey.ID)
+	assert.Equal(t, int64(1716883200), *apiKey.Expiration)
+}
+
 func TestPackageRevoke(t *testing.T) {
 	t.Parallel()
 
