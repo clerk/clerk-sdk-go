@@ -12,8 +12,8 @@ type Feature struct {
 	AvatarURL   string `json:"avatar_url"`
 }
 
-// CommerceMoney represents money amounts with formatting.
-type CommerceMoney struct {
+// BillingMoney represents money amounts with formatting.
+type BillingMoney struct {
 	APIResource
 
 	Amount          int64  `json:"amount"`
@@ -22,8 +22,8 @@ type CommerceMoney struct {
 	CurrencySymbol  string `json:"currency_symbol"`
 }
 
-// CommerceProduct represents a product.
-type CommerceProduct struct {
+// BillingProduct represents a product.
+type BillingProduct struct {
 	APIResource
 
 	Object    string  `json:"object"`
@@ -39,34 +39,34 @@ type CommerceProduct struct {
 type Plan struct {
 	APIResource
 
-	Object                       string           `json:"object"`
-	ID                           string           `json:"id"`
-	Name                         string           `json:"name"`
-	Fee                          *CommerceMoney   `json:"fee"`
-	AnnualMonthlyFee             *CommerceMoney   `json:"annual_monthly_fee"`
-	AnnualFee                    *CommerceMoney   `json:"annual_fee"`
-	Amount                       *int64           `json:"amount,omitempty"`
-	AmountFormatted              *string          `json:"amount_formatted,omitempty"`
-	AnnualMonthlyAmount          *int64           `json:"annual_monthly_amount,omitempty"`
-	AnnualMonthlyAmountFormatted *string          `json:"annual_monthly_amount_formatted,omitempty"`
-	AnnualAmount                 *int64           `json:"annual_amount,omitempty"`
-	AnnualAmountFormatted        *string          `json:"annual_amount_formatted,omitempty"`
-	CurrencySymbol               string           `json:"currency_symbol"`
-	Currency                     string           `json:"currency"`
-	Description                  string           `json:"description"`
-	ProductID                    string           `json:"product_id"`
-	Product                      *CommerceProduct `json:"product,omitempty"`
-	IsDefault                    bool             `json:"is_default"`
-	IsRecurring                  bool             `json:"is_recurring"`
-	PubliclyVisible              bool             `json:"publicly_visible"`
-	HasBaseFee                   bool             `json:"has_base_fee"`
-	PayerType                    []string         `json:"payer_type"`
-	ForPayerType                 string           `json:"for_payer_type"`
-	Slug                         string           `json:"slug"`
-	AvatarURL                    string           `json:"avatar_url"`
-	Features                     []*Feature       `json:"features"`
-	FreeTrialEnabled             bool             `json:"free_trial_enabled"`
-	FreeTrialDays                *int             `json:"free_trial_days"`
+	Object                       string          `json:"object"`
+	ID                           string          `json:"id"`
+	Name                         string          `json:"name"`
+	Fee                          *BillingMoney   `json:"fee"`
+	AnnualMonthlyFee             *BillingMoney   `json:"annual_monthly_fee"`
+	AnnualFee                    *BillingMoney   `json:"annual_fee"`
+	Amount                       *int64          `json:"amount,omitempty"`
+	AmountFormatted              *string         `json:"amount_formatted,omitempty"`
+	AnnualMonthlyAmount          *int64          `json:"annual_monthly_amount,omitempty"`
+	AnnualMonthlyAmountFormatted *string         `json:"annual_monthly_amount_formatted,omitempty"`
+	AnnualAmount                 *int64          `json:"annual_amount,omitempty"`
+	AnnualAmountFormatted        *string         `json:"annual_amount_formatted,omitempty"`
+	CurrencySymbol               string          `json:"currency_symbol"`
+	Currency                     string          `json:"currency"`
+	Description                  string          `json:"description"`
+	ProductID                    string          `json:"product_id"`
+	Product                      *BillingProduct `json:"product,omitempty"`
+	IsDefault                    bool            `json:"is_default"`
+	IsRecurring                  bool            `json:"is_recurring"`
+	PubliclyVisible              bool            `json:"publicly_visible"`
+	HasBaseFee                   bool            `json:"has_base_fee"`
+	PayerType                    []string        `json:"payer_type"`
+	ForPayerType                 string          `json:"for_payer_type"`
+	Slug                         string          `json:"slug"`
+	AvatarURL                    string          `json:"avatar_url"`
+	Features                     []*Feature      `json:"features"`
+	FreeTrialEnabled             bool            `json:"free_trial_enabled"`
+	FreeTrialDays                *int            `json:"free_trial_days"`
 }
 
 // PlanList contains a list of plans.
@@ -77,8 +77,8 @@ type PlanList struct {
 	TotalCount int64   `json:"total_count"`
 }
 
-// CommercePaymentSource represents a payment source.
-type CommercePaymentSource struct {
+// BillingPaymentSource represents a payment source.
+type BillingPaymentSource struct {
 	APIResource
 
 	Object                   string  `json:"object"`
@@ -100,12 +100,12 @@ type CommercePaymentSource struct {
 	IsRemovable              *bool   `json:"is_removable,omitempty"`
 }
 
-// CommerceSubscriptionItemNextPayment represents next payment info.
-type CommerceSubscriptionItemNextPayment struct {
+// BillingSubscriptionItemNextPayment represents next payment info.
+type BillingSubscriptionItemNextPayment struct {
 	APIResource
 
-	Amount *CommerceMoney `json:"amount"`
-	Date   *int64         `json:"date"`
+	Amount *BillingMoney `json:"amount"`
+	Date   *int64        `json:"date"`
 }
 
 // Payer represents a billing payer (user or organization).
@@ -137,30 +137,30 @@ type Payer struct {
 type SubscriptionItem struct {
 	APIResource
 
-	Object          string                               `json:"object"`
-	ID              string                               `json:"id"`
-	InstanceID      string                               `json:"instance_id"`
-	Status          string                               `json:"status"`
-	PlanID          string                               `json:"plan_id"`
-	Plan            *Plan                                `json:"plan"`
-	PlanPeriod      string                               `json:"plan_period"`
-	PaymentSourceID string                               `json:"payment_source_id"`
-	PaymentSource   *CommercePaymentSource               `json:"payment_source"`
-	LifetimePaid    *CommerceMoney                       `json:"lifetime_paid"`
-	Amount          *CommerceMoney                       `json:"amount"`
-	NextInvoice     *CommerceSubscriptionItemNextPayment `json:"next_invoice"`
-	NextPayment     *CommerceSubscriptionItemNextPayment `json:"next_payment"`
-	PayerID         string                               `json:"payer_id"`
-	Payer           *Payer                               `json:"payer"`
-	IsFreeTrial     bool                                 `json:"is_free_trial"`
-	PeriodStart     *int64                               `json:"period_start"`
-	PeriodEnd       *int64                               `json:"period_end"`
-	ProrationDate   string                               `json:"proration_date"`
-	CanceledAt      *int64                               `json:"canceled_at"`
-	PastDueAt       *int64                               `json:"past_due_at"`
-	EndedAt         *int64                               `json:"ended_at"`
-	CreatedAt       int64                                `json:"created_at"`
-	UpdatedAt       int64                                `json:"updated_at"`
+	Object          string                              `json:"object"`
+	ID              string                              `json:"id"`
+	InstanceID      string                              `json:"instance_id"`
+	Status          string                              `json:"status"`
+	PlanID          string                              `json:"plan_id"`
+	Plan            *Plan                               `json:"plan"`
+	PlanPeriod      string                              `json:"plan_period"`
+	PaymentSourceID string                              `json:"payment_source_id"`
+	PaymentSource   *BillingPaymentSource               `json:"payment_source"`
+	LifetimePaid    *BillingMoney                       `json:"lifetime_paid"`
+	Amount          *BillingMoney                       `json:"amount"`
+	NextInvoice     *BillingSubscriptionItemNextPayment `json:"next_invoice"`
+	NextPayment     *BillingSubscriptionItemNextPayment `json:"next_payment"`
+	PayerID         string                              `json:"payer_id"`
+	Payer           *Payer                              `json:"payer"`
+	IsFreeTrial     bool                                `json:"is_free_trial"`
+	PeriodStart     *int64                              `json:"period_start"`
+	PeriodEnd       *int64                              `json:"period_end"`
+	ProrationDate   string                              `json:"proration_date"`
+	CanceledAt      *int64                              `json:"canceled_at"`
+	PastDueAt       *int64                              `json:"past_due_at"`
+	EndedAt         *int64                              `json:"ended_at"`
+	CreatedAt       int64                               `json:"created_at"`
+	UpdatedAt       int64                               `json:"updated_at"`
 }
 
 // SubscriptionItemList contains a list of subscription items.
