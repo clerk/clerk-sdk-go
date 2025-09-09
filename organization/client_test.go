@@ -195,6 +195,10 @@ func TestOrganizationClientList(t *testing.T) {
 				"filter_by":             []string{"missing_member_with_elevated_permissions"},
 				"include_members_count": []string{"true"},
 				"include_missing_member_with_elevated_permissions": []string{"true"},
+				"created_at_before": []string{"1730333164378"},
+				"created_at_after":  []string{"1730333164378"},
+				"slug":              []string{"acme"},
+				"name":              []string{"Acme Inc"},
 			},
 		},
 	}
@@ -206,6 +210,10 @@ func TestOrganizationClientList(t *testing.T) {
 		FilterBy:            []string{"missing_member_with_elevated_permissions"},
 		IncludeMembersCount: clerk.Bool(true),
 		IncludeMissingMemberWithElevatedPermissions: clerk.Bool(true),
+		CreatedAtBefore: clerk.Int64(1730333164378),
+		CreatedAtAfter:  clerk.Int64(1730333164378),
+		Slug:            clerk.String("acme"),
+		Name:            clerk.String("Acme Inc"),
 	}
 	params.Limit = clerk.Int64(1)
 	params.Offset = clerk.Int64(2)
