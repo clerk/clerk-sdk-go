@@ -205,6 +205,10 @@ type ListParams struct {
 	Query                                       *string  `json:"query,omitempty"`
 	UserIDs                                     []string `json:"user_id,omitempty"`
 	FilterBy                                    []string `json:"filter_by,omitempty"`
+	CreatedAtBefore                             *int64   `json:"created_at_before,omitempty"`
+	CreatedAtAfter                              *int64   `json:"created_at_after,omitempty"`
+	Slug                                        *string  `json:"slug,omitempty"`
+	Name                                        *string  `json:"name,omitempty"`
 }
 
 // ToQuery returns query string values from the params.
@@ -230,6 +234,18 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.FilterBy != nil {
 		q["filter_by"] = params.FilterBy
+	}
+	if params.CreatedAtBefore != nil {
+		q.Set("created_at_before", strconv.FormatInt(*params.CreatedAtBefore, 10))
+	}
+	if params.CreatedAtAfter != nil {
+		q.Set("created_at_after", strconv.FormatInt(*params.CreatedAtAfter, 10))
+	}
+	if params.Slug != nil {
+		q.Set("slug", *params.Slug)
+	}
+	if params.Name != nil {
+		q.Set("name", *params.Name)
 	}
 	return q
 }
