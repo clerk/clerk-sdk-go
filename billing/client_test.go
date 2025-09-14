@@ -102,7 +102,7 @@ func TestBillingClientListSubscriptionItems(t *testing.T) {
 	require.Equal(t, 1, len(subscriptionItemList.Data))
 	require.Equal(t, "sub_item_123", subscriptionItemList.Data[0].ID)
 	require.Equal(t, "payer_456", subscriptionItemList.Data[0].PayerID)
-	require.Equal(t, "plan_789", subscriptionItemList.Data[0].PlanID)
+	require.Equal(t, "plan_789", *subscriptionItemList.Data[0].PlanID)
 	require.Equal(t, "active", subscriptionItemList.Data[0].Status)
 	require.Equal(t, int64(1640995200), *subscriptionItemList.Data[0].PeriodStart)
 	require.Equal(t, int64(1643673600), *subscriptionItemList.Data[0].PeriodEnd)
@@ -323,6 +323,6 @@ func TestBillingClientListSubscriptionItemsWithMultipleFilters(t *testing.T) {
 	require.Equal(t, 1, len(subscriptionItemList.Data))
 	require.Equal(t, "sub_item_123", subscriptionItemList.Data[0].ID)
 	require.Equal(t, "payer_456", subscriptionItemList.Data[0].PayerID)
-	require.Equal(t, "plan_789", subscriptionItemList.Data[0].PlanID)
+	require.Equal(t, "plan_789", *subscriptionItemList.Data[0].PlanID)
 	require.Equal(t, "active", subscriptionItemList.Data[0].Status)
 }

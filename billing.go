@@ -141,7 +141,7 @@ type SubscriptionItem struct {
 	ID              string                              `json:"id"`
 	InstanceID      string                              `json:"instance_id"`
 	Status          string                              `json:"status"`
-	PlanID          string                              `json:"plan_id"`
+	PlanID          *string                             `json:"plan_id"`
 	Plan            *Plan                               `json:"plan"`
 	PlanPeriod      string                              `json:"plan_period"`
 	PaymentSourceID string                              `json:"payment_source_id"`
