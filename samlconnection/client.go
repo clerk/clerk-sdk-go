@@ -45,6 +45,7 @@ type CreateParams struct {
 	IdpMetadataURL   *string                 `json:"idp_metadata_url,omitempty"`
 	IdpMetadata      *string                 `json:"idp_metadata,omitempty"`
 	AttributeMapping *AttributeMappingParams `json:"attribute_mapping,omitempty"`
+	ForceAuthn       *bool                   `json:"force_authn,omitempty"`
 }
 
 // Create creates a new SAML Connection.
@@ -102,6 +103,7 @@ type UpdateParams struct {
 	AllowSubdomains                  *bool                   `json:"allow_subdomains,omitempty"`
 	AllowIdpInitiated                *bool                   `json:"allow_idp_initiated,omitempty"`
 	DisableAdditionalIdentifications *bool                   `json:"disable_additional_identifications,omitempty"`
+	ForceAuthn                       *bool                   `json:"force_authn,omitempty"`
 }
 
 // Update updates the SAML Connection specified by id.
