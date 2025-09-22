@@ -31,12 +31,15 @@ func NewClient(config *clerk.ClientConfig) *Client {
 
 type CreateParams struct {
 	clerk.APIParams
-	Name                  *string          `json:"name,omitempty"`
-	Slug                  *string          `json:"slug,omitempty"`
-	CreatedBy             *string          `json:"created_by,omitempty"`
-	MaxAllowedMemberships *int64           `json:"max_allowed_memberships,omitempty"`
-	PublicMetadata        *json.RawMessage `json:"public_metadata,omitempty"`
-	PrivateMetadata       *json.RawMessage `json:"private_metadata,omitempty"`
+	Name                  *string `json:"name,omitempty"`
+	Slug                  *string `json:"slug,omitempty"`
+	CreatedBy             *string `json:"created_by,omitempty"`
+	MaxAllowedMemberships *int64  `json:"max_allowed_memberships,omitempty"`
+	// RoleSetKey is a preview field and is not available yet for all customers.
+	// The use of this field will cause an error to be returned.
+	RoleSetKey      *string          `json:"role_set_key,omitempty"`
+	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
 }
 
 // Create creates a new organization.
@@ -83,12 +86,15 @@ func (c *Client) GetWithParams(ctx context.Context, idOrSlug string, params *Get
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name                  *string          `json:"name,omitempty"`
-	Slug                  *string          `json:"slug,omitempty"`
-	MaxAllowedMemberships *int64           `json:"max_allowed_memberships,omitempty"`
-	PublicMetadata        *json.RawMessage `json:"public_metadata,omitempty"`
-	PrivateMetadata       *json.RawMessage `json:"private_metadata,omitempty"`
-	AdminDeleteEnabled    *bool            `json:"admin_delete_enabled,omitempty"`
+	Name                  *string `json:"name,omitempty"`
+	Slug                  *string `json:"slug,omitempty"`
+	MaxAllowedMemberships *int64  `json:"max_allowed_memberships,omitempty"`
+	// RoleSetKey is a preview field and is not available yet for all customers.
+	// The use of this field will cause an error to be returned.
+	RoleSetKey         *string          `json:"role_set_key,omitempty"`
+	PublicMetadata     *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata    *json.RawMessage `json:"private_metadata,omitempty"`
+	AdminDeleteEnabled *bool            `json:"admin_delete_enabled,omitempty"`
 }
 
 // Update updates an organization.
