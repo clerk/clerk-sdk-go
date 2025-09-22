@@ -19,21 +19,23 @@ func TestSAMLConnectionClientCreate(t *testing.T) {
 	name := "the-name"
 	domain := "example.com"
 	provider := "saml_custom"
+	forceAuthn := true
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s"}`, name, domain, provider)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s"}`, id, name, domain, provider)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s","force_authn":%t}`, name, domain, provider, forceAuthn)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","force_authn":%t}`, id, name, domain, provider, forceAuthn)),
 			Method: http.MethodPost,
 			Path:   "/v1/saml_connections",
 		},
 	}
 	client := NewClient(config)
 	samlConnection, err := client.Create(context.Background(), &CreateParams{
-		Name:     clerk.String(name),
-		Domain:   clerk.String(domain),
-		Provider: clerk.String(provider),
+		Name:       clerk.String(name),
+		Domain:     clerk.String(domain),
+		Provider:   clerk.String(provider),
+		ForceAuthn: clerk.Bool(forceAuthn),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
@@ -41,6 +43,7 @@ func TestSAMLConnectionClientCreate(t *testing.T) {
 	// nolint:staticcheck // we want to test the .Domain behavior when it's deprecated
 	require.Equal(t, domain, samlConnection.Domain)
 	require.Equal(t, provider, samlConnection.Provider)
+	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
 }
 
 // TestSAMLConnectionClientCreate_WithBothDomainAndDomains tests that the client can not create a SAML connection
@@ -138,12 +141,14 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	domain := "example.com"
 	provider := "saml_custom"
 	disableAdditionalIdentifications := true
+	forceAuthn := false
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
-			T:   t,
-			Out: json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t}`, id, name, domain, provider, disableAdditionalIdentifications)), Method: http.MethodGet,
-			Path: "/v1/saml_connections/" + id,
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t, "force_authn": %t}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
+			Method: http.MethodGet,
+			Path:   "/v1/saml_connections/" + id,
 		},
 	}
 	client := NewClient(config)
@@ -155,6 +160,7 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	require.Equal(t, domain, samlConnection.Domain)
 	require.Equal(t, provider, samlConnection.Provider)
 	require.Equal(t, disableAdditionalIdentifications, samlConnection.DisableAdditionalIdentifications)
+	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
 }
 
 func TestSAMLConnectionClientUpdate(t *testing.T) {
@@ -164,12 +170,13 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	domain := "example.com"
 	provider := "saml_custom"
 	disableAdditionalIdentifications := true
+	forceAuthn := true
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": ""}`, name, disableAdditionalIdentifications)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t}`, id, name, domain, provider, disableAdditionalIdentifications)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t}`, name, disableAdditionalIdentifications, forceAuthn)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
 			Method: http.MethodPatch,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -179,11 +186,13 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 		Name:                             clerk.String(name),
 		DisableAdditionalIdentifications: clerk.Bool(disableAdditionalIdentifications),
 		OrganizationID:                   clerk.String(""),
+		ForceAuthn:                       clerk.Bool(forceAuthn),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
 	require.Equal(t, name, samlConnection.Name)
 	require.Equal(t, disableAdditionalIdentifications, samlConnection.DisableAdditionalIdentifications)
+	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
 }
 
 func TestSAMLConnectionClientUpdate_Error(t *testing.T) {
