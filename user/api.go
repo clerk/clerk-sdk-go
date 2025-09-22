@@ -49,6 +49,12 @@ func List(ctx context.Context, params *ListParams) (*clerk.UserList, error) {
 	return getClient().List(ctx, params)
 }
 
+// ListWithoutCount returns a list of users without fetching the total count.
+// This is more efficient than List when you don't need the total count.
+func ListWithoutCount(ctx context.Context, params *ListParams) ([]*clerk.User, error) {
+	return getClient().ListWithoutCount(ctx, params)
+}
+
 // Count returns the total count of users satisfying the parameters.
 func Count(ctx context.Context, params *ListParams) (*TotalCount, error) {
 	return getClient().Count(ctx, params)

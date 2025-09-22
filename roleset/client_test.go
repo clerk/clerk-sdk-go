@@ -1,0 +1,188 @@
+package roleset
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+	"testing"
+
+	"github.com/clerk/clerk-sdk-go/v3"
+	"github.com/clerk/clerk-sdk-go/v3/clerktest"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestRoleSetClient_Create(t *testing.T) {
+	roleSetID := "role_set_2b6E7b8FdHPjQKsrrakHLUPOzKe"
+	name := "Admin Role Set"
+	key := "admin-roles"
+	description := "Roles for administrative users"
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","key":"%s","description":"%s", "roles": ["org:member"], "type": "initial"}`, name, key, description)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"%s","key":"%s","description":"%s","roles":[],"created_at":1234567890,"updated_at":1234567890}`, roleSetID, name, key, description)),
+			Method: http.MethodPost,
+			Path:   "/v1/role_sets",
+		},
+	}
+	client := NewClient(config)
+	roleSet, err := client.Create(context.Background(), &CreateParams{
+		Name:        clerk.String(name),
+		Key:         clerk.String(key),
+		Description: clerk.String(description),
+		Roles:       &[]string{"org:member"},
+		Type:        clerk.String("initial"),
+	})
+	require.NoError(t, err)
+	assert.Equal(t, roleSetID, roleSet.ID)
+	assert.Equal(t, name, roleSet.Name)
+	assert.Equal(t, key, roleSet.Key)
+	assert.Equal(t, description, *roleSet.Description)
+}
+
+func TestRoleSetClient_Get(t *testing.T) {
+	roleSetKey := "admin-roles"
+	roleSetID := "role_set_2b6E7b8FdHPjQKsrrakHLUPOzKe"
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","key":"%s","description":"Roles for administrative users","roles":[],"created_at":1234567890,"updated_at":1234567890, "type": "initial"}`, roleSetID, roleSetKey)),
+			Method: http.MethodGet,
+			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey),
+		},
+	}
+	client := NewClient(config)
+	roleSet, err := client.Get(context.Background(), roleSetKey)
+	require.NoError(t, err)
+	assert.Equal(t, roleSetID, roleSet.ID)
+	assert.Equal(t, roleSetKey, roleSet.Key)
+}
+
+func TestRoleSetClient_Update(t *testing.T) {
+	roleSetKey := "admin-roles"
+	roleSetID := "role_set_2b6E7b8FdHPjQKsrrakHLUPOzKe"
+	newName := "Updated Admin Role Set"
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "type": "initial"}`, newName)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"%s","key":"%s","description":"Roles for administrative users","roles":[],"created_at":1234567890,"updated_at":1234567891, "type": "initial"}`, roleSetID, newName, roleSetKey)),
+			Method: http.MethodPatch,
+			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey),
+		},
+	}
+	client := NewClient(config)
+	roleSet, err := client.Update(context.Background(), roleSetKey, &UpdateParams{
+		Name: clerk.String(newName),
+		Type: clerk.String("initial"),
+	})
+	require.NoError(t, err)
+	assert.Equal(t, roleSetID, roleSet.ID)
+	assert.Equal(t, newName, roleSet.Name)
+}
+
+func TestRoleSetClient_Delete(t *testing.T) {
+	roleSetKey := "admin-roles"
+	roleSetID := "role_set_2b6E7b8FdHPjQKsrrakHLUPOzKe"
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","deleted":true}`, roleSetID)),
+			Method: http.MethodDelete,
+			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey),
+		},
+	}
+	client := NewClient(config)
+	deletedResource, err := client.Delete(context.Background(), roleSetKey)
+	require.NoError(t, err)
+	assert.Equal(t, roleSetID, deletedResource.ID)
+	assert.True(t, deletedResource.Deleted)
+}
+
+func TestRoleSetClient_List(t *testing.T) {
+	roleSet1ID := "role_set_2b6E7b8FdHPjQKsrrakHLUPOzKe"
+	roleSet2ID := "role_set_2b6E7b8FdHPjQKsrrakHLUPOzKf"
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T: t,
+			Out: json.RawMessage(fmt.Sprintf(`{
+				"data": [
+					{"object":"role_set","id":"%s","name":"Admin Role Set","key":"admin-roles","description":"Admin roles","type": "initial","roles":[],"created_at":1234567890,"updated_at":1234567890},
+					{"object":"role_set","id":"%s","name":"User Role Set","key":"user-roles","description":"User roles","type": "custom","roles":[],"created_at":1234567890,"updated_at":1234567890}
+				],
+				"total_count": 2
+			}`, roleSet1ID, roleSet2ID)),
+			Method: http.MethodGet,
+			Path:   "/v1/role_sets",
+		},
+	}
+	client := NewClient(config)
+	list, err := client.List(context.Background(), &ListParams{})
+	require.NoError(t, err)
+	assert.Len(t, list.RoleSets, 2)
+	assert.Equal(t, int64(2), list.TotalCount)
+	assert.Equal(t, roleSet1ID, list.RoleSets[0].ID)
+	assert.Equal(t, roleSet2ID, list.RoleSets[1].ID)
+}
+
+func TestRoleSetClient_AddRoles(t *testing.T) {
+	roleSetKey := "admin-roles"
+	roleSetID := "role_set_2b6E7b8FdHPjQKsrrakHLUPOzKe"
+	roleKeys := []string{"role:admin", "role:manager"}
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"role_keys":["role:admin","role:manager"]}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type": "initial","key":"%s","description":"Admin roles","roles":[{"object":"role_set_item","id":"role_1","name":"Admin","key":"role:admin","description":"Admin role","created_at":1234567890,"updated_at":1234567890}],"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
+			Method: http.MethodPost,
+			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles",
+		},
+	}
+	client := NewClient(config)
+	roleSet, err := client.AddRoles(context.Background(), roleSetKey, &AddRolesParams{
+		RoleKeys: roleKeys,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, roleSetID, roleSet.ID)
+	assert.Len(t, roleSet.Roles, 1)
+	assert.Equal(t, "role:admin", roleSet.Roles[0].Key)
+}
+
+func TestRoleSetClient_RemoveRoles(t *testing.T) {
+	roleSetKey := "admin-roles"
+	roleSetID := "role_set_2b6E7b8FdHPjQKsrrakHLUPOzKe"
+	roleKeys := []string{"role:admin"}
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"role_keys":["role:admin"]}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type": "initial","key":"%s","description":"Admin roles","roles":[],"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
+			Method: http.MethodDelete,
+			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles",
+		},
+	}
+	client := NewClient(config)
+	roleSet, err := client.RemoveRoles(context.Background(), roleSetKey, &RemoveRolesParams{
+		RoleKeys: roleKeys,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, roleSetID, roleSet.ID)
+	assert.Len(t, roleSet.Roles, 0)
+}
