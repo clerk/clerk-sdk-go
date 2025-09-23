@@ -39,34 +39,28 @@ type BillingProduct struct {
 type Plan struct {
 	APIResource
 
-	Object                       string          `json:"object"`
-	ID                           string          `json:"id"`
-	Name                         string          `json:"name"`
-	Fee                          *BillingMoney   `json:"fee"`
-	AnnualMonthlyFee             *BillingMoney   `json:"annual_monthly_fee"`
-	AnnualFee                    *BillingMoney   `json:"annual_fee"`
-	Amount                       *int64          `json:"amount,omitempty"`
-	AmountFormatted              *string         `json:"amount_formatted,omitempty"`
-	AnnualMonthlyAmount          *int64          `json:"annual_monthly_amount,omitempty"`
-	AnnualMonthlyAmountFormatted *string         `json:"annual_monthly_amount_formatted,omitempty"`
-	AnnualAmount                 *int64          `json:"annual_amount,omitempty"`
-	AnnualAmountFormatted        *string         `json:"annual_amount_formatted,omitempty"`
-	CurrencySymbol               string          `json:"currency_symbol"`
-	Currency                     string          `json:"currency"`
-	Description                  string          `json:"description"`
-	ProductID                    string          `json:"product_id"`
-	Product                      *BillingProduct `json:"product,omitempty"`
-	IsDefault                    bool            `json:"is_default"`
-	IsRecurring                  bool            `json:"is_recurring"`
-	PubliclyVisible              bool            `json:"publicly_visible"`
-	HasBaseFee                   bool            `json:"has_base_fee"`
-	PayerType                    []string        `json:"payer_type"`
-	ForPayerType                 string          `json:"for_payer_type"`
-	Slug                         string          `json:"slug"`
-	AvatarURL                    string          `json:"avatar_url"`
-	Features                     []*Feature      `json:"features"`
-	FreeTrialEnabled             bool            `json:"free_trial_enabled"`
-	FreeTrialDays                *int            `json:"free_trial_days"`
+	Object           string          `json:"object"`
+	ID               string          `json:"id"`
+	Name             string          `json:"name"`
+	Fee              *BillingMoney   `json:"fee"`
+	AnnualMonthlyFee *BillingMoney   `json:"annual_monthly_fee"`
+	AnnualFee        *BillingMoney   `json:"annual_fee"`
+	CurrencySymbol   string          `json:"currency_symbol"`
+	Currency         string          `json:"currency"`
+	Description      string          `json:"description"`
+	ProductID        string          `json:"product_id"`
+	Product          *BillingProduct `json:"product,omitempty"`
+	IsDefault        bool            `json:"is_default"`
+	IsRecurring      bool            `json:"is_recurring"`
+	PubliclyVisible  bool            `json:"publicly_visible"`
+	HasBaseFee       bool            `json:"has_base_fee"`
+	PayerType        []string        `json:"payer_type"`
+	ForPayerType     string          `json:"for_payer_type"`
+	Slug             string          `json:"slug"`
+	AvatarURL        string          `json:"avatar_url"`
+	Features         []*Feature      `json:"features"`
+	FreeTrialEnabled bool            `json:"free_trial_enabled"`
+	FreeTrialDays    *int            `json:"free_trial_days"`
 }
 
 // PlanList contains a list of plans.
