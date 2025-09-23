@@ -77,8 +77,8 @@ type PlanList struct {
 	TotalCount int64   `json:"total_count"`
 }
 
-// BillingPaymentSource represents a payment source.
-type BillingPaymentSource struct {
+// BillingPaymentMethod represents a payment method.
+type BillingPaymentMethod struct {
 	APIResource
 
 	Object                   string  `json:"object"`
@@ -144,8 +144,8 @@ type SubscriptionItem struct {
 	PlanID          *string                             `json:"plan_id"`
 	Plan            *Plan                               `json:"plan"`
 	PlanPeriod      string                              `json:"plan_period"`
-	PaymentSourceID string                              `json:"payment_source_id"`
-	PaymentSource   *BillingPaymentSource               `json:"payment_source"`
+	PaymentMethodID string                              `json:"payment_method_id"`
+	PaymentMethod   *BillingPaymentMethod               `json:"payment_method"`
 	LifetimePaid    *BillingMoney                       `json:"lifetime_paid"`
 	Amount          *BillingMoney                       `json:"amount"`
 	NextInvoice     *BillingSubscriptionItemNextPayment `json:"next_invoice"`
