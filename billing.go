@@ -142,7 +142,6 @@ type SubscriptionItem struct {
 	PaymentMethod   *BillingPaymentMethod               `json:"payment_method"`
 	LifetimePaid    *BillingMoney                       `json:"lifetime_paid"`
 	Amount          *BillingMoney                       `json:"amount"`
-	NextInvoice     *BillingSubscriptionItemNextPayment `json:"next_invoice"`
 	NextPayment     *BillingSubscriptionItemNextPayment `json:"next_payment"`
 	PayerID         string                              `json:"payer_id"`
 	Payer           *Payer                              `json:"payer"`
