@@ -54,13 +54,13 @@ func (c *Client) ListPlans(ctx context.Context, params *ListPlansParams) (*clerk
 type ListSubscriptionItemsParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	Status         *string `json:"status,omitempty"`
-	PayerType      *string `json:"payer_type,omitempty"`
-	PlanID         *string `json:"plan_id,omitempty"`
-	IncludeFree    *bool   `json:"include_free,omitempty"`
-	Query          *string `json:"query,omitempty"`
-	UserID         *string `json:"user_id,omitempty"`
-	OrganizationID *string `json:"organization_id,omitempty"`
+	Status         *string `json:"status"`
+	PayerType      *string `json:"payer_type"`
+	PlanID         *string `json:"plan_id"`
+	IncludeFree    *bool   `json:"include_free"`
+	Query          *string `json:"query"`
+	UserID         *string `json:"user_id"`
+	OrganizationID *string `json:"organization_id"`
 }
 
 func (params *ListSubscriptionItemsParams) ToQuery() url.Values {
