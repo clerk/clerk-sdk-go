@@ -170,10 +170,3 @@ type SubscriptionItemList struct {
 	Data       []*SubscriptionItem `json:"data"`
 	TotalCount int64               `json:"total_count"`
 }
-
-// ExtendFreeTrialResponse represents the response from extending free trial.
-type ExtendFreeTrialResponse struct {
-	APIResource
-
-	*SubscriptionItem
-}
