@@ -49,7 +49,7 @@ type Plan struct {
 	Currency         string          `json:"currency"`
 	Description      string          `json:"description"`
 	ProductID        string          `json:"product_id"`
-	Product          *BillingProduct `json:"product,omitempty"`
+	Product          *BillingProduct `json:"product"`
 	IsDefault        bool            `json:"is_default"`
 	IsRecurring      bool            `json:"is_recurring"`
 	PubliclyVisible  bool            `json:"publicly_visible"`
@@ -79,7 +79,7 @@ type BillingPaymentMethod struct {
 	ID                       string  `json:"id"`
 	PayerID                  string  `json:"payer_id"`
 	PaymentMethod            string  `json:"payment_method"`
-	IsDefault                *bool   `json:"is_default,omitempty"`
+	IsDefault                *bool   `json:"is_default"`
 	Gateway                  string  `json:"gateway"`
 	GatewayExternalID        string  `json:"gateway_external_id"`
 	GatewayExternalAccountID *string `json:"gateway_external_account_id"`
@@ -87,11 +87,11 @@ type BillingPaymentMethod struct {
 	Status                   string  `json:"status"`
 	WalletType               string  `json:"wallet_type"`
 	CardType                 string  `json:"card_type"`
-	ExpiryYear               int     `json:"expiry_year,omitempty"`
-	ExpiryMonth              int     `json:"expiry_month,omitempty"`
+	ExpiryYear               int     `json:"expiry_year"`
+	ExpiryMonth              int     `json:"expiry_month"`
 	CreatedAt                int64   `json:"created_at"`
 	UpdatedAt                int64   `json:"updated_at"`
-	IsRemovable              *bool   `json:"is_removable,omitempty"`
+	IsRemovable              *bool   `json:"is_removable"`
 }
 
 // BillingSubscriptionItemNextPayment represents next payment info.
@@ -111,14 +111,14 @@ type Payer struct {
 	InstanceID string `json:"instance_id"`
 
 	// User payer only
-	UserID    string `json:"user_id,omitempty"`
+	UserID    string `json:"user_id"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
 
 	// Org payer only
-	OrganizationID   string `json:"organization_id,omitempty"`
-	OrganizationName string `json:"organization_name,omitempty"`
+	OrganizationID   string `json:"organization_id"`
+	OrganizationName string `json:"organization_name"`
 
 	// Used for both org and user payers
 	ImageURL string `json:"image_url"`
