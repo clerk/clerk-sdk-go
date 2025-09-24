@@ -78,7 +78,7 @@ func TestBillingClientListSubscriptionItems(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(`{"data": [{"object":"subscription_item","id":"sub_item_123","payer_id":"payer_456","plan_id":"plan_789","status":"active","period_start":1640995200,"period_end":1643673600,"payer":{"object":"payer","id":"payer_456","first_name":"John","last_name":"Doe","created_at":1640995200,"updated_at":1640995200},"plan":{"object":"plan","id":"plan_789","name":"Pro Plan","payer_type":["user"],"features":[]},"created_at":1640995200,"updated_at":1640995200}],"total_count": 1}`),
+			Out:    json.RawMessage(`{"data": [{"object":"subscription_item","id":"sub_item_123","payer_id":"payer_456","plan_id":"plan_789","status":"active","period_start":1640995200,"period_end":1643673600,"payer":{"object":"payer","id":"payer_456","user_id":"user_456","first_name":"John","last_name":"Doe","email":"john@example.com","created_at":1640995200,"updated_at":1640995200},"plan":{"object":"plan","id":"plan_789","name":"Pro Plan","payer_type":["user"],"features":[]},"created_at":1640995200,"updated_at":1640995200}],"total_count": 1}`),
 			Method: http.MethodGet,
 			Path:   "/v1/billing/subscription_items",
 			Query: &url.Values{
@@ -108,7 +108,7 @@ func TestBillingClientListSubscriptionItems(t *testing.T) {
 	require.Equal(t, int64(1643673600), *subscriptionItemList.Data[0].PeriodEnd)
 	require.NotNil(t, subscriptionItemList.Data[0].Payer)
 	require.Equal(t, "payer_456", subscriptionItemList.Data[0].Payer.ID)
-	require.Equal(t, "John", subscriptionItemList.Data[0].Payer.FirstName)
+	require.Equal(t, "John", *subscriptionItemList.Data[0].Payer.FirstName)
 	require.NotNil(t, subscriptionItemList.Data[0].Plan)
 	require.Equal(t, "plan_789", subscriptionItemList.Data[0].Plan.ID)
 	require.Equal(t, "Pro Plan", subscriptionItemList.Data[0].Plan.Name)
@@ -297,7 +297,7 @@ func TestBillingClientListSubscriptionItemsWithMultipleFilters(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(`{"data": [{"object":"subscription_item","id":"sub_item_123","payer_id":"payer_456","plan_id":"plan_789","status":"active","period_start":1640995200,"period_end":1643673600,"created_at":1640995200,"updated_at":1640995200}],"total_count": 1}`),
+			Out:    json.RawMessage(`{"data": [{"object":"subscription_item","id":"sub_item_123","payer_id":"payer_456","plan_id":"plan_789","status":"active","period_start":1640995200,"period_end":1643673600,"payer":{"object":"payer","id":"payer_456","user_id":"user_456","first_name":"John","last_name":"Doe","email":"john@example.com","created_at":1640995200,"updated_at":1640995200},"plan":{"object":"plan","id":"plan_789","name":"Pro Plan","payer_type":["user"],"features":[]},"created_at":1640995200,"updated_at":1640995200}],"total_count": 1}`),
 			Method: http.MethodGet,
 			Path:   "/v1/billing/subscription_items",
 			Query: &url.Values{
