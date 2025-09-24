@@ -111,14 +111,14 @@ type Payer struct {
 	InstanceID string `json:"instance_id"`
 
 	// User payer only
-	UserID    string `json:"user_id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
+	UserID    *string `json:"user_id"`
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	Email     *string `json:"email"`
 
 	// Org payer only
-	OrganizationID   string `json:"organization_id"`
-	OrganizationName string `json:"organization_name"`
+	OrganizationID   *string `json:"organization_id"`
+	OrganizationName *string `json:"organization_name"`
 
 	// Used for both org and user payers
 	ImageURL string `json:"image_url"`

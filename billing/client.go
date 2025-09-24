@@ -27,7 +27,7 @@ func NewClient(config *clerk.ClientConfig) *Client {
 type ListPlansParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	PayerType *string `json:"payer_type,omitempty"`
+	PayerType *string
 }
 
 func (params *ListPlansParams) ToQuery() url.Values {
@@ -54,13 +54,13 @@ func (c *Client) ListPlans(ctx context.Context, params *ListPlansParams) (*clerk
 type ListSubscriptionItemsParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	Status         *string `json:"status"`
-	PayerType      *string `json:"payer_type"`
-	PlanID         *string `json:"plan_id"`
-	IncludeFree    *bool   `json:"include_free"`
-	Query          *string `json:"query"`
-	UserID         *string `json:"user_id"`
-	OrganizationID *string `json:"organization_id"`
+	Status         *string
+	PayerType      *string
+	PlanID         *string
+	IncludeFree    *bool
+	Query          *string
+	UserID         *string
+	OrganizationID *string
 }
 
 func (params *ListSubscriptionItemsParams) ToQuery() url.Values {
@@ -108,7 +108,7 @@ func (c *Client) ListSubscriptionItems(ctx context.Context, params *ListSubscrip
 
 type CancelSubscriptionItemParams struct {
 	clerk.APIParams
-	EndNow *bool `json:"end_now,omitempty"`
+	EndNow *bool
 }
 
 func (params *CancelSubscriptionItemParams) ToQuery() url.Values {
