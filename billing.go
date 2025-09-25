@@ -32,7 +32,7 @@ type BillingProduct struct {
 	Currency  string  `json:"currency"`
 	Name      string  `json:"name"`
 	IsDefault bool    `json:"is_default"`
-	Plans     []*Plan `json:"plans"`
+	Plans     []Plan `json:"plans"`
 }
 
 // Plan represents a billing plan.
