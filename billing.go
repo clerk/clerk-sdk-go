@@ -66,7 +66,7 @@ type Plan struct {
 type PlanList struct {
 	APIResource
 
-	Data       []*Plan `json:"data"`
+	Data       []Plan `json:"data"`
 	TotalCount int64   `json:"total_count"`
 }
 
