@@ -19,7 +19,7 @@ func TestBillingClientListPlans(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(`{"data": [{"object":"plan","id":"plan_123","name":"Basic Plan","payer_type":["user"],"features":[{"object":"feature","id":"feature_456","name":"Feature 1","key":"feature_1"}]}],"total_count": 1}`),
+			Out:    json.RawMessage(`{"data": [{"object":"plan","id":"plan_123","name":"Basic Plan","for_payer_type":"user","features":[{"object":"feature","id":"feature_456","name":"Feature 1","key":"feature_1"}]}],"total_count": 1}`),
 			Method: http.MethodGet,
 			Path:   "/v1/billing/plans",
 			Query: &url.Values{
@@ -41,7 +41,7 @@ func TestBillingClientListPlans(t *testing.T) {
 	require.Equal(t, 1, len(planList.Data))
 	require.Equal(t, "plan_123", planList.Data[0].ID)
 	require.Equal(t, "Basic Plan", planList.Data[0].Name)
-	require.Equal(t, []string{"user"}, planList.Data[0].PayerType)
+	require.Equal(t, "user", planList.Data[0].ForPayerType)
 	require.Equal(t, 1, len(planList.Data[0].Features))
 	require.Equal(t, "feature_456", planList.Data[0].Features[0].ID)
 	require.Equal(t, "Feature 1", planList.Data[0].Features[0].Name)
@@ -273,7 +273,7 @@ func TestBillingClientListPlansWithoutFilters(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(`{"data": [{"object":"plan","id":"plan_123","name":"Basic Plan","payer_type":["user"],"features":[]},{"object":"plan","id":"plan_456","name":"Pro Plan","payer_type":["organization"],"features":[]}],"total_count": 2}`),
+			Out:    json.RawMessage(`{"data": [{"object":"plan","id":"plan_123","name":"Basic Plan","for_payer_type":"user","features":[]},{"object":"plan","id":"plan_456","name":"Pro Plan","for_payer_type":"organization","features":[]}],"total_count": 2}`),
 			Method: http.MethodGet,
 			Path:   "/v1/billing/plans",
 		},
@@ -285,10 +285,10 @@ func TestBillingClientListPlansWithoutFilters(t *testing.T) {
 	require.Equal(t, 2, len(planList.Data))
 	require.Equal(t, "plan_123", planList.Data[0].ID)
 	require.Equal(t, "Basic Plan", planList.Data[0].Name)
-	require.Equal(t, []string{"user"}, planList.Data[0].PayerType)
+	require.Equal(t, "user", planList.Data[0].ForPayerType)
 	require.Equal(t, "plan_456", planList.Data[1].ID)
 	require.Equal(t, "Pro Plan", planList.Data[1].Name)
-	require.Equal(t, []string{"organization"}, planList.Data[1].PayerType)
+	require.Equal(t, "organization", planList.Data[1].ForPayerType)
 }
 
 func TestBillingClientListSubscriptionItemsWithMultipleFilters(t *testing.T) {
