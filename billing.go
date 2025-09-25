@@ -57,7 +57,7 @@ type Plan struct {
 	ForPayerType     string          `json:"for_payer_type"`
 	Slug             string          `json:"slug"`
 	AvatarURL        string          `json:"avatar_url"`
-	Features         []*Feature      `json:"features"`
+	Features         []Feature      `json:"features"`
 	FreeTrialEnabled bool            `json:"free_trial_enabled"`
 	FreeTrialDays    *int            `json:"free_trial_days"`
 }
