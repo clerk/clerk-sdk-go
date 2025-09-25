@@ -159,6 +159,6 @@ type SubscriptionItem struct {
 type SubscriptionItemList struct {
 	APIResource
 
-	Data       []*SubscriptionItem `json:"data"`
+	Data       []SubscriptionItem `json:"data"`
 	TotalCount int64               `json:"total_count"`
 }
