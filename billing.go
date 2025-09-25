@@ -143,7 +143,7 @@ type SubscriptionItem struct {
 	PayerID         string                              `json:"payer_id"`
 	Payer           *Payer                              `json:"payer"`
 	IsFreeTrial     bool                                `json:"is_free_trial"`
-	PeriodStart     *int64                              `json:"period_start"`
+	PeriodStart     int64                               `json:"period_start"`
 	PeriodEnd       *int64                              `json:"period_end"`
 	ProrationDate   string                              `json:"proration_date"`
 	CanceledAt      *int64                              `json:"canceled_at"`
