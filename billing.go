@@ -26,12 +26,12 @@ type BillingMoney struct {
 type BillingProduct struct {
 	APIResource
 
-	Object    string  `json:"object"`
-	ID        string  `json:"id"`
-	Slug      string  `json:"slug"`
-	Currency  string  `json:"currency"`
-	Name      string  `json:"name"`
-	IsDefault bool    `json:"is_default"`
+	Object    string `json:"object"`
+	ID        string `json:"id"`
+	Slug      string `json:"slug"`
+	Currency  string `json:"currency"`
+	Name      string `json:"name"`
+	IsDefault bool   `json:"is_default"`
 	Plans     []Plan `json:"plans"`
 }
 
@@ -45,8 +45,6 @@ type Plan struct {
 	Fee              *BillingMoney   `json:"fee"`
 	AnnualMonthlyFee *BillingMoney   `json:"annual_monthly_fee"`
 	AnnualFee        *BillingMoney   `json:"annual_fee"`
-	CurrencySymbol   string          `json:"currency_symbol"`
-	Currency         string          `json:"currency"`
 	Description      string          `json:"description"`
 	ProductID        string          `json:"product_id"`
 	Product          *BillingProduct `json:"product"`
@@ -57,7 +55,7 @@ type Plan struct {
 	ForPayerType     string          `json:"for_payer_type"`
 	Slug             string          `json:"slug"`
 	AvatarURL        string          `json:"avatar_url"`
-	Features         []Feature      `json:"features"`
+	Features         []Feature       `json:"features"`
 	FreeTrialEnabled bool            `json:"free_trial_enabled"`
 	FreeTrialDays    *int            `json:"free_trial_days"`
 }
@@ -67,7 +65,7 @@ type PlanList struct {
 	APIResource
 
 	Data       []Plan `json:"data"`
-	TotalCount int64   `json:"total_count"`
+	TotalCount int64  `json:"total_count"`
 }
 
 // BillingPaymentMethod represents a payment method.
@@ -160,5 +158,5 @@ type SubscriptionItemList struct {
 	APIResource
 
 	Data       []SubscriptionItem `json:"data"`
-	TotalCount int64               `json:"total_count"`
+	TotalCount int64              `json:"total_count"`
 }
