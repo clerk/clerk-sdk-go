@@ -54,7 +54,6 @@ type Plan struct {
 	IsRecurring      bool            `json:"is_recurring"`
 	PubliclyVisible  bool            `json:"publicly_visible"`
 	HasBaseFee       bool            `json:"has_base_fee"`
-	PayerType        []string        `json:"payer_type"`
 	ForPayerType     string          `json:"for_payer_type"`
 	Slug             string          `json:"slug"`
 	AvatarURL        string          `json:"avatar_url"`
