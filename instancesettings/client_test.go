@@ -147,3 +147,47 @@ func TestInstanceClientUpdateOrganizationSettings_Error(t *testing.T) {
 	require.Equal(t, 1, len(apiErr.Errors))
 	require.Equal(t, "update-error-code", apiErr.Errors[0].Code)
 }
+
+func TestInstanceClientUpdateOrganizationSettingsWithSlugDisabled(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"slug_disabled":true}`),
+			Out:    json.RawMessage(`{"enabled":true,"max_allowed_memberships":3,"slug_disabled":true}`),
+			Method: http.MethodPatch,
+			Path:   "/v1/instance/organization_settings",
+		},
+	}
+	client := NewClient(config)
+	orgSettings, err := client.UpdateOrganizationSettings(context.Background(), &UpdateOrganizationSettingsParams{
+		SlugDisabled: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.True(t, orgSettings.Enabled)
+	require.Equal(t, int64(3), orgSettings.MaxAllowedMemberships)
+	require.True(t, orgSettings.SlugDisabled)
+}
+
+func TestInstanceClientUpdateOrganizationSettingsEnableSlug(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"slug_disabled":false}`),
+			Out:    json.RawMessage(`{"enabled":true,"slug_disabled":false}`),
+			Method: http.MethodPatch,
+			Path:   "/v1/instance/organization_settings",
+		},
+	}
+	client := NewClient(config)
+	orgSettings, err := client.UpdateOrganizationSettings(context.Background(), &UpdateOrganizationSettingsParams{
+		SlugDisabled: clerk.Bool(false),
+	})
+	require.NoError(t, err)
+	require.True(t, orgSettings.Enabled)
+	require.Equal(t, int64(3), orgSettings.MaxAllowedMemberships)
+	require.False(t, orgSettings.SlugDisabled)
+}
