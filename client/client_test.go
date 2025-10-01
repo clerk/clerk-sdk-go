@@ -29,6 +29,7 @@ func TestClientClientGet(t *testing.T) {
 	client, err := c.Get(context.Background(), id)
 	require.NoError(t, err)
 	require.Equal(t, id, client.ID)
+	require.Nil(t, client.LastAuthenticationStrategy)
 }
 
 func TestClientClientVerify(t *testing.T) {

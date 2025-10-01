@@ -23,6 +23,7 @@ type SAMLConnection struct {
 	AllowSubdomains                  bool                           `json:"allow_subdomains"`
 	AllowIdpInitiated                bool                           `json:"allow_idp_initiated"`
 	DisableAdditionalIdentifications bool                           `json:"disable_additional_identifications"`
+	ForceAuthn                       bool                           `json:"force_authn"`
 	CreatedAt                        int64                          `json:"created_at"`
 	UpdatedAt                        int64                          `json:"updated_at"`
 }

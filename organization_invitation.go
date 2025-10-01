@@ -20,6 +20,7 @@ type OrganizationInvitation struct {
 	OrganizationID         string                  `json:"organization_id"`
 	PublicOrganizationData *PublicOrganizationData `json:"public_organization_data,omitempty"`
 	Status                 string                  `json:"status"`
+	URL                    string                  `json:"url,omitempty"`
 	PublicMetadata         json.RawMessage         `json:"public_metadata"`
 	PrivateMetadata        json.RawMessage         `json:"private_metadata"`
 	ExpiresAt              *int64                  `json:"expires_at,omitempty"`
