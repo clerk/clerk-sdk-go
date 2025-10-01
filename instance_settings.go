@@ -20,6 +20,7 @@ type OrganizationSettings struct {
 	CreatorRole            string   `json:"creator_role"`
 	AdminDeleteEnabled     bool     `json:"admin_delete_enabled"`
 	DomainsEnabled         bool     `json:"domains_enabled"`
+	SlugDisabled           bool     `json:"slug_disabled"`
 	DomainsEnrollmentModes []string `json:"domains_enrollment_modes"`
 	DomainsDefaultRole     string   `json:"domains_default_role"`
 }
