@@ -107,6 +107,7 @@ type UpdateOrganizationSettingsParams struct {
 	CreatorRoleID          *string   `json:"creator_role_id,omitempty"`
 	AdminDeleteEnabled     *bool     `json:"admin_delete_enabled,omitempty"`
 	DomainsEnabled         *bool     `json:"domains_enabled,omitempty"`
+	SlugDisabled           *bool     `json:"slug_disabled,omitempty"`
 	DomainsEnrollmentModes *[]string `json:"domains_enrollment_modes,omitempty"`
 	DomainsDefaultRoleID   *string   `json:"domains_default_role_id,omitempty"`
 	// This feature is currently in beta and is not yet available for all instances.
