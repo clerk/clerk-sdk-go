@@ -107,7 +107,7 @@ func TestInstanceClientUpdateOrganizationSettings(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"enabled":true,"force_organization_selection": true}`),
+			In:     json.RawMessage(`{"enabled":true,"force_organization_selection": true,"slug_disabled": true}`),
 			Out:    json.RawMessage(`{"enabled":true,"max_allowed_memberships":3}`),
 			Method: http.MethodPatch,
 			Path:   "/v1/instance/organization_settings",
@@ -117,6 +117,7 @@ func TestInstanceClientUpdateOrganizationSettings(t *testing.T) {
 	orgSettings, err := client.UpdateOrganizationSettings(context.Background(), &UpdateOrganizationSettingsParams{
 		Enabled:                    clerk.Bool(true),
 		ForceOrganizationSelection: clerk.Bool(true),
+		SlugDisabled:               clerk.Bool(true),
 	})
 	require.NoError(t, err)
 	require.True(t, orgSettings.Enabled)
