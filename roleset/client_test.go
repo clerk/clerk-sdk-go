@@ -186,3 +186,98 @@ func TestRoleSetClient_RemoveRoles(t *testing.T) {
 	assert.Equal(t, roleSetID, roleSet.ID)
 	assert.Len(t, roleSet.Roles, 0)
 }
+
+func TestListParams_ToQuery(t *testing.T) {
+	t.Parallel()
+
+	t.Run("with all parameters", func(t *testing.T) {
+		params := &ListParams{
+			ListParams: clerk.ListParams{
+				Limit:  clerk.Int64(10),
+				Offset: clerk.Int64(20),
+			},
+			Query:   clerk.String("admin"),
+			OrderBy: clerk.String("created_at"),
+		}
+
+		query := params.ToQuery()
+		assert.Equal(t, "10", query.Get("limit"))
+		assert.Equal(t, "20", query.Get("offset"))
+		assert.Equal(t, "admin", query.Get("query"))
+		assert.Equal(t, "created_at", query.Get("order_by"))
+	})
+
+	t.Run("with only base list parameters", func(t *testing.T) {
+		params := &ListParams{
+			ListParams: clerk.ListParams{
+				Limit: clerk.Int64(5),
+			},
+		}
+
+		query := params.ToQuery()
+		assert.Equal(t, "5", query.Get("limit"))
+		assert.Empty(t, query.Get("query"))
+		assert.Empty(t, query.Get("order_by"))
+	})
+
+	t.Run("with only new parameters", func(t *testing.T) {
+		params := &ListParams{
+			Query:   clerk.String("test query"),
+			OrderBy: clerk.String("name"),
+		}
+
+		query := params.ToQuery()
+		assert.Equal(t, "test query", query.Get("query"))
+		assert.Equal(t, "name", query.Get("order_by"))
+		assert.Empty(t, query.Get("limit"))
+		assert.Empty(t, query.Get("offset"))
+	})
+
+	t.Run("with nil parameters", func(t *testing.T) {
+		params := &ListParams{}
+
+		query := params.ToQuery()
+		assert.Empty(t, query.Get("query"))
+		assert.Empty(t, query.Get("order_by"))
+		assert.Empty(t, query.Get("limit"))
+		assert.Empty(t, query.Get("offset"))
+	})
+}
+
+func TestRoleSetClient_ListWithQueryParams(t *testing.T) {
+	t.Parallel()
+	roleSet1ID := "role_set_2b6E7b8FdHPjQKsrrakHLUPOzKe"
+
+	expectedQuery := url.Values{}
+	expectedQuery.Set("query", "admin")
+	expectedQuery.Set("order_by", "created_at")
+	expectedQuery.Set("limit", "10")
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T: t,
+			Out: json.RawMessage(fmt.Sprintf(`{
+				"data": [
+					{"object":"role_set","id":"%s","name":"Admin Role Set","key":"admin-roles","description":"Admin roles","type": "initial","roles":[],"created_at":1234567890,"updated_at":1234567890}
+				],
+				"total_count": 1
+			}`, roleSet1ID)),
+			Method: http.MethodGet,
+			Path:   "/v1/role_sets",
+			Query:  &expectedQuery,
+		},
+	}
+	client := NewClient(config)
+	list, err := client.List(context.Background(), &ListParams{
+		ListParams: clerk.ListParams{
+			Limit: clerk.Int64(10),
+		},
+		Query:   clerk.String("admin"),
+		OrderBy: clerk.String("created_at"),
+	})
+	require.NoError(t, err)
+	assert.Len(t, list.RoleSets, 1)
+	assert.Equal(t, int64(1), list.TotalCount)
+	assert.Equal(t, roleSet1ID, list.RoleSets[0].ID)
+}

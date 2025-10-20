@@ -124,6 +124,31 @@ func TestInstanceClientUpdateOrganizationSettings(t *testing.T) {
 	require.Equal(t, int64(3), orgSettings.MaxAllowedMemberships)
 }
 
+func TestInstanceClientUpdateOrganizationSettingsWithInitialRoleSetKey(t *testing.T) {
+	t.Parallel()
+	initialRoleSetKey := "admin-roles"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"enabled":true,"initial_role_set_key":"admin-roles"}`),
+			Out:    json.RawMessage(`{"enabled":true,"max_allowed_memberships":5,"initial_role_set_key":"admin-roles"}`),
+			Method: http.MethodPatch,
+			Path:   "/v1/instance/organization_settings",
+		},
+	}
+	client := NewClient(config)
+	orgSettings, err := client.UpdateOrganizationSettings(context.Background(), &UpdateOrganizationSettingsParams{
+		Enabled:           clerk.Bool(true),
+		InitialRoleSetKey: clerk.String(initialRoleSetKey),
+	})
+	require.NoError(t, err)
+	require.True(t, orgSettings.Enabled)
+	require.Equal(t, int64(5), orgSettings.MaxAllowedMemberships)
+	require.NotNil(t, orgSettings.InitialRoleSetKey)
+	require.Equal(t, initialRoleSetKey, *orgSettings.InitialRoleSetKey)
+}
+
 func TestInstanceClientUpdateOrganizationSettings_Error(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
