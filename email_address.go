@@ -10,7 +10,7 @@ type EmailAddress struct {
 	Reserved             bool                    `json:"reserved"`
 	Verification         *Verification           `json:"verification"`
 	LinkedTo             []*LinkedIdentification `json:"linked_to"`
-	MatchesSsoConnection bool                    `json:"matches_sso_connection"`
+	MatchesSSOConnection bool                    `json:"matches_sso_connection"`
 	CreatedAt            int64                   `json:"created_at"`
 	UpdatedAt            int64                   `json:"updated_at"`
 }

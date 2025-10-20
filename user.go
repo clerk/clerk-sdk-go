@@ -87,7 +87,7 @@ type SAMLAccount struct {
 	ProviderUserID         *string                `json:"provider_user_id"`
 	LastAuthenticatedAt    *int64                 `json:"last_authenticated_at"`
 	PublicMetadata         json.RawMessage        `json:"public_metadata"`
-	SamlConnection         *samlAccountConnection `json:"saml_connection"`
+	SAMLConnection         *samlAccountConnection `json:"saml_connection"`
 	EnterpriseConnectionID string                 `json:"enterprise_connection_id"`
 	Verification           *Verification          `json:"verification"`
 }
@@ -106,7 +106,7 @@ type samlAccountConnection struct {
 	Provider                         string   `json:"provider"`
 	SyncUserAttributes               bool     `json:"sync_user_attributes"`
 	AllowSubdomains                  bool     `json:"allow_subdomains"`
-	AllowIdpInitiated                bool     `json:"allow_idp_initiated"`
+	AllowIDPInitiated                bool     `json:"allow_idp_initiated"`
 	DisableAdditionalIdentifications bool     `json:"disable_additional_identifications"`
 	CreatedAt                        int64    `json:"created_at"`
 	UpdatedAt                        int64    `json:"updated_at"`

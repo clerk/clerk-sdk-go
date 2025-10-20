@@ -38,5 +38,5 @@ type enterpriseAccountConnection struct {
 
 	// SAML Connection specific fields
 	AllowSubdomains   bool `json:"allow_subdomains"`
-	AllowIdpInitiated bool `json:"allow_idp_initiated"`
+	AllowIDPInitiated bool `json:"allow_idp_initiated"`
 }
