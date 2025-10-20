@@ -27,10 +27,8 @@ type enterpriseAccountConnection struct {
 	Provider               string `json:"provider"`
 
 	// Name is the name of this enterprise connection that we will display directly to end-users
-	Name          string  `json:"name"`
-	LogoPublicURL *string `json:"logo_public_url"`
-	// Deprecated: Use Domains instead
-	Domain                           string   `json:"domain,omitempty"`
+	Name                             string   `json:"name"`
+	LogoPublicURL                    *string  `json:"logo_public_url"`
 	Domains                          []string `json:"domains,omitempty"`
 	Active                           bool     `json:"active"`
 	SyncUserAttributes               bool     `json:"sync_user_attributes"`

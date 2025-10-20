@@ -99,10 +99,8 @@ type UserList struct {
 }
 
 type samlAccountConnection struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	// Deprecated: Use Domains instead
-	Domain                           string   `json:"domain"`
+	ID                               string   `json:"id"`
+	Name                             string   `json:"name"`
 	Domains                          []string `json:"domains"`
 	Active                           bool     `json:"active"`
 	Provider                         string   `json:"provider"`
