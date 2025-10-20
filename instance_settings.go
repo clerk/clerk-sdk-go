@@ -24,4 +24,6 @@ type OrganizationSettings struct {
 	SlugDisabled           bool     `json:"slug_disabled"`
 	DomainsEnrollmentModes []string `json:"domains_enrollment_modes"`
 	DomainsDefaultRole     string   `json:"domains_default_role"`
+	// TODO(nicolas): Remove omitempty when it's GA
+	InitialRoleSetKey *string `json:"initial_role_set_key,omitempty"`
 }
