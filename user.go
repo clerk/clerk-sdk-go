@@ -21,6 +21,7 @@ type User struct {
 	EmailAddresses                []*EmailAddress    `json:"email_addresses"`
 	PhoneNumbers                  []*PhoneNumber     `json:"phone_numbers"`
 	Web3Wallets                   []*Web3Wallet      `json:"web3_wallets"`
+	Passkeys                      []*Passkey         `json:"passkeys"`
 	ExternalAccounts              []*ExternalAccount `json:"external_accounts"`
 	SAMLAccounts                  []*SAMLAccount     `json:"saml_accounts"`
 	PasswordLastUpdatedAt         *int64             `json:"password_last_updated_at,omitempty"`
