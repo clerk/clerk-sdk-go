@@ -24,6 +24,7 @@ type Verification struct {
 	ExpireAt                        *int64          `json:"expire_at"`
 	VerifiedAtClient                string          `json:"verified_at_client,omitempty"`
 	Nonce                           *string         `json:"nonce,omitempty"`
+	Message                         *string         `json:"message,omitempty"`
 	ExternalVerificationRedirectURL *string         `json:"external_verification_redirect_url,omitempty"`
 	Error                           json.RawMessage `json:"error,omitempty"`
 }
