@@ -60,6 +60,7 @@ type ExternalAccount struct {
 	AvatarURL        string          `json:"avatar_url"`
 	ImageURL         *string         `json:"image_url,omitempty"`
 	Username         *string         `json:"username"`
+	PhoneNumber      *string         `json:"phone_number"`
 	PublicMetadata   json.RawMessage `json:"public_metadata"`
 	Label            *string         `json:"label"`
 	CreatedAt        int64           `json:"created_at"`
@@ -87,7 +88,7 @@ type SAMLAccount struct {
 	ProviderUserID         *string                `json:"provider_user_id"`
 	LastAuthenticatedAt    *int64                 `json:"last_authenticated_at"`
 	PublicMetadata         json.RawMessage        `json:"public_metadata"`
-	SAMLConnection         *samlAccountConnection `json:"saml_connection"`
+	SAMLConnection         *SAMLAccountConnection `json:"saml_connection"`
 	EnterpriseConnectionID string                 `json:"enterprise_connection_id"`
 	Verification           *Verification          `json:"verification"`
 }
@@ -98,7 +99,7 @@ type UserList struct {
 	TotalCount int64   `json:"total_count"`
 }
 
-type samlAccountConnection struct {
+type SAMLAccountConnection struct {
 	ID                               string   `json:"id"`
 	Name                             string   `json:"name"`
 	Domains                          []string `json:"domains"`

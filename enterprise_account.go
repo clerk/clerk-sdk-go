@@ -15,11 +15,11 @@ type EnterpriseAccount struct {
 	LastAuthenticatedAt    *int64                       `json:"last_authenticated_at"`
 	PublicMetadata         json.RawMessage              `json:"public_metadata" logger:"omit"`
 	Verification           *Verification                `json:"verification"`
-	EnterpriseConnection   *enterpriseAccountConnection `json:"enterprise_connection"`
+	EnterpriseConnection   *EnterpriseAccountConnection `json:"enterprise_connection"`
 	EnterpriseConnectionID string                       `json:"enterprise_connection_id"`
 }
 
-type enterpriseAccountConnection struct {
+type EnterpriseAccountConnection struct {
 	// ID belongs to the underlying connection, either SAML Connection or the OAuth config
 	ID                     string `json:"id"`
 	EnterpriseConnectionID string `json:"enterprise_connection_id"`
