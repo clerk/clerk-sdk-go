@@ -30,4 +30,5 @@ type OrganizationMembershipPublicUserData struct {
 	ImageURL   *string `json:"image_url"`
 	HasImage   bool    `json:"has_image"`
 	Identifier string  `json:"identifier"`
+	Username   *string `json:"username"`
 }
