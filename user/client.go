@@ -57,6 +57,8 @@ type CreateParams struct {
 	SkipLegalChecks *bool   `json:"skip_legal_checks,omitempty"`
 	// Specified in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
+	// Specified in BCP-47 format
+	Locale *string `json:"locale,omitempty"`
 }
 
 // Create creates a new user.
@@ -110,6 +112,8 @@ type UpdateParams struct {
 	SkipLegalChecks *bool   `json:"skip_legal_checks,omitempty"`
 	// Specified in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
+	// Specified in BCP-47 format
+	Locale *string `json:"locale,omitempty"`
 }
 
 // Update updates a user.
