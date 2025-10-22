@@ -39,6 +39,32 @@ func TestUserClientCreate(t *testing.T) {
 	require.Equal(t, username, *user.Username)
 }
 
+func TestUserClientCreate_WithLocale(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	username := "username"
+	locale := "en-US"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"username":"%s","locale":"%s"}`, username, locale)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","username":"%s","locale":"%s"}`, id, username, locale)),
+			Method: http.MethodPost,
+			Path:   "/v1/users",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Create(context.Background(), &CreateParams{
+		Username: clerk.String(username),
+		Locale:   clerk.String(locale),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Equal(t, username, *user.Username)
+	require.Equal(t, locale, *user.Locale)
+}
+
 func TestUserClientList_Request(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
@@ -197,6 +223,29 @@ func TestUserClientUpdate(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, user.ID)
 	require.Equal(t, username, *user.Username)
+}
+
+func TestUserClientUpdate_WithLocale(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	locale := "fr-FR"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"locale":"%s"}`, locale)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","locale":"%s"}`, id, locale)),
+			Method: http.MethodPatch,
+			Path:   "/v1/users/" + id,
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Update(context.Background(), id, &UpdateParams{
+		Locale: clerk.String(locale),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Equal(t, locale, *user.Locale)
 }
 
 type testFile struct {
