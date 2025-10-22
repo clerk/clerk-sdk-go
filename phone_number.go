@@ -11,4 +11,6 @@ type PhoneNumber struct {
 	Verification            *Verification           `json:"verification"`
 	LinkedTo                []*LinkedIdentification `json:"linked_to"`
 	BackupCodes             []string                `json:"backup_codes"`
+	CreatedAt               int64                   `json:"created_at"`
+	UpdatedAt               int64                   `json:"updated_at"`
 }
