@@ -32,7 +32,8 @@ type CreateParams struct {
 	// Type defines the type of role set. It can be either "initial" or "custom".
 	Type *string `json:"type,omitempty"`
 	// Roles are an array of role keys
-	Roles *[]string `json:"roles,omitempty"`
+	Roles          *[]string `json:"roles,omitempty"`
+	DefaultRoleKey *string   `json:"default_role_key,omitempty"`
 }
 
 // Create creates a new role set.
@@ -64,7 +65,8 @@ type UpdateParams struct {
 	// Type defines the type of role set. For update operations it can be only set to "initial".
 	// There's only one "initial" role set per organization, after updating this roleset to "initial"
 	// the other "initial" role sets will be updated to "custom".
-	Type *string `json:"type,omitempty"`
+	Type           *string `json:"type,omitempty"`
+	DefaultRoleKey *string `json:"default_role_key,omitempty"`
 }
 
 // Update updates a role set.

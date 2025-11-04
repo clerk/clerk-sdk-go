@@ -24,25 +24,29 @@ func TestRoleSetClient_Create(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","key":"%s","description":"%s", "roles": ["org:member"], "type": "initial"}`, name, key, description)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"%s","key":"%s","description":"%s","roles":[],"created_at":1234567890,"updated_at":1234567890}`, roleSetID, name, key, description)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","key":"%s","description":"%s", "roles": ["org:member"], "type": "initial", "default_role_key": "org:member"}`, name, key, description)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"%s","key":"%s","description":"%s","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"type":"initial","created_at":1234567890,"updated_at":1234567890}`, roleSetID, name, key, description)),
 			Method: http.MethodPost,
 			Path:   "/v1/role_sets",
 		},
 	}
 	client := NewClient(config)
 	roleSet, err := client.Create(context.Background(), &CreateParams{
-		Name:        clerk.String(name),
-		Key:         clerk.String(key),
-		Description: clerk.String(description),
-		Roles:       &[]string{"org:member"},
-		Type:        clerk.String("initial"),
+		Name:           clerk.String(name),
+		Key:            clerk.String(key),
+		Description:    clerk.String(description),
+		Roles:          &[]string{"org:member"},
+		Type:           clerk.String("initial"),
+		DefaultRoleKey: clerk.String("org:member"),
 	})
 	require.NoError(t, err)
 	assert.Equal(t, roleSetID, roleSet.ID)
 	assert.Equal(t, name, roleSet.Name)
 	assert.Equal(t, key, roleSet.Key)
 	assert.Equal(t, description, *roleSet.Description)
+	assert.NotNil(t, roleSet.DefaultRole)
+	assert.Equal(t, "org:member", roleSet.DefaultRole.Key)
+	assert.Equal(t, "Member", roleSet.DefaultRole.Name)
 }
 
 func TestRoleSetClient_Get(t *testing.T) {
@@ -53,7 +57,7 @@ func TestRoleSetClient_Get(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","key":"%s","description":"Roles for administrative users","roles":[],"created_at":1234567890,"updated_at":1234567890, "type": "initial"}`, roleSetID, roleSetKey)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","key":"%s","description":"Roles for administrative users","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"type":"initial","created_at":1234567890,"updated_at":1234567890}`, roleSetID, roleSetKey)),
 			Method: http.MethodGet,
 			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey),
 		},
@@ -74,16 +78,17 @@ func TestRoleSetClient_Update(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "type": "initial"}`, newName)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"%s","key":"%s","description":"Roles for administrative users","roles":[],"created_at":1234567890,"updated_at":1234567891, "type": "initial"}`, roleSetID, newName, roleSetKey)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "type": "initial", "default_role_key": "org:admin"}`, newName)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"%s","key":"%s","description":"Roles for administrative users","roles":[],"default_role":{"object":"role_set_item","id":"role_456","name":"Admin","key":"org:admin","description":"Default admin role","created_at":1234567890,"updated_at":1234567890},"type":"initial","created_at":1234567890,"updated_at":1234567891}`, roleSetID, newName, roleSetKey)),
 			Method: http.MethodPatch,
 			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey),
 		},
 	}
 	client := NewClient(config)
 	roleSet, err := client.Update(context.Background(), roleSetKey, &UpdateParams{
-		Name: clerk.String(newName),
-		Type: clerk.String("initial"),
+		Name:           clerk.String(newName),
+		Type:           clerk.String("initial"),
+		DefaultRoleKey: clerk.String("org:admin"),
 	})
 	require.NoError(t, err)
 	assert.Equal(t, roleSetID, roleSet.ID)
@@ -120,8 +125,8 @@ func TestRoleSetClient_List(t *testing.T) {
 			T: t,
 			Out: json.RawMessage(fmt.Sprintf(`{
 				"data": [
-					{"object":"role_set","id":"%s","name":"Admin Role Set","key":"admin-roles","description":"Admin roles","type": "initial","roles":[],"created_at":1234567890,"updated_at":1234567890},
-					{"object":"role_set","id":"%s","name":"User Role Set","key":"user-roles","description":"User roles","type": "custom","roles":[],"created_at":1234567890,"updated_at":1234567890}
+					{"object":"role_set","id":"%s","name":"Admin Role Set","key":"admin-roles","description":"Admin roles","type":"initial","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567890},
+					{"object":"role_set","id":"%s","name":"User Role Set","key":"user-roles","description":"User roles","type":"custom","roles":[],"default_role":{"object":"role_set_item","id":"role_456","name":"User","key":"org:user","description":"Default user role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567890}
 				],
 				"total_count": 2
 			}`, roleSet1ID, roleSet2ID)),
@@ -148,7 +153,7 @@ func TestRoleSetClient_AddRoles(t *testing.T) {
 		Transport: &clerktest.RoundTripper{
 			T:      t,
 			In:     json.RawMessage(`{"role_keys":["role:admin","role:manager"]}`),
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type": "initial","key":"%s","description":"Admin roles","roles":[{"object":"role_set_item","id":"role_1","name":"Admin","key":"role:admin","description":"Admin role","created_at":1234567890,"updated_at":1234567890}],"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[{"object":"role_set_item","id":"role_1","name":"Admin","key":"role:admin","description":"Admin role","created_at":1234567890,"updated_at":1234567890}],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
 			Method: http.MethodPost,
 			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles",
 		},
@@ -173,7 +178,7 @@ func TestRoleSetClient_RemoveRoles(t *testing.T) {
 		Transport: &clerktest.RoundTripper{
 			T:      t,
 			In:     json.RawMessage(`{"role_keys":["role:admin"]}`),
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type": "initial","key":"%s","description":"Admin roles","roles":[],"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
 			Method: http.MethodDelete,
 			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles",
 		},
@@ -259,7 +264,7 @@ func TestRoleSetClient_ListWithQueryParams(t *testing.T) {
 			T: t,
 			Out: json.RawMessage(fmt.Sprintf(`{
 				"data": [
-					{"object":"role_set","id":"%s","name":"Admin Role Set","key":"admin-roles","description":"Admin roles","type": "initial","roles":[],"created_at":1234567890,"updated_at":1234567890}
+					{"object":"role_set","id":"%s","name":"Admin Role Set","key":"admin-roles","description":"Admin roles","type":"initial","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567890}
 				],
 				"total_count": 1
 			}`, roleSet1ID)),
