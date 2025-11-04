@@ -9,6 +9,7 @@ type RoleSet struct {
 	Key         string         `json:"key"`
 	Description *string        `json:"description"`
 	Roles       []*RoleSetItem `json:"roles"`
+	DefaultRole *RoleSetItem   `json:"default_role"`
 	// Type defines the type of role set. It can be either "initial" or "custom".
 	Type      string `json:"type"`
 	CreatedAt int64  `json:"created_at"`
