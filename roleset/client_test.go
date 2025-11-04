@@ -152,7 +152,7 @@ func TestRoleSetClient_AddRoles(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"role_keys":["role:admin","role:manager"]}`),
+			In:     json.RawMessage(`{"role_keys":["role:admin","role:manager"], "default_role_key": "role:admin"}`),
 			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[{"object":"role_set_item","id":"role_1","name":"Admin","key":"role:admin","description":"Admin role","created_at":1234567890,"updated_at":1234567890}],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
 			Method: http.MethodPost,
 			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles",
@@ -160,7 +160,8 @@ func TestRoleSetClient_AddRoles(t *testing.T) {
 	}
 	client := NewClient(config)
 	roleSet, err := client.AddRoles(context.Background(), roleSetKey, &AddRolesParams{
-		RoleKeys: roleKeys,
+		RoleKeys:       roleKeys,
+		DefaultRoleKey: clerk.String("role:admin"),
 	})
 	require.NoError(t, err)
 	assert.Equal(t, roleSetID, roleSet.ID)

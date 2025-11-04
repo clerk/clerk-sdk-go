@@ -125,7 +125,8 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.RoleSetLi
 
 type AddRolesParams struct {
 	clerk.APIParams
-	RoleKeys []string `json:"role_keys,omitempty"`
+	RoleKeys       []string `json:"role_keys,omitempty"`
+	DefaultRoleKey *string  `json:"default_role_key,omitempty"`
 }
 
 // AddRoles adds roles to a role set.
