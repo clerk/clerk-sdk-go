@@ -34,5 +34,6 @@ type APIKeyWithSecret struct {
 // APIKeyList represents a list of API keys without secrets.
 type APIKeyList struct {
 	APIResource
-	APIKeys []*APIKey `json:"api_keys"`
+	APIKeys    []*APIKey `json:"data"`
+	TotalCount int64     `json:"total_count"`
 }

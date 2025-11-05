@@ -68,7 +68,7 @@ func TestList(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
-		"api_keys": []map[string]interface{}{
+		"data": []map[string]interface{}{
 			{
 				"object":            "api_key",
 				"id":                "ak_test123",
@@ -88,6 +88,7 @@ func TestList(t *testing.T) {
 				"updated_at":        1640995200,
 			},
 		},
+		"total_count": int64(1),
 	}
 
 	responseJSON, _ := json.Marshal(response)
@@ -114,6 +115,7 @@ func TestList(t *testing.T) {
 
 	apiKeys, err := client.List(context.Background(), params)
 	require.NoError(t, err)
+	assert.Equal(t, int64(1), apiKeys.TotalCount)
 	assert.Len(t, apiKeys.APIKeys, 1)
 	assert.Equal(t, "ak_test123", apiKeys.APIKeys[0].ID)
 }
