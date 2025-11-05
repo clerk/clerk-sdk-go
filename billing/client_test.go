@@ -364,7 +364,7 @@ func TestBillingProduct_WithoutOptionalPlans(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "prod_123", product.ID)
 	require.Equal(t, "Basic Product", product.Name)
-	require.Empty(t, product.Plans, "Plans should be empty when omitted from response")
+	require.Nil(t, product.Plans, "Plans should be nil when omitted from response")
 }
 
 func TestSubscriptionItem_WithoutOptionalNestedObjects(t *testing.T) {
@@ -387,11 +387,10 @@ func TestSubscriptionItem_WithoutOptionalNestedObjects(t *testing.T) {
 	require.Equal(t, "sub_item_123", subItem.ID)
 	require.Equal(t, "active", subItem.Status)
 
-	// These fields have omitempty and are absent from the JSON response
+	// These fields are absent from the JSON response
 	require.Nil(t, subItem.Plan, "Plan should be nil when omitted from response")
 	require.Nil(t, subItem.PaymentMethod, "PaymentMethod should be nil when omitted from response")
-	// Payer is non-nullable now, so it should have zero values but not nil
-	require.Equal(t, "", subItem.Payer.ID, "Payer should have zero values when omitted")
+	require.Nil(t, subItem.Payer, "Payer should be nil when omitted from response")
 }
 
 func TestPayer_WithoutOptionalFields(t *testing.T) {
@@ -404,11 +403,11 @@ func TestPayer_WithoutOptionalFields(t *testing.T) {
 	require.Equal(t, "payer_123", payer.ID)
 	require.Equal(t, "user_456", *payer.UserID)
 
-	// These fields have omitempty and are absent from the JSON response
+	// These fields are absent from the JSON response
 	require.Nil(t, payer.FirstName, "FirstName should be nil when omitted")
 	require.Nil(t, payer.LastName, "LastName should be nil when omitted")
 	require.Nil(t, payer.Email, "Email should be nil when omitted")
-	require.Equal(t, "", payer.ImageURL, "ImageURL should be empty string when omitted")
+	require.Nil(t, payer.ImageURL, "ImageURL should be nil when omitted")
 	require.Equal(t, int64(0), payer.CreatedAt, "CreatedAt should be zero when omitted")
 	require.Equal(t, int64(0), payer.UpdatedAt, "UpdatedAt should be zero when omitted")
 }
@@ -423,7 +422,7 @@ func TestBillingPaymentMethod_WithoutOptionalCardFields(t *testing.T) {
 	require.Equal(t, "pm_123", paymentMethod.ID)
 	require.Equal(t, "bank_account", paymentMethod.PaymentType)
 
-	// These fields have omitempty and are absent from the JSON response
+	// These fields are absent from the JSON response
 	require.Nil(t, paymentMethod.WalletType, "WalletType should be nil when omitted")
 	require.Nil(t, paymentMethod.CardType, "CardType should be nil when omitted")
 	require.Nil(t, paymentMethod.ExpiryYear, "ExpiryYear should be nil when omitted")
@@ -468,7 +467,7 @@ func TestBillingSubscriptionItemNextPayment_NonNullableFields(t *testing.T) {
 	require.Equal(t, int64(1672531200), nextPayment.Date)
 }
 
-func TestSubscriptionItem_NonNullablePayer(t *testing.T) {
+func TestSubscriptionItem_WithPayer(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
@@ -485,13 +484,14 @@ func TestSubscriptionItem_NonNullablePayer(t *testing.T) {
 
 	subItem := subscriptionItemList.Data[0]
 
+	require.NotNil(t, subItem.Payer, "Payer should be present")
 	require.Equal(t, "payer_456", subItem.Payer.ID)
 	require.Equal(t, "Jane", *subItem.Payer.FirstName)
 	require.Equal(t, "Smith", *subItem.Payer.LastName)
 	require.Equal(t, "jane@example.com", *subItem.Payer.Email)
 }
 
-func TestSubscriptionItem_NonNullableAmountAndLifetimePaid(t *testing.T) {
+func TestSubscriptionItem_WithAmountAndLifetimePaid(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
@@ -508,15 +508,18 @@ func TestSubscriptionItem_NonNullableAmountAndLifetimePaid(t *testing.T) {
 
 	subItem := subscriptionItemList.Data[0]
 
+	require.NotNil(t, subItem.Amount, "Amount should be present")
 	require.Equal(t, int64(4999), subItem.Amount.Amount)
 	require.Equal(t, "$49.99", subItem.Amount.AmountFormatted)
 	require.Equal(t, "USD", subItem.Amount.Currency)
+
+	require.NotNil(t, subItem.LifetimePaid, "LifetimePaid should be present")
 	require.Equal(t, int64(14997), subItem.LifetimePaid.Amount)
 	require.Equal(t, "$149.97", subItem.LifetimePaid.AmountFormatted)
 	require.Equal(t, "USD", subItem.LifetimePaid.Currency)
 }
 
-func TestSubscriptionItem_NonNullableNextPayment(t *testing.T) {
+func TestSubscriptionItem_WithNextPayment(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
@@ -533,6 +536,7 @@ func TestSubscriptionItem_NonNullableNextPayment(t *testing.T) {
 
 	subItem := subscriptionItemList.Data[0]
 
+	require.NotNil(t, subItem.NextPayment, "NextPayment should be present")
 	require.Equal(t, int64(1999), subItem.NextPayment.Amount.Amount)
 	require.Equal(t, "$19.99", subItem.NextPayment.Amount.AmountFormatted)
 	require.Equal(t, int64(1672531200), subItem.NextPayment.Date)
@@ -649,7 +653,6 @@ func TestPlan_EmptyFeaturesArrayVsOmitted(t *testing.T) {
 	require.Empty(t, plan1.Features, "Features should be empty array")
 	require.Len(t, plan1.Features, 0, "Features should have length 0")
 
-	// Test with omitted features field
 	jsonDataOmitted := `{"object":"plan","id":"plan_456","name":"Pro Plan","product_id":"prod_456","for_payer_type":"user","is_default":false,"is_recurring":true,"publicly_visible":true,"has_base_fee":false,"slug":"pro","free_trial_enabled":false}`
 	var plan2 clerk.Plan
 	err = json.Unmarshal([]byte(jsonDataOmitted), &plan2)
@@ -667,7 +670,6 @@ func TestBillingProduct_EmptyPlansArrayVsOmitted(t *testing.T) {
 	require.Empty(t, product1.Plans, "Plans should be empty array")
 	require.Len(t, product1.Plans, 0, "Plans should have length 0")
 
-	// Test with omitted plans field
 	jsonDataOmitted := `{"object":"product","id":"prod_456","slug":"pro-product","currency":"USD","name":"Pro Product","is_default":true}`
 	var product2 clerk.BillingProduct
 	err = json.Unmarshal([]byte(jsonDataOmitted), &product2)
@@ -702,14 +704,15 @@ func TestSubscriptionItem_MixedOptionalFields(t *testing.T) {
 	require.Nil(t, subItem.PaymentMethod, "PaymentMethod should be nil when omitted")
 
 	// Amount is present
+	require.NotNil(t, subItem.Amount, "Amount should be present")
 	require.Equal(t, int64(2999), subItem.Amount.Amount)
 	require.Equal(t, "$29.99", subItem.Amount.AmountFormatted)
 
-	// LifetimePaid is omitted (non-nullable, so should have zero values)
-	require.Equal(t, int64(0), subItem.LifetimePaid.Amount, "LifetimePaid should have zero values when omitted")
-	require.Equal(t, "", subItem.LifetimePaid.AmountFormatted, "LifetimePaid AmountFormatted should be empty when omitted")
+	// LifetimePaid is omitted
+	require.Nil(t, subItem.LifetimePaid, "LifetimePaid should be nil when omitted")
 
-	// Payer is present (non-nullable)
+	// Payer is present
+	require.NotNil(t, subItem.Payer, "Payer should be present")
 	require.Equal(t, "payer_456", subItem.Payer.ID)
 	require.Equal(t, "user_456", *subItem.Payer.UserID)
 }
@@ -728,7 +731,7 @@ func TestBillingPaymentMethod_PartialCardData(t *testing.T) {
 	require.NotNil(t, paymentMethod.CardType, "CardType should be present")
 	require.Equal(t, "visa", *paymentMethod.CardType)
 
-	// Expiry fields are omitted (nullable, so should be nil)
+	// Expiry fields are omitted
 	require.Nil(t, paymentMethod.ExpiryYear, "ExpiryYear should be nil when omitted")
 	require.Nil(t, paymentMethod.ExpiryMonth, "ExpiryMonth should be nil when omitted")
 	require.Nil(t, paymentMethod.WalletType, "WalletType should be nil for card payment")
