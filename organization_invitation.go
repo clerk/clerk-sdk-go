@@ -18,6 +18,7 @@ type OrganizationInvitation struct {
 	Role                   string                  `json:"role"`
 	RoleName               string                  `json:"role_name"`
 	OrganizationID         string                  `json:"organization_id"`
+	InviterID              string                  `json:"inviter_id"`
 	PublicOrganizationData *PublicOrganizationData `json:"public_organization_data,omitempty"`
 	Status                 string                  `json:"status"`
 	PublicMetadata         json.RawMessage         `json:"public_metadata"`
