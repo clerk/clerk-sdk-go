@@ -39,25 +39,24 @@ type BillingProduct struct {
 type Plan struct {
 	APIResource
 
-	Object           string          `json:"object"`
-	ID               string          `json:"id"`
-	Name             string          `json:"name"`
-	Fee              *BillingMoney   `json:"fee"`
-	AnnualMonthlyFee *BillingMoney   `json:"annual_monthly_fee"`
-	AnnualFee        *BillingMoney   `json:"annual_fee"`
-	Description      string          `json:"description"`
-	ProductID        string          `json:"product_id"`
-	Product          *BillingProduct `json:"product"`
-	IsDefault        bool            `json:"is_default"`
-	IsRecurring      bool            `json:"is_recurring"`
-	PubliclyVisible  bool            `json:"publicly_visible"`
-	HasBaseFee       bool            `json:"has_base_fee"`
-	ForPayerType     string          `json:"for_payer_type"`
-	Slug             string          `json:"slug"`
-	AvatarURL        string          `json:"avatar_url"`
-	Features         []Feature       `json:"features"`
-	FreeTrialEnabled bool            `json:"free_trial_enabled"`
-	FreeTrialDays    *int            `json:"free_trial_days"`
+	Object           string        `json:"object"`
+	ID               string        `json:"id"`
+	Name             string        `json:"name"`
+	Fee              *BillingMoney `json:"fee"`
+	AnnualMonthlyFee *BillingMoney `json:"annual_monthly_fee"`
+	AnnualFee        *BillingMoney `json:"annual_fee"`
+	Description      *string       `json:"description"`
+	ProductID        string        `json:"product_id"`
+	IsDefault        bool          `json:"is_default"`
+	IsRecurring      bool          `json:"is_recurring"`
+	PubliclyVisible  bool          `json:"publicly_visible"`
+	HasBaseFee       bool          `json:"has_base_fee"`
+	ForPayerType     string        `json:"for_payer_type"`
+	Slug             string        `json:"slug"`
+	AvatarURL        *string       `json:"avatar_url"`
+	Features         []Feature     `json:"features"`
+	FreeTrialEnabled bool          `json:"free_trial_enabled"`
+	FreeTrialDays    *int          `json:"free_trial_days"`
 }
 
 // PlanList contains a list of plans.
@@ -75,28 +74,28 @@ type BillingPaymentMethod struct {
 	Object                   string  `json:"object"`
 	ID                       string  `json:"id"`
 	PayerID                  string  `json:"payer_id"`
-	PaymentMethod            string  `json:"payment_method"`
+	PaymentType              string  `json:"payment_type"`
 	IsDefault                *bool   `json:"is_default"`
 	Gateway                  string  `json:"gateway"`
 	GatewayExternalID        string  `json:"gateway_external_id"`
 	GatewayExternalAccountID *string `json:"gateway_external_account_id"`
 	Last4                    string  `json:"last4"`
 	Status                   string  `json:"status"`
-	WalletType               string  `json:"wallet_type"`
-	CardType                 string  `json:"card_type"`
-	ExpiryYear               int     `json:"expiry_year"`
-	ExpiryMonth              int     `json:"expiry_month"`
+	WalletType               *string `json:"wallet_type"`
+	CardType                 *string `json:"card_type"`
+	ExpiryYear               *int    `json:"expiry_year"`
+	ExpiryMonth              *int    `json:"expiry_month"`
 	CreatedAt                int64   `json:"created_at"`
 	UpdatedAt                int64   `json:"updated_at"`
-	IsRemovable              *bool   `json:"is_removable"`
+	IsRemovable              bool    `json:"is_removable"`
 }
 
 // BillingSubscriptionItemNextPayment represents next payment info.
 type BillingSubscriptionItemNextPayment struct {
 	APIResource
 
-	Amount *BillingMoney `json:"amount"`
-	Date   *int64        `json:"date"`
+	Amount BillingMoney `json:"amount"`
+	Date   int64        `json:"date"`
 }
 
 // Payer represents a billing payer (user or organization).
@@ -118,7 +117,7 @@ type Payer struct {
 	OrganizationName *string `json:"organization_name"`
 
 	// Used for both org and user payers
-	ImageURL string `json:"image_url"`
+	ImageURL *string `json:"image_url"`
 
 	CreatedAt int64 `json:"created_at"`
 	UpdatedAt int64 `json:"updated_at"`
@@ -145,7 +144,7 @@ type SubscriptionItem struct {
 	IsFreeTrial     bool                                `json:"is_free_trial"`
 	PeriodStart     int64                               `json:"period_start"`
 	PeriodEnd       *int64                              `json:"period_end"`
-	ProrationDate   string                              `json:"proration_date"`
+	ProrationDate   *string                             `json:"proration_date"`
 	CanceledAt      *int64                              `json:"canceled_at"`
 	PastDueAt       *int64                              `json:"past_due_at"`
 	EndedAt         *int64                              `json:"ended_at"`
