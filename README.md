@@ -28,7 +28,7 @@ Check out the [upgrade guide](UPGRADING.md#2-x-x-to-3-x-x).
 
 ## Requirements
 
-- Go 1.19 or later.
+- Go 1.24 or later.
 
 ## Installation
 
