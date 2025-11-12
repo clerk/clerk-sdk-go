@@ -18,6 +18,7 @@ type OrganizationSettings struct {
 	MaxAllowedMemberships  int64    `json:"max_allowed_memberships"`
 	MaxAllowedRoles        int64    `json:"max_allowed_roles"`
 	MaxAllowedPermissions  int64    `json:"max_allowed_permissions"`
+	MaxRoleSetsAllowed     int64    `json:"max_role_sets_allowed"`
 	CreatorRole            string   `json:"creator_role"`
 	AdminDeleteEnabled     bool     `json:"admin_delete_enabled"`
 	DomainsEnabled         bool     `json:"domains_enabled"`

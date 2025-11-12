@@ -132,7 +132,7 @@ func TestInstanceClientUpdateOrganizationSettingsWithInitialRoleSetKey(t *testin
 		Transport: &clerktest.RoundTripper{
 			T:      t,
 			In:     json.RawMessage(`{"enabled":true,"initial_role_set_key":"admin-roles"}`),
-			Out:    json.RawMessage(`{"enabled":true,"max_allowed_memberships":5,"initial_role_set_key":"admin-roles"}`),
+			Out:    json.RawMessage(`{"enabled":true,"max_allowed_memberships":5,"initial_role_set_key":"admin-roles", "max_role_sets_allowed": 30}`),
 			Method: http.MethodPatch,
 			Path:   "/v1/instance/organization_settings",
 		},
