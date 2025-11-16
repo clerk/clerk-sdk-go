@@ -20,6 +20,7 @@ type OrganizationInvitation struct {
 	OrganizationID         string                  `json:"organization_id"`
 	InviterID              string                  `json:"inviter_id"`
 	PublicOrganizationData *PublicOrganizationData `json:"public_organization_data,omitempty"`
+	PublicInviterData      *PublicInviterData      `json:"public_inviter_data,omitempty"`
 	Status                 string                  `json:"status"`
 	PublicMetadata         json.RawMessage         `json:"public_metadata"`
 	PrivateMetadata        json.RawMessage         `json:"private_metadata"`
@@ -32,4 +33,13 @@ type OrganizationInvitationList struct {
 	APIResource
 	OrganizationInvitations []*OrganizationInvitation `json:"data"`
 	TotalCount              int64                     `json:"total_count"`
+}
+
+type PublicInviterData struct {
+	UserID     string  `json:"user_id"`
+	FirstName  *string `json:"first_name"`
+	LastName   *string `json:"last_name"`
+	ImageURL   *string `json:"image_url"`
+	HasImage   bool    `json:"has_image"`
+	Identifier string  `json:"identifier"`
 }
