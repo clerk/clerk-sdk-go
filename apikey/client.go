@@ -47,6 +47,18 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.APIKe
 	return resource, err
 }
 
+// Get returns an API key
+func (c *Client) Get(ctx context.Context, apiKeyID string) (*clerk.APIKey, error) {
+	path, err := clerk.JoinPath(path, apiKeyID)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	resource := &clerk.APIKey{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
@@ -120,6 +132,18 @@ func (c *Client) Update(ctx context.Context, apiKeyID string, params *UpdatePara
 	req := clerk.NewAPIRequest(http.MethodPatch, path)
 	req.SetParams(params)
 	resource := &clerk.APIKey{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
+// Delete deletes an API key
+func (c *Client) Delete(ctx context.Context, apiKeyID string) (*clerk.DeletedResource, error) {
+	path, err := clerk.JoinPath(path, apiKeyID)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	resource := &clerk.DeletedResource{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
