@@ -13,6 +13,11 @@ func Create(ctx context.Context, params *CreateParams) (*clerk.APIKeyWithSecret,
 	return getClient().Create(ctx, params)
 }
 
+// Get returns an API key
+func Get(ctx context.Context, apiKeyID string) (*clerk.APIKey, error) {
+	return getClient().Get(ctx, apiKeyID)
+}
+
 // List returns a list of API keys.
 func List(ctx context.Context, params *ListParams) (*clerk.APIKeyList, error) {
 	return getClient().List(ctx, params)
@@ -26,6 +31,11 @@ func GetSecret(ctx context.Context, apiKeyID string) (*APIKeySecret, error) {
 // Update updates an API key.
 func Update(ctx context.Context, apiKeyID string, params *UpdateParams) (*clerk.APIKey, error) {
 	return getClient().Update(ctx, apiKeyID, params)
+}
+
+// Delete deletes an API key
+func Delete(ctx context.Context, apiKeyID string) (*clerk.DeletedResource, error) {
+	return getClient().Delete(ctx, apiKeyID)
 }
 
 // Revoke revokes an API key.
