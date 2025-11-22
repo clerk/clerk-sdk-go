@@ -20,13 +20,15 @@ type OrganizationInvitation struct {
 	OrganizationID         string                  `json:"organization_id"`
 	InviterID              string                  `json:"inviter_id"`
 	PublicOrganizationData *PublicOrganizationData `json:"public_organization_data,omitempty"`
-	PublicInviterData      *PublicInviterData      `json:"public_inviter_data,omitempty"`
-	Status                 string                  `json:"status"`
-	PublicMetadata         json.RawMessage         `json:"public_metadata"`
-	PrivateMetadata        json.RawMessage         `json:"private_metadata"`
-	ExpiresAt              *int64                  `json:"expires_at,omitempty"`
-	CreatedAt              int64                   `json:"created_at"`
-	UpdatedAt              int64                   `json:"updated_at"`
+
+	// note: PublicInviterData is only returned when the invitation was made by via the Clerk Frontend API.
+	PublicInviterData *PublicInviterData `json:"public_inviter_data,omitempty"`
+	Status            string             `json:"status"`
+	PublicMetadata    json.RawMessage    `json:"public_metadata"`
+	PrivateMetadata   json.RawMessage    `json:"private_metadata"`
+	ExpiresAt         *int64             `json:"expires_at,omitempty"`
+	CreatedAt         int64              `json:"created_at"`
+	UpdatedAt         int64              `json:"updated_at"`
 }
 
 type OrganizationInvitationList struct {
