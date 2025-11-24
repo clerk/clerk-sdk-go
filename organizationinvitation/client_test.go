@@ -79,7 +79,7 @@ func TestOrganizationInvitationClientList(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"data":[{"id":"%s","object":"organization_invitation","email_address":"string","role":"string","organization_id":"%s","inviter_id":"%s","status":"string","public_metadata":{},"private_metadata":{},"expires_at":1,"created_at":0,"updated_at":0}],"total_count":1}`, id, organizationID, inviterID)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"data":[{"id":"%s","object":"organization_invitation","email_address":"string","role":"string","organization_id":"%s","inviter_id":"%s","status":"string","public_metadata":{},"private_metadata":{},"expires_at":1,"created_at":0,"updated_at":0,"public_inviter_data":{"user_id":"inviter_123"}}],"total_count":1}`, id, organizationID, inviterID)),
 			Method: http.MethodGet,
 			Path:   "/v1/organizations/" + organizationID + "/invitations",
 			Query: &url.Values{
@@ -106,6 +106,7 @@ func TestOrganizationInvitationClientList(t *testing.T) {
 	require.Equal(t, organizationID, response.OrganizationInvitations[0].OrganizationID)
 	require.Equal(t, inviterID, response.OrganizationInvitations[0].InviterID)
 	require.Equal(t, int64(1), *response.OrganizationInvitations[0].ExpiresAt)
+	require.Equal(t, "inviter_123", response.OrganizationInvitations[0].PublicInviterData.UserID)
 	require.Equal(t, int64(1), response.TotalCount)
 }
 
@@ -143,7 +144,7 @@ func TestOrganizationInvitationClientGet(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"organization_invitation","email_address":"string","role":"string","role_name":"string","organization_id":"%s","inviter_id":"%s","status":"string","public_metadata":{},"private_metadata":{},"expires_at": 1,"created_at":0,"updated_at":0}`, id, organizationID, inviterID)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"organization_invitation","email_address":"string","role":"string","role_name":"string","organization_id":"%s","inviter_id":"%s","status":"string","public_metadata":{},"private_metadata":{},"expires_at": 1,"created_at":0,"updated_at":0,"public_inviter_data":{"user_id":"inviter_123"}}`, id, organizationID, inviterID)),
 			Method: http.MethodGet,
 			Path:   "/v1/organizations/" + organizationID + "/invitations/" + id,
 		},
@@ -159,6 +160,7 @@ func TestOrganizationInvitationClientGet(t *testing.T) {
 	require.Equal(t, inviterID, response.InviterID)
 	require.Equal(t, "string", response.RoleName)
 	require.Equal(t, "string", response.Role)
+	require.Equal(t, "inviter_123", response.PublicInviterData.UserID)
 	require.Equal(t, int64(1), *response.ExpiresAt)
 }
 
@@ -253,7 +255,7 @@ func TestOrganizationInvitationClientListFromInstance(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(`{"data":[{"id":"orginv_123","object":"organization_invitation","email_address":"string","role":"string","organization_id":"org_123","status":"string","public_metadata":{},"private_metadata":{},"created_at":0,"updated_at":0}],"total_count":1}`),
+			Out:    json.RawMessage(`{"data":[{"id":"orginv_123","object":"organization_invitation","email_address":"string","role":"string","organization_id":"org_123","status":"string","public_metadata":{},"private_metadata":{},"created_at":0,"updated_at":0,"public_inviter_data":{"user_id":"inviter_123"}}],"total_count":1}`),
 			Method: http.MethodGet,
 			Path:   "/v1/organization_invitations",
 			Query: &url.Values{
@@ -277,6 +279,7 @@ func TestOrganizationInvitationClientListFromInstance(t *testing.T) {
 	require.Len(t, response.OrganizationInvitations, 1)
 	require.Equal(t, int64(1), response.TotalCount)
 	require.Equal(t, "orginv_123", response.OrganizationInvitations[0].ID)
+	require.Equal(t, "inviter_123", response.OrganizationInvitations[0].PublicInviterData.UserID)
 }
 
 func TestOrganizationInvitationClientListFromInstance_Error(t *testing.T) {
