@@ -119,7 +119,7 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.Organizat
 
 // AssignPermission assigns a permission to an organization role.
 func (c *Client) AssignPermission(ctx context.Context, roleID, permissionID string) (*clerk.OrganizationRole, error) {
-	path, err := clerk.JoinPath(path, roleID, "/permissions/", permissionID)
+	path, err := clerk.JoinPath(path, roleID, "/permissions", permissionID)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func (c *Client) AssignPermission(ctx context.Context, roleID, permissionID stri
 
 // RemovePermission removes a permission from an organization role.
 func (c *Client) RemovePermission(ctx context.Context, roleID, permissionID string) (*clerk.OrganizationRole, error) {
-	path, err := clerk.JoinPath(path, roleID, "/permissions/", permissionID)
+	path, err := clerk.JoinPath(path, roleID, "/permissions", permissionID)
 	if err != nil {
 		return nil, err
 	}
