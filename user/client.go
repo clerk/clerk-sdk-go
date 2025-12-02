@@ -594,7 +594,7 @@ type PasswordUntrustedParams struct {
 	UserID string `json:"user_id"`
 }
 
-// DeleteExternalAccount deletes an external account by its ID.
+// PasswordUntrusted marks the user's password as untrusted.
 func (c *Client) PasswordUntrusted(ctx context.Context, params *PasswordUntrustedParams) (*clerk.User, error) {
 	path, err := clerk.JoinPath(path, params.UserID, "/password_untrusted")
 	if err != nil {

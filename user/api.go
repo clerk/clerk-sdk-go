@@ -126,7 +126,7 @@ func DeleteExternalAccount(ctx context.Context, params *DeleteExternalAccountPar
 	return getClient().DeleteExternalAccount(ctx, params)
 }
 
-// DeleteExternalAccount deletes an external account by its ID.
+// PasswordUntrusted marks the user's password as untrusted.
 func PasswordUntrusted(ctx context.Context, params *PasswordUntrustedParams) (*clerk.User, error) {
 	return getClient().PasswordUntrusted(ctx, params)
 }
