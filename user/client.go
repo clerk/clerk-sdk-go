@@ -600,7 +600,7 @@ func (c *Client) PasswordUntrusted(ctx context.Context, params *PasswordUntruste
 	if err != nil {
 		return nil, err
 	}
-	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	req := clerk.NewAPIRequest(http.MethodPost, path)
 	resource := &clerk.User{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
