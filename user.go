@@ -47,6 +47,7 @@ type User struct {
 	MFADisabledAt                 *int64                    `json:"mfa_disabled_at"`
 	LegalAcceptedAt               *int64                    `json:"legal_accepted_at"`
 	Locale                        *string                   `json:"locale"`
+	RequiresPasswordReset         bool                      `json:"requires_password_reset"`
 }
 
 type ExternalAccount struct {

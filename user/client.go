@@ -588,3 +588,20 @@ func (c *Client) DeleteExternalAccount(ctx context.Context, params *DeleteExtern
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
+
+type PasswordUntrustedParams struct {
+	clerk.APIParams
+	UserID string `json:"user_id"`
+}
+
+// DeleteExternalAccount deletes an external account by its ID.
+func (c *Client) PasswordUntrusted(ctx context.Context, params *PasswordUntrustedParams) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, params.UserID, "/password_untrusted")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	resource := &clerk.User{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
