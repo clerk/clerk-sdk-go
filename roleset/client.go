@@ -144,7 +144,8 @@ func (c *Client) AddRoles(ctx context.Context, roleSetKeyOrID string, params *Ad
 
 type RemoveRoleParams struct {
 	clerk.APIParams
-	RoleKey string `json:"role_key,omitempty"`
+	RoleKey   string `json:"role_key,omitempty"`
+	ToRoleKey string `json:"to_role_key,omitempty"`
 }
 
 // RemoveRoles removes roles from a role set.
