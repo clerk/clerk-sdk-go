@@ -11,6 +11,7 @@ type Organization struct {
 	ImageURL                             *string         `json:"image_url"`
 	HasImage                             bool            `json:"has_image"`
 	MembersCount                         *int64          `json:"members_count,omitempty"`
+	RoleSet                              *RoleSet        `json:"role_set,omitempty"`
 	MissingMemberWithElevatedPermissions *bool           `json:"missing_member_with_elevated_permissions,omitempty"`
 	PendingInvitationsCount              *int64          `json:"pending_invitations_count,omitempty"`
 	MaxAllowedMemberships                int64           `json:"max_allowed_memberships"`
