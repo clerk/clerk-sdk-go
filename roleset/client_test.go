@@ -180,8 +180,8 @@ func TestRoleSetClient_RemoveRoles(t *testing.T) {
 			T:      t,
 			In:     json.RawMessage(`{"role_key":"role:admin"}`),
 			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
-			Method: http.MethodDelete,
-			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles",
+			Method: http.MethodPost,
+			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles/replace",
 		},
 	}
 	client := NewClient(config)
@@ -205,8 +205,8 @@ func TestRoleSetClient_RemoveRoleWithToRoleKey(t *testing.T) {
 			T:      t,
 			In:     json.RawMessage(`{"role_key":"role:admin","to_role_key":"role:member"}`),
 			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[{"object":"role_set_item","id":"role_456","name":"Member","key":"role:member","description":"Member role","created_at":1234567890,"updated_at":1234567890}],"default_role":{"object":"role_set_item","id":"role_456","name":"Member","key":"role:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
-			Method: http.MethodDelete,
-			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles",
+			Method: http.MethodPost,
+			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles/replace",
 		},
 	}
 	client := NewClient(config)

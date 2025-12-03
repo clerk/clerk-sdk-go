@@ -150,11 +150,11 @@ type RemoveRoleParams struct {
 
 // RemoveRoles removes roles from a role set.
 func (c *Client) RemoveRole(ctx context.Context, roleSetKeyOrID string, params *RemoveRoleParams) (*clerk.RoleSet, error) {
-	path, err := clerk.JoinPath(path, roleSetKeyOrID, "/roles")
+	path, err := clerk.JoinPath(path, roleSetKeyOrID, "/roles", "/replace")
 	if err != nil {
 		return nil, err
 	}
-	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
 	roleSet := &clerk.RoleSet{}
 	err = c.Backend.Call(ctx, req, roleSet)
