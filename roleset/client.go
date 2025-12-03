@@ -142,13 +142,13 @@ func (c *Client) AddRoles(ctx context.Context, roleSetKeyOrID string, params *Ad
 	return roleSet, err
 }
 
-type RemoveRolesParams struct {
+type RemoveRoleParams struct {
 	clerk.APIParams
-	RoleKeys []string `json:"role_keys,omitempty"`
+	RoleKey string `json:"role_key,omitempty"`
 }
 
 // RemoveRoles removes roles from a role set.
-func (c *Client) RemoveRoles(ctx context.Context, roleSetKeyOrID string, params *RemoveRolesParams) (*clerk.RoleSet, error) {
+func (c *Client) RemoveRole(ctx context.Context, roleSetKeyOrID string, params *RemoveRoleParams) (*clerk.RoleSet, error) {
 	path, err := clerk.JoinPath(path, roleSetKeyOrID, "/roles")
 	if err != nil {
 		return nil, err
