@@ -172,21 +172,21 @@ func TestRoleSetClient_AddRoles(t *testing.T) {
 func TestRoleSetClient_RemoveRoles(t *testing.T) {
 	roleSetKey := "admin-roles"
 	roleSetID := "role_set_2b6E7b8FdHPjQKsrrakHLUPOzKe"
-	roleKeys := []string{"role:admin"}
+	roleKey := "role:admin"
 
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"role_keys":["role:admin"]}`),
+			In:     json.RawMessage(`{"role_key":"role:admin"}`),
 			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
 			Method: http.MethodDelete,
 			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles",
 		},
 	}
 	client := NewClient(config)
-	roleSet, err := client.RemoveRoles(context.Background(), roleSetKey, &RemoveRolesParams{
-		RoleKeys: roleKeys,
+	roleSet, err := client.RemoveRole(context.Background(), roleSetKey, &RemoveRoleParams{
+		RoleKey: roleKey,
 	})
 	require.NoError(t, err)
 	assert.Equal(t, roleSetID, roleSet.ID)

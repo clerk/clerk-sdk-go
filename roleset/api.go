@@ -39,8 +39,8 @@ func AddRoles(ctx context.Context, roleSetKeyOrID string, params *AddRolesParams
 }
 
 // RemoveRoles removes roles from a role set.
-func RemoveRoles(ctx context.Context, roleSetKeyOrID string, params *RemoveRolesParams) (*clerk.RoleSet, error) {
-	return getClient().RemoveRoles(ctx, roleSetKeyOrID, params)
+func RemoveRoles(ctx context.Context, roleSetKeyOrID string, params *RemoveRoleParams) (*clerk.RoleSet, error) {
+	return getClient().RemoveRole(ctx, roleSetKeyOrID, params)
 }
 
 func getClient() *Client {
