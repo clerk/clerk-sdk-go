@@ -184,7 +184,8 @@ func TestSAMLConnectionsService_Delete(t *testing.T) {
 }
 
 const (
-	dummySAMLConnectionID = "samlc_2P17P4pXsx8MmunM1pkeYeimDDd"
+	dummySAMLConnectionID       = "samlc_2P17P4pXsx8MmunM1pkeYeimDDd"
+	dummyEnterpriseConnectionID = "entc_2Tm3h1gBPzEMXUpG9FXYgK4LX4M"
 
 	dummySAMLConnectionJSON = `
 {
@@ -192,6 +193,7 @@ const (
 	"id": "` + dummySAMLConnectionID + `",
     "name": "Testing SAML",
     "domain": "example.com",
+	"enterprise_connection_id": "` + dummyEnterpriseConnectionID + `",
 	"idp_entity_id": "test-idp-entity-id",
 	"idp_sso_url": "https://example.com/saml/sso",
 	"idp_certificate": "` + dummySAMLConnectionCertificate + `",
@@ -219,6 +221,7 @@ const (
 	"id": "` + dummySAMLConnectionID + `",
     "name": "New name for Testing SAML",
     "domain": "example.com",
+	"enterprise_connection_id": "` + dummyEnterpriseConnectionID + `",
 	"idp_entity_id": "test-idp-entity-id",
 	"idp_sso_url": "https://example.com/saml/sso",
 	"idp_certificate": "` + dummySAMLConnectionCertificate + `",
