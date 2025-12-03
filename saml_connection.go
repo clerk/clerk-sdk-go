@@ -10,6 +10,7 @@ type SAMLConnection struct {
 	Domains                          []string                       `json:"domains"`
 	IdpEntityID                      *string                        `json:"idp_entity_id"`
 	OrganizationID                   *string                        `json:"organization_id"`
+	EnterpriseConnectionID           *string                        `json:"enterprise_connection_id"`
 	IdpSsoURL                        *string                        `json:"idp_sso_url"`
 	IdpCertificate                   *string                        `json:"idp_certificate"`
 	IdpMetadataURL                   *string                        `json:"idp_metadata_url"`

@@ -146,7 +146,7 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t, "force_authn": %t}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t, "force_authn": %t, "enterprise_connection_id": "entconn_2abc123def456"}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
 			Method: http.MethodGet,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -176,7 +176,7 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 		Transport: &clerktest.RoundTripper{
 			T:      t,
 			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t}`, name, disableAdditionalIdentifications, forceAuthn)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t, "enterprise_connection_id": null}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
 			Method: http.MethodPatch,
 			Path:   "/v1/saml_connections/" + id,
 		},
