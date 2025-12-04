@@ -661,14 +661,14 @@ func TestUserClientPasswordUntrusted(t *testing.T) {
 			T:      t,
 			Method: http.MethodPost,
 			Out:    json.RawMessage(fmt.Sprintf(`{"user_id":"%s"}`, userID)),
-			Path:   fmt.Sprintf("/v1/users/%s/password_untrusted", userID),
+			Path:   fmt.Sprintf("/v1/users/%s/password_compromised", userID),
 		},
 	}
 	client := NewClient(config)
-	user, err := client.PasswordUntrusted(context.Background(), &PasswordUntrustedParams{
+	user, err := client.PasswordCompromised(context.Background(), &PasswordCompromisedParams{
 		UserID: userID,
 	})
 	require.NoError(t, err)
 	require.Equal(t, userID, user.ID)
-	require.True(t, user.RequiresPasswordReset)
+	require.True(t, *user.RequiresPasswordReset)
 }
