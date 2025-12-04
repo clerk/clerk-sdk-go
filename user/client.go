@@ -589,14 +589,14 @@ func (c *Client) DeleteExternalAccount(ctx context.Context, params *DeleteExtern
 	return resource, err
 }
 
-type PasswordUntrustedParams struct {
+type PasswordCompromisedParams struct {
 	clerk.APIParams
 	UserID string `json:"user_id"`
 }
 
-// PasswordUntrusted marks the user's password as untrusted.
-func (c *Client) PasswordUntrusted(ctx context.Context, params *PasswordUntrustedParams) (*clerk.User, error) {
-	path, err := clerk.JoinPath(path, params.UserID, "/password_untrusted")
+// PasswordCompromised marks the user's password as compromised.
+func (c *Client) PasswordCompromised(ctx context.Context, params *PasswordCompromisedParams) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, params.UserID, "/password_compromised")
 	if err != nil {
 		return nil, err
 	}
