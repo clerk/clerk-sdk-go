@@ -602,8 +602,8 @@ func (c *Client) PasswordCompromised(ctx context.Context, params *PasswordCompro
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPost, path)
-	resource := &clerk.User{}
 	req.SetParams(params)
+	resource := &clerk.User{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
