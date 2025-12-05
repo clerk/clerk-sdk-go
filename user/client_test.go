@@ -651,3 +651,22 @@ func TestUserClientDeleteExternalAccount(t *testing.T) {
 	require.Equal(t, externalAccountID, externalAccount.ID)
 	require.Equal(t, "external_account", externalAccount.Object)
 }
+
+func TestUserClientPasswordCompromised(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Method: http.MethodPost,
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"user","id":"%s","requires_password_reset":true}`, userID)),
+			Path:   fmt.Sprintf("/v1/users/%s/password_compromised", userID),
+		},
+	}
+	client := NewClient(config)
+	user, err := client.PasswordCompromised(context.Background(), userID)
+	require.NoError(t, err)
+	require.Equal(t, userID, user.ID)
+	require.True(t, *user.RequiresPasswordReset)
+}

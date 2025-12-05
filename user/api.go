@@ -126,6 +126,11 @@ func DeleteExternalAccount(ctx context.Context, params *DeleteExternalAccountPar
 	return getClient().DeleteExternalAccount(ctx, params)
 }
 
+// PasswordCompromised marks the user's password as compromised.
+func PasswordCompromised(ctx context.Context, userID string) (*clerk.User, error) {
+	return getClient().PasswordCompromised(ctx, userID)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),

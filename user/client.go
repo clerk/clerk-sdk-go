@@ -588,3 +588,15 @@ func (c *Client) DeleteExternalAccount(ctx context.Context, params *DeleteExtern
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
+
+// PasswordCompromised marks the user's password as compromised.
+func (c *Client) PasswordCompromised(ctx context.Context, userID string) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, userID, "/password_compromised")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	resource := &clerk.User{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
