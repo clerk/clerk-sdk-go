@@ -103,13 +103,18 @@ func TestRoleSetClient_Delete(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","deleted":true}`, roleSetID)),
-			Method: http.MethodDelete,
-			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","deleted":true,"reassignment_mappings":{"org:member":"org:admin"},"dest_role_set_key":"admin-roles"}`, roleSetID)),
+			Method: http.MethodPost,
+			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/replace",
 		},
 	}
 	client := NewClient(config)
-	deletedResource, err := client.Delete(context.Background(), roleSetKey)
+	deletedResource, err := client.Delete(context.Background(), roleSetKey, &DeleteParams{
+		ReassignmentMappings: &clerk.ReassignmentMappings{
+			"org:member": "org:admin",
+		},
+		DestRoleSetKey: clerk.String("admin-roles"),
+	})
 	require.NoError(t, err)
 	assert.Equal(t, roleSetID, deletedResource.ID)
 	assert.True(t, deletedResource.Deleted)
