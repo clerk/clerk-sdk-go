@@ -665,7 +665,10 @@ func TestUserClientPasswordCompromised(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	user, err := client.PasswordCompromised(context.Background(), userID)
+	user, err := client.PasswordCompromised(context.Background(), &PasswordCompromisedParams{
+		UserID:            userID,
+		RevokeAllSessions: clerk.Bool(true),
+	})
 	require.NoError(t, err)
 	require.Equal(t, userID, user.ID)
 	require.True(t, *user.RequiresPasswordReset)
