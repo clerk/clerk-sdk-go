@@ -141,7 +141,7 @@ func TestOrganizationClientUpdate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s"}`, name)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","reassignment_mappings":{"org:member":"org:admin"},"role_set_key":"admin-roles"}`, name)),
 			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s"}`, id, name)),
 			Method: http.MethodPatch,
 			Path:   "/v1/organizations/" + id,
@@ -150,6 +150,10 @@ func TestOrganizationClientUpdate(t *testing.T) {
 	client := NewClient(config)
 	organization, err := client.Update(context.Background(), id, &UpdateParams{
 		Name: clerk.String(name),
+		ReassignmentMappings: &clerk.ReassignmentMappings{
+			"org:member": "org:admin",
+		},
+		RoleSetKey: clerk.String("admin-roles"),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, organization.ID)

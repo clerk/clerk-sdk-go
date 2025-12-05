@@ -82,13 +82,20 @@ func (c *Client) Update(ctx context.Context, roleSetKeyOrID string, params *Upda
 	return roleSet, err
 }
 
+type DeleteParams struct {
+	clerk.APIParams
+	ReassignmentMappings *clerk.ReassignmentMappings `json:"reassignment_mappings,omitempty"`
+	DestRoleSetKey       *string                     `json:"dest_role_set_key,omitempty"`
+}
+
 // Delete removes a role set.
-func (c *Client) Delete(ctx context.Context, roleSetKeyOrID string) (*clerk.DeletedResource, error) {
-	path, err := clerk.JoinPath(path, roleSetKeyOrID)
+func (c *Client) Delete(ctx context.Context, roleSetKeyOrID string, params *DeleteParams) (*clerk.DeletedResource, error) {
+	path, err := clerk.JoinPath(path, roleSetKeyOrID, "/replace")
 	if err != nil {
 		return nil, err
 	}
-	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
 	deletedResource := &clerk.DeletedResource{}
 	err = c.Backend.Call(ctx, req, deletedResource)
 	return deletedResource, err

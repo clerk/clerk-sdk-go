@@ -24,8 +24,8 @@ func Update(ctx context.Context, roleSetKeyOrID string, params *UpdateParams) (*
 }
 
 // Delete removes a role set.
-func Delete(ctx context.Context, roleSetKeyOrID string) (*clerk.DeletedResource, error) {
-	return getClient().Delete(ctx, roleSetKeyOrID)
+func Delete(ctx context.Context, roleSetKeyOrID string, params *DeleteParams) (*clerk.DeletedResource, error) {
+	return getClient().Delete(ctx, roleSetKeyOrID, params)
 }
 
 // List returns a list of role sets.
@@ -39,7 +39,7 @@ func AddRoles(ctx context.Context, roleSetKeyOrID string, params *AddRolesParams
 }
 
 // RemoveRoles removes roles from a role set.
-func RemoveRoles(ctx context.Context, roleSetKeyOrID string, params *RemoveRoleParams) (*clerk.RoleSet, error) {
+func RemoveRole(ctx context.Context, roleSetKeyOrID string, params *RemoveRoleParams) (*clerk.RoleSet, error) {
 	return getClient().RemoveRole(ctx, roleSetKeyOrID, params)
 }
 

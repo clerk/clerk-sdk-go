@@ -80,15 +80,16 @@ func (c *Client) Get(ctx context.Context, idOrSlug string, params *GetParams) (*
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name                  *string `json:"name,omitempty"`
-	Slug                  *string `json:"slug,omitempty"`
-	MaxAllowedMemberships *int64  `json:"max_allowed_memberships,omitempty"`
-	// RoleSetKey is a preview field and is not available yet for all customers.
+	Name                  *string          `json:"name,omitempty"`
+	Slug                  *string          `json:"slug,omitempty"`
+	MaxAllowedMemberships *int64           `json:"max_allowed_memberships,omitempty"`
+	PublicMetadata        *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata       *json.RawMessage `json:"private_metadata,omitempty"`
+	AdminDeleteEnabled    *bool            `json:"admin_delete_enabled,omitempty"`
+	// RoleSetKey and ReassignmentMappings are preview fields and are not available yet for all customers.
 	// The use of this field will cause an error to be returned.
-	RoleSetKey         *string          `json:"role_set_key,omitempty"`
-	PublicMetadata     *json.RawMessage `json:"public_metadata,omitempty"`
-	PrivateMetadata    *json.RawMessage `json:"private_metadata,omitempty"`
-	AdminDeleteEnabled *bool            `json:"admin_delete_enabled,omitempty"`
+	RoleSetKey           *string                     `json:"role_set_key,omitempty"`
+	ReassignmentMappings *clerk.ReassignmentMappings `json:"reassignment_mappings,omitempty"`
 }
 
 // Update updates an organization.

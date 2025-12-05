@@ -29,3 +29,7 @@ type OrganizationList struct {
 	Organizations []*Organization `json:"data"`
 	TotalCount    int64           `json:"total_count"`
 }
+
+// ReassignmentMappings is a map of role keys to the new role key.
+// NOTE: This is a preview struct and is not available yet for all customers.
+type ReassignmentMappings map[string]string
