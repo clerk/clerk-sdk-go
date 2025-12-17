@@ -102,15 +102,15 @@ func (c *Client) UpdateRestrictions(ctx context.Context, params *UpdateRestricti
 
 type UpdateOrganizationSettingsParams struct {
 	clerk.APIParams
-	Enabled                      *bool                                         `json:"enabled,omitempty"`
-	MaxAllowedMemberships        *int64                                        `json:"max_allowed_memberships,omitempty"`
-	CreatorRoleID                *string                                       `json:"creator_role_id,omitempty"`
-	AdminDeleteEnabled           *bool                                         `json:"admin_delete_enabled,omitempty"`
-	DomainsEnabled               *bool                                         `json:"domains_enabled,omitempty"`
-	SlugDisabled                 *bool                                         `json:"slug_disabled,omitempty"`
-	DomainsEnrollmentModes       *[]string                                     `json:"domains_enrollment_modes,omitempty"`
-	DomainsDefaultRoleID         *string                                       `json:"domains_default_role_id,omitempty"`
-	OrganizationCreationDefaults *UpdateOrganizationCreationDefaultsParams    `json:"default_organization_naming,omitempty"`
+	Enabled                      *bool                                     `json:"enabled,omitempty"`
+	MaxAllowedMemberships        *int64                                    `json:"max_allowed_memberships,omitempty"`
+	CreatorRoleID                *string                                   `json:"creator_role_id,omitempty"`
+	AdminDeleteEnabled           *bool                                     `json:"admin_delete_enabled,omitempty"`
+	DomainsEnabled               *bool                                     `json:"domains_enabled,omitempty"`
+	SlugDisabled                 *bool                                     `json:"slug_disabled,omitempty"`
+	DomainsEnrollmentModes       *[]string                                 `json:"domains_enrollment_modes,omitempty"`
+	DomainsDefaultRoleID         *string                                   `json:"domains_default_role_id,omitempty"`
+	OrganizationCreationDefaults *UpdateOrganizationCreationDefaultsParams `json:"default_organization_naming,omitempty"`
 	// This feature is currently in beta and is not yet available for all instances.
 	// do not use this feature in production.
 	ForceOrganizationSelection *bool   `json:"force_organization_selection,omitempty"`
@@ -118,7 +118,7 @@ type UpdateOrganizationSettingsParams struct {
 }
 
 type UpdateOrganizationCreationDefaultsParams struct {
-	Enabled                       *bool                                         `json:"enabled,omitempty"`
+	Enabled                       *bool                                        `json:"enabled,omitempty"`
 	AutomaticOrganizationCreation *AutomaticOrganizationCreationSettingsParams `json:"automatic_organization_creation,omitempty"`
 	DetectFromEmailDomain         *DetectFromEmailDomainSettingsParams         `json:"detect_from_email_domain,omitempty"`
 	OrganizationNameTemplate      *OrganizationNameTemplateSettingsParams      `json:"organization_name_template,omitempty"`
