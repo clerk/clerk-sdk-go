@@ -661,15 +661,34 @@ func TestUserClientPasswordCompromised(t *testing.T) {
 			T:      t,
 			Method: http.MethodPost,
 			Out:    json.RawMessage(fmt.Sprintf(`{"object":"user","id":"%s","requires_password_reset":true}`, userID)),
-			Path:   fmt.Sprintf("/v1/users/%s/password_compromised", userID),
+			Path:   fmt.Sprintf("/v1/users/%s/password/set_compromised", userID),
 		},
 	}
 	client := NewClient(config)
-	user, err := client.PasswordCompromised(context.Background(), &PasswordCompromisedParams{
+	user, err := client.SetPasswordCompromised(context.Background(), &SetPasswordCompromisedParams{
 		UserID:            userID,
 		RevokeAllSessions: clerk.Bool(true),
 	})
 	require.NoError(t, err)
 	require.Equal(t, userID, user.ID)
 	require.True(t, *user.RequiresPasswordReset)
+}
+
+func TestUserClientUnsetPasswordCompromised(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Method: http.MethodPost,
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"user","id":"%s","requires_password_reset":false}`, userID)),
+			Path:   fmt.Sprintf("/v1/users/%s/password/unset_compromised", userID),
+		},
+	}
+	client := NewClient(config)
+	user, err := client.UnsetPasswordCompromised(context.Background(), userID)
+	require.NoError(t, err)
+	require.Equal(t, userID, user.ID)
+	require.False(t, *user.RequiresPasswordReset)
 }
