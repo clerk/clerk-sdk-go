@@ -589,20 +589,32 @@ func (c *Client) DeleteExternalAccount(ctx context.Context, params *DeleteExtern
 	return resource, err
 }
 
-type PasswordCompromisedParams struct {
+type SetPasswordCompromisedParams struct {
 	clerk.APIParams
 	UserID            string `json:"-"`
 	RevokeAllSessions *bool  `json:"revoke_all_sessions,omitempty"`
 }
 
-// PasswordCompromised marks the user's password as compromised.
-func (c *Client) PasswordCompromised(ctx context.Context, params *PasswordCompromisedParams) (*clerk.User, error) {
-	path, err := clerk.JoinPath(path, params.UserID, "/password_compromised")
+// SetPasswordCompromised sets the user's password as compromised.
+func (c *Client) SetPasswordCompromised(ctx context.Context, params *SetPasswordCompromisedParams) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, params.UserID, "password", "set_compromised")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
+	resource := &clerk.User{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
+// UnsetPasswordCompromised unsets the user's password as compromised.
+func (c *Client) UnsetPasswordCompromised(ctx context.Context, userID string) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, userID, "password", "unset_compromised")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
 	resource := &clerk.User{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
