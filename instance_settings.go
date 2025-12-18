@@ -26,7 +26,7 @@ type OrganizationSettings struct {
 	DomainsEnrollmentModes []string `json:"domains_enrollment_modes"`
 	DomainsDefaultRole     string   `json:"domains_default_role"`
 	// TODO(gabriel): remove Remove omitempty when feat is out
-	OrganizationCreationDefaults *OrganizationCreationDefaults `json:"default_organization_naming,omitempty"`
+	OrganizationCreationDefaults *OrganizationCreationDefaults `json:"organization_creation_defaults,omitempty"`
 	// TODO(nicolas): Remove omitempty when it's GA
 	InitialRoleSetKey *string `json:"initial_role_set_key,omitempty"`
 }
@@ -53,5 +53,5 @@ type OrganizationNameTemplateSettings struct {
 }
 
 type FallbackSettings struct {
-	Template string `json:"template"`
+	Name string `json:"name"`
 }

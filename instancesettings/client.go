@@ -110,7 +110,7 @@ type UpdateOrganizationSettingsParams struct {
 	SlugDisabled                 *bool                                     `json:"slug_disabled,omitempty"`
 	DomainsEnrollmentModes       *[]string                                 `json:"domains_enrollment_modes,omitempty"`
 	DomainsDefaultRoleID         *string                                   `json:"domains_default_role_id,omitempty"`
-	OrganizationCreationDefaults *UpdateOrganizationCreationDefaultsParams `json:"default_organization_naming,omitempty"`
+	OrganizationCreationDefaults *UpdateOrganizationCreationDefaultsParams `json:"organization_creation_defaults,omitempty"`
 	// This feature is currently in beta and is not yet available for all instances.
 	// do not use this feature in production.
 	ForceOrganizationSelection *bool   `json:"force_organization_selection,omitempty"`
@@ -139,7 +139,7 @@ type OrganizationNameTemplateSettingsParams struct {
 }
 
 type FallbackSettingsParams struct {
-	Template *string `json:"template,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // UpdateOrganizationSettings updates the organization settings of the instance.
