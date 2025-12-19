@@ -173,3 +173,47 @@ func TestInstanceClientUpdateOrganizationSettings_Error(t *testing.T) {
 	require.Equal(t, 1, len(apiErr.Errors))
 	require.Equal(t, "update-error-code", apiErr.Errors[0].Code)
 }
+
+func TestInstanceClientUpdateOrganizationSettingsWithCreationDefaults(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"enabled":true,"organization_creation_defaults":{"enabled":true,"automatic_organization_creation":{"enabled":true},"detect_from_email_domain":{"enabled":false},"organization_name_template":{"enabled":true,"template":"{{user.first_name}}'s Organization"},"fallback":{"name":"My Organization"}}}`),
+			Out:    json.RawMessage(`{"enabled":true,"max_allowed_memberships":3,"organization_creation_defaults":{"enabled":true,"automatic_organization_creation":{"enabled":true},"detect_from_email_domain":{"enabled":false},"organization_name_template":{"enabled":true,"template":"{{user.first_name}}'s Organization"},"fallback":{"name":"My Organization"}}}`),
+			Method: http.MethodPatch,
+			Path:   "/v1/instance/organization_settings",
+		},
+	}
+	client := NewClient(config)
+	orgSettings, err := client.UpdateOrganizationSettings(context.Background(), &UpdateOrganizationSettingsParams{
+		Enabled: clerk.Bool(true),
+		OrganizationCreationDefaults: &UpdateOrganizationCreationDefaultsParams{
+			Enabled: clerk.Bool(true),
+			AutomaticOrganizationCreation: &AutomaticOrganizationCreationSettingsParams{
+				Enabled: clerk.Bool(true),
+			},
+			DetectFromEmailDomain: &DetectFromEmailDomainSettingsParams{
+				Enabled: clerk.Bool(false),
+			},
+			OrganizationNameTemplate: &OrganizationNameTemplateSettingsParams{
+				Enabled:  clerk.Bool(true),
+				Template: clerk.String("{{user.first_name}}'s Organization"),
+			},
+			Fallback: &FallbackSettingsParams{
+				Name: clerk.String("My Organization"),
+			},
+		},
+	})
+	require.NoError(t, err)
+	require.True(t, orgSettings.Enabled)
+	require.Equal(t, int64(3), orgSettings.MaxAllowedMemberships)
+	require.NotNil(t, orgSettings.OrganizationCreationDefaults)
+	require.True(t, orgSettings.OrganizationCreationDefaults.Enabled)
+	require.True(t, orgSettings.OrganizationCreationDefaults.AutomaticOrganizationCreation.Enabled)
+	require.False(t, orgSettings.OrganizationCreationDefaults.DetectFromEmailDomain.Enabled)
+	require.True(t, orgSettings.OrganizationCreationDefaults.OrganizationNameTemplate.Enabled)
+	require.Equal(t, "{{user.first_name}}'s Organization", orgSettings.OrganizationCreationDefaults.OrganizationNameTemplate.Template)
+	require.Equal(t, "My Organization", orgSettings.OrganizationCreationDefaults.Fallback.Name)
+}

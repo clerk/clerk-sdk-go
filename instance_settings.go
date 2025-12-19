@@ -25,6 +25,33 @@ type OrganizationSettings struct {
 	SlugDisabled           bool     `json:"slug_disabled"`
 	DomainsEnrollmentModes []string `json:"domains_enrollment_modes"`
 	DomainsDefaultRole     string   `json:"domains_default_role"`
+	// TODO(gabriel): remove Remove omitempty when feat is out
+	OrganizationCreationDefaults *OrganizationCreationDefaults `json:"organization_creation_defaults,omitempty"`
 	// TODO(nicolas): Remove omitempty when it's GA
 	InitialRoleSetKey *string `json:"initial_role_set_key,omitempty"`
+}
+
+type OrganizationCreationDefaults struct {
+	Enabled                       bool                                  `json:"enabled"`
+	AutomaticOrganizationCreation AutomaticOrganizationCreationSettings `json:"automatic_organization_creation"`
+	DetectFromEmailDomain         DetectFromEmailDomainSettings         `json:"detect_from_email_domain"`
+	OrganizationNameTemplate      OrganizationNameTemplateSettings      `json:"organization_name_template"`
+	Fallback                      FallbackSettings                      `json:"fallback"`
+}
+
+type AutomaticOrganizationCreationSettings struct {
+	Enabled bool `json:"enabled"`
+}
+
+type DetectFromEmailDomainSettings struct {
+	Enabled bool `json:"enabled"`
+}
+
+type OrganizationNameTemplateSettings struct {
+	Enabled  bool   `json:"enabled"`
+	Template string `json:"template"`
+}
+
+type FallbackSettings struct {
+	Name string `json:"name"`
 }
