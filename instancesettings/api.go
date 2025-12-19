@@ -23,6 +23,11 @@ func UpdateOrganizationSettings(ctx context.Context, params *UpdateOrganizationS
 	return getClient().UpdateOrganizationSettings(ctx, params)
 }
 
+// GetOrganizationSettingsShortcodes returns the list of available template shortcodes.
+func GetOrganizationSettingsShortcodes(ctx context.Context) (clerk.OrganizationSettingsShortcodes, error) {
+	return getClient().GetOrganizationSettingsShortcodes(ctx)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),

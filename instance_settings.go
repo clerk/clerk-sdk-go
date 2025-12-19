@@ -1,5 +1,7 @@
 package clerk
 
+import "encoding/json"
+
 type InstanceRestrictions struct {
 	APIResource
 	Object                             string `json:"object"`
@@ -54,4 +56,14 @@ type OrganizationNameTemplateSettings struct {
 
 type FallbackSettings struct {
 	Name string `json:"name"`
+}
+
+// OrganizationSettingsShortcodes represents the list of available template shortcodes
+// for organization name templates.
+type OrganizationSettingsShortcodes []string
+
+// Read implements the ResponseReader interface by unmarshaling the JSON response
+// into the shortcodes slice.
+func (s *OrganizationSettingsShortcodes) Read(response *APIResponse) {
+	json.Unmarshal(response.RawJSON, s)
 }

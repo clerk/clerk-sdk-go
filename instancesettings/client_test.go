@@ -217,3 +217,28 @@ func TestInstanceClientUpdateOrganizationSettingsWithCreationDefaults(t *testing
 	require.Equal(t, "{{user.first_name}}'s Organization", orgSettings.OrganizationCreationDefaults.OrganizationNameTemplate.Template)
 	require.Equal(t, "My Organization", orgSettings.OrganizationCreationDefaults.Fallback.Name)
 }
+
+func TestInstanceClientGetOrganizationSettingsShortcodes(t *testing.T) {
+	t.Parallel()
+	shortcodes := []string{"user.first_name", "user.last_name", "user.full_name", "user.username"}
+	responseJSON, _ := json.Marshal(shortcodes)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(responseJSON),
+			Method: http.MethodGet,
+			Path:   "/v1/instance/organization_settings/shortcodes",
+		},
+	}
+
+	client := NewClient(config)
+	result, err := client.GetOrganizationSettingsShortcodes(context.Background())
+	require.NoError(t, err)
+	require.Len(t, result, 4)
+	require.Contains(t, result, "user.first_name")
+	require.Contains(t, result, "user.last_name")
+	require.Contains(t, result, "user.full_name")
+	require.Contains(t, result, "user.username")
+}

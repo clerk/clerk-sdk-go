@@ -154,3 +154,17 @@ func (c *Client) UpdateOrganizationSettings(ctx context.Context, params *UpdateO
 	err = c.Backend.Call(ctx, req, orgSettings)
 	return orgSettings, err
 }
+
+// GetOrganizationSettingsShortcodes returns the list of available template shortcodes
+// that can be used in organization name templates.
+func (c *Client) GetOrganizationSettingsShortcodes(ctx context.Context) (clerk.OrganizationSettingsShortcodes, error) {
+	path, err := clerk.JoinPath(path, "/organization_settings/shortcodes")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+
+	shortcodes := clerk.OrganizationSettingsShortcodes{}
+	err = c.Backend.Call(ctx, req, &shortcodes)
+	return shortcodes, err
+}
