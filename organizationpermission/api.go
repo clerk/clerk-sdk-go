@@ -5,7 +5,7 @@ package organizationpermission
 import (
 	"context"
 
-	"github.com/clerk/clerk-sdk-go/v3"
+	"github.com/clerk/clerk-sdk-go/v2"
 )
 
 // Create creates a new organization permission.
