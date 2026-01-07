@@ -34,6 +34,7 @@ type CreateParams struct {
 	// Roles are an array of role keys
 	Roles          *[]string `json:"roles,omitempty"`
 	DefaultRoleKey *string   `json:"default_role_key,omitempty"`
+	CreatorRoleKey *string   `json:"creator_role_key,omitempty"`
 }
 
 // Create creates a new role set.
@@ -67,6 +68,7 @@ type UpdateParams struct {
 	// the other "initial" role sets will be updated to "custom".
 	Type           *string `json:"type,omitempty"`
 	DefaultRoleKey *string `json:"default_role_key,omitempty"`
+	CreatorRoleKey *string `json:"creator_role_key,omitempty"`
 }
 
 // Update updates a role set.
@@ -134,6 +136,7 @@ type AddRolesParams struct {
 	clerk.APIParams
 	RoleKeys       []string `json:"role_keys,omitempty"`
 	DefaultRoleKey *string  `json:"default_role_key,omitempty"`
+	CreatorRoleKey *string  `json:"creator_role_key,omitempty"`
 }
 
 // AddRoles adds roles to a role set.
