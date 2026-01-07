@@ -24,8 +24,8 @@ func TestRoleSetClient_Create(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","key":"%s","description":"%s", "roles": ["org:member"], "type": "initial", "default_role_key": "org:member"}`, name, key, description)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"%s","key":"%s","description":"%s","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"type":"initial","created_at":1234567890,"updated_at":1234567890}`, roleSetID, name, key, description)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","key":"%s","description":"%s", "roles": ["org:member"], "type": "initial", "default_role_key": "org:member", "creator_role_key": "org:admin"}`, name, key, description)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"%s","key":"%s","description":"%s","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"creator_role":{"object":"role_set_item","id":"role_456","name":"Admin","key":"org:admin","description":"Creator admin role","created_at":1234567890,"updated_at":1234567890},"type":"initial","created_at":1234567890,"updated_at":1234567890}`, roleSetID, name, key, description)),
 			Method: http.MethodPost,
 			Path:   "/v1/role_sets",
 		},
@@ -38,6 +38,7 @@ func TestRoleSetClient_Create(t *testing.T) {
 		Roles:          &[]string{"org:member"},
 		Type:           clerk.String("initial"),
 		DefaultRoleKey: clerk.String("org:member"),
+		CreatorRoleKey: clerk.String("org:admin"),
 	})
 	require.NoError(t, err)
 	assert.Equal(t, roleSetID, roleSet.ID)
@@ -47,6 +48,9 @@ func TestRoleSetClient_Create(t *testing.T) {
 	assert.NotNil(t, roleSet.DefaultRole)
 	assert.Equal(t, "org:member", roleSet.DefaultRole.Key)
 	assert.Equal(t, "Member", roleSet.DefaultRole.Name)
+	assert.NotNil(t, roleSet.CreatorRole)
+	assert.Equal(t, "org:admin", roleSet.CreatorRole.Key)
+	assert.Equal(t, "Admin", roleSet.CreatorRole.Name)
 }
 
 func TestRoleSetClient_Get(t *testing.T) {
@@ -57,7 +61,7 @@ func TestRoleSetClient_Get(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","key":"%s","description":"Roles for administrative users","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"type":"initial","created_at":1234567890,"updated_at":1234567890}`, roleSetID, roleSetKey)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","key":"%s","description":"Roles for administrative users","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"creator_role":{"object":"role_set_item","id":"role_456","name":"Admin","key":"org:admin","description":"Creator admin role","created_at":1234567890,"updated_at":1234567890},"type":"initial","created_at":1234567890,"updated_at":1234567890}`, roleSetID, roleSetKey)),
 			Method: http.MethodGet,
 			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey),
 		},
@@ -78,8 +82,8 @@ func TestRoleSetClient_Update(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "type": "initial", "default_role_key": "org:admin"}`, newName)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"%s","key":"%s","description":"Roles for administrative users","roles":[],"default_role":{"object":"role_set_item","id":"role_456","name":"Admin","key":"org:admin","description":"Default admin role","created_at":1234567890,"updated_at":1234567890},"type":"initial","created_at":1234567890,"updated_at":1234567891}`, roleSetID, newName, roleSetKey)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "type": "initial", "default_role_key": "org:admin", "creator_role_key": "org:super_admin"}`, newName)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"%s","key":"%s","description":"Roles for administrative users","roles":[],"default_role":{"object":"role_set_item","id":"role_456","name":"Admin","key":"org:admin","description":"Default admin role","created_at":1234567890,"updated_at":1234567890},"creator_role":{"object":"role_set_item","id":"role_789","name":"Super Admin","key":"org:super_admin","description":"Creator super admin role","created_at":1234567890,"updated_at":1234567890},"type":"initial","created_at":1234567890,"updated_at":1234567891}`, roleSetID, newName, roleSetKey)),
 			Method: http.MethodPatch,
 			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey),
 		},
@@ -89,6 +93,7 @@ func TestRoleSetClient_Update(t *testing.T) {
 		Name:           clerk.String(newName),
 		Type:           clerk.String("initial"),
 		DefaultRoleKey: clerk.String("org:admin"),
+		CreatorRoleKey: clerk.String("org:super_admin"),
 	})
 	require.NoError(t, err)
 	assert.Equal(t, roleSetID, roleSet.ID)
@@ -130,8 +135,8 @@ func TestRoleSetClient_List(t *testing.T) {
 			T: t,
 			Out: json.RawMessage(fmt.Sprintf(`{
 				"data": [
-					{"object":"role_set","id":"%s","name":"Admin Role Set","key":"admin-roles","description":"Admin roles","type":"initial","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567890},
-					{"object":"role_set","id":"%s","name":"User Role Set","key":"user-roles","description":"User roles","type":"custom","roles":[],"default_role":{"object":"role_set_item","id":"role_456","name":"User","key":"org:user","description":"Default user role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567890}
+					{"object":"role_set","id":"%s","name":"Admin Role Set","key":"admin-roles","description":"Admin roles","type":"initial","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"creator_role":{"object":"role_set_item","id":"role_456","name":"Admin","key":"org:admin","description":"Creator admin role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567890},
+					{"object":"role_set","id":"%s","name":"User Role Set","key":"user-roles","description":"User roles","type":"custom","roles":[],"default_role":{"object":"role_set_item","id":"role_456","name":"User","key":"org:user","description":"Default user role","created_at":1234567890,"updated_at":1234567890},"creator_role":{"object":"role_set_item","id":"role_789","name":"Creator","key":"org:creator","description":"Creator role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567890}
 				],
 				"total_count": 2
 			}`, roleSet1ID, roleSet2ID)),
@@ -157,8 +162,8 @@ func TestRoleSetClient_AddRoles(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"role_keys":["role:admin","role:manager"], "default_role_key": "role:admin"}`),
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[{"object":"role_set_item","id":"role_1","name":"Admin","key":"role:admin","description":"Admin role","created_at":1234567890,"updated_at":1234567890}],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
+			In:     json.RawMessage(`{"role_keys":["role:admin","role:manager"], "default_role_key": "role:admin", "creator_role_key": "role:super_admin"}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[{"object":"role_set_item","id":"role_1","name":"Admin","key":"role:admin","description":"Admin role","created_at":1234567890,"updated_at":1234567890}],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"creator_role":{"object":"role_set_item","id":"role_999","name":"Super Admin","key":"role:super_admin","description":"Creator super admin role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
 			Method: http.MethodPost,
 			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles",
 		},
@@ -167,6 +172,7 @@ func TestRoleSetClient_AddRoles(t *testing.T) {
 	roleSet, err := client.AddRoles(context.Background(), roleSetKey, &AddRolesParams{
 		RoleKeys:       roleKeys,
 		DefaultRoleKey: clerk.String("role:admin"),
+		CreatorRoleKey: clerk.String("role:super_admin"),
 	})
 	require.NoError(t, err)
 	assert.Equal(t, roleSetID, roleSet.ID)
@@ -184,7 +190,7 @@ func TestRoleSetClient_RemoveRoles(t *testing.T) {
 		Transport: &clerktest.RoundTripper{
 			T:      t,
 			In:     json.RawMessage(`{"role_key":"role:admin"}`),
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"creator_role":{"object":"role_set_item","id":"role_456","name":"Admin","key":"org:admin","description":"Creator admin role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
 			Method: http.MethodPost,
 			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles/replace",
 		},
@@ -209,7 +215,7 @@ func TestRoleSetClient_RemoveRoleWithToRoleKey(t *testing.T) {
 		Transport: &clerktest.RoundTripper{
 			T:      t,
 			In:     json.RawMessage(`{"role_key":"role:admin","to_role_key":"role:member"}`),
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[{"object":"role_set_item","id":"role_456","name":"Member","key":"role:member","description":"Member role","created_at":1234567890,"updated_at":1234567890}],"default_role":{"object":"role_set_item","id":"role_456","name":"Member","key":"role:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"role_set","id":"%s","name":"Admin Role Set","type":"initial","key":"%s","description":"Admin roles","roles":[{"object":"role_set_item","id":"role_456","name":"Member","key":"role:member","description":"Member role","created_at":1234567890,"updated_at":1234567890}],"default_role":{"object":"role_set_item","id":"role_456","name":"Member","key":"role:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"creator_role":{"object":"role_set_item","id":"role_789","name":"Admin","key":"org:admin","description":"Creator admin role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567891}`, roleSetID, roleSetKey)),
 			Method: http.MethodPost,
 			Path:   "/v1/role_sets/" + url.PathEscape(roleSetKey) + "/roles/replace",
 		},
@@ -297,7 +303,7 @@ func TestRoleSetClient_ListWithQueryParams(t *testing.T) {
 			T: t,
 			Out: json.RawMessage(fmt.Sprintf(`{
 				"data": [
-					{"object":"role_set","id":"%s","name":"Admin Role Set","key":"admin-roles","description":"Admin roles","type":"initial","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567890}
+					{"object":"role_set","id":"%s","name":"Admin Role Set","key":"admin-roles","description":"Admin roles","type":"initial","roles":[],"default_role":{"object":"role_set_item","id":"role_123","name":"Member","key":"org:member","description":"Default member role","created_at":1234567890,"updated_at":1234567890},"creator_role":{"object":"role_set_item","id":"role_456","name":"Admin","key":"org:admin","description":"Creator admin role","created_at":1234567890,"updated_at":1234567890},"created_at":1234567890,"updated_at":1234567890}
 				],
 				"total_count": 1
 			}`, roleSet1ID)),
