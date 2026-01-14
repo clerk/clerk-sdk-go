@@ -4,18 +4,17 @@ import "time"
 
 type AuditLog struct {
 	APIResource
-	Object              string         `json:"object"`
-	ID                  string         `json:"id"`
-	EventTime           time.Time      `json:"event_time"`
-	OriginatingInstance string         `json:"originating_instance"`
-	SubjectInstance     string         `json:"subject_instance"`
-	Actor               string         `json:"actor"`
-	Subject             string         `json:"subject"`
-	Type                string         `json:"type"`
-	TraceID             string         `json:"trace_id"`
-	SpanID              string         `json:"span_id"`
-	ParentSpanID        *string        `json:"parent_span_id"`
-	Payload             map[string]any `json:"payload"`
+	Object          string         `json:"object"`
+	ID              string         `json:"id"`
+	EventTime       time.Time      `json:"event_time"`
+	SubjectInstance string         `json:"subject_instance"`
+	Actor           string         `json:"actor"`
+	Subject         string         `json:"subject"`
+	Type            string         `json:"type"`
+	TraceID         string         `json:"trace_id"`
+	SpanID          string         `json:"span_id"`
+	ParentSpanID    *string        `json:"parent_span_id"`
+	Payload         map[string]any `json:"payload"`
 }
 
 type AuditLogList struct {
