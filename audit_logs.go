@@ -1,12 +1,10 @@
 package clerk
 
-import "time"
-
 type AuditLog struct {
 	APIResource
 	Object          string         `json:"object"`
 	ID              string         `json:"id"`
-	EventTime       time.Time      `json:"event_time"`
+	EventTime       int64          `json:"event_time"`
 	SubjectInstance string         `json:"subject_instance"`
 	Actor           string         `json:"actor"`
 	Subject         string         `json:"subject"`

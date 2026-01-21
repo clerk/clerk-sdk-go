@@ -25,7 +25,7 @@ func TestPackageList(t *testing.T) {
 				"id":               "019400f7-c6e4-7f00-8000-000000000001",
 				"object":           "audit_log",
 				"type":             "user.created",
-				"event_time":       "2024-01-15T10:30:00Z",
+				"event_time":       1705315800000,
 				"subject_instance": "ins_2xPNClBrCHGhpOITVJlhdhBfGS7",
 				"actor":            "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
 				"subject":          "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
