@@ -38,6 +38,7 @@ func TestPackageList(t *testing.T) {
 		"cursor": map[string]interface{}{
 			"starting_after": expectedCursor,
 			"ending_before":  expectedCursor,
+			"has_next_page":  true,
 		},
 	}
 
@@ -85,4 +86,5 @@ func TestPackageList(t *testing.T) {
 
 	assert.NotNil(t, auditLogs.Cursor)
 	assert.Equal(t, expectedCursor, *auditLogs.Cursor.StartingAfter)
+	assert.True(t, auditLogs.Cursor.HasNextPage)
 }

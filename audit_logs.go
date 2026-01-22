@@ -17,12 +17,13 @@ type AuditLog struct {
 
 type AuditLogList struct {
 	APIResource
-	AuditLogs []*AuditLog              `json:"data"`
-	Cursor    *CursorPaginationCursors `json:"cursor"`
+	AuditLogs []*AuditLog       `json:"data"`
+	Cursor    *PaginationCursor `json:"cursor"`
 }
 
-// CursorPaginationCursors contains the cursors for pagination.
-type CursorPaginationCursors struct {
+// PaginationCursor contains the cursors for pagination.
+type PaginationCursor struct {
 	StartingAfter *string `json:"starting_after"`
 	EndingBefore  *string `json:"ending_before"`
+	HasNextPage   bool    `json:"has_next_page"`
 }
