@@ -41,9 +41,9 @@ type ListParams struct {
 	// Filter audit logs by event type (e.g., email_send).
 	Type *string `json:"type,omitempty"`
 	// Filter audit logs to events on or after this date (Unix timestamp in milliseconds).
-	StartDate *int64 `json:"start_date,omitempty"`
+	EventTimeAfter *int64 `json:"event_time_after,omitempty"`
 	// Filter audit logs to events on or before this date (Unix timestamp in milliseconds).
-	EndDate *int64 `json:"end_date,omitempty"`
+	EventTimeBefore *int64 `json:"event_time_before,omitempty"`
 }
 
 // ToQuery returns the params as url.Values.
@@ -67,11 +67,11 @@ func (params *ListParams) ToQuery() url.Values {
 	if params.Type != nil {
 		q.Add("type", *params.Type)
 	}
-	if params.StartDate != nil {
-		q.Add("start_date", strconv.FormatInt(*params.StartDate, 10))
+	if params.EventTimeAfter != nil {
+		q.Add("event_time_after", strconv.FormatInt(*params.EventTimeAfter, 10))
 	}
-	if params.EndDate != nil {
-		q.Add("end_date", strconv.FormatInt(*params.EndDate, 10))
+	if params.EventTimeBefore != nil {
+		q.Add("event_time_before", strconv.FormatInt(*params.EventTimeBefore, 10))
 	}
 	return q
 }
