@@ -34,8 +34,6 @@ type ListParams struct {
 	StartingAfter *string `json:"starting_after,omitempty"`
 	// A cursor for pagination. Provide the cursor from a previous response to fetch the previous page.
 	EndingBefore *string `json:"ending_before,omitempty"`
-	// Filter audit logs by subject instance ID.
-	SubjectInstance *string `json:"subject_instance,omitempty"`
 	// Filter audit logs by subject (user ID or organization ID).
 	Subject *string `json:"subject,omitempty"`
 	// Filter audit logs by event type (e.g., email_send).
@@ -44,6 +42,9 @@ type ListParams struct {
 	EventTimeAfter *int64 `json:"event_time_after,omitempty"`
 	// Filter audit logs to events on or before this date (Unix timestamp in milliseconds).
 	EventTimeBefore *int64 `json:"event_time_before,omitempty"`
+	// When true, only returns events marked as end-user facing.
+	// When false or omitted, returns all events.
+	EndUserFacingOnly *bool `json:"end_user_facing_only,omitempty"`
 }
 
 // ToQuery returns the params as url.Values.
@@ -58,9 +59,6 @@ func (params *ListParams) ToQuery() url.Values {
 	if params.EndingBefore != nil {
 		q.Add("ending_before", *params.EndingBefore)
 	}
-	if params.SubjectInstance != nil {
-		q.Add("subject_instance", *params.SubjectInstance)
-	}
 	if params.Subject != nil {
 		q.Add("subject", *params.Subject)
 	}
@@ -72,6 +70,9 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.EventTimeBefore != nil {
 		q.Add("event_time_before", strconv.FormatInt(*params.EventTimeBefore, 10))
+	}
+	if params.EndUserFacingOnly != nil {
+		q.Add("end_user_facing_only", strconv.FormatBool(*params.EndUserFacingOnly))
 	}
 	return q
 }
