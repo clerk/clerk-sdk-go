@@ -5,7 +5,7 @@ type AuditLog struct {
 	Object          string         `json:"object"`
 	ID              string         `json:"id"`
 	EventTime       int64          `json:"event_time"`
-	SubjectInstance string         `json:"subject_instance"`
+	Instance        string         `json:"instance"`
 	Actor           string         `json:"actor"`
 	Subject         string         `json:"subject"`
 	Type            string         `json:"type"`

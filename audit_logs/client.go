@@ -34,8 +34,6 @@ type ListParams struct {
 	StartingAfter *string `json:"starting_after,omitempty"`
 	// A cursor for pagination. Provide the cursor from a previous response to fetch the previous page.
 	EndingBefore *string `json:"ending_before,omitempty"`
-	// Filter audit logs by subject instance ID.
-	SubjectInstance *string `json:"subject_instance,omitempty"`
 	// Filter audit logs by subject (user ID or organization ID).
 	Subject *string `json:"subject,omitempty"`
 	// Filter audit logs by event type (e.g., email_send).
@@ -57,9 +55,6 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.EndingBefore != nil {
 		q.Add("ending_before", *params.EndingBefore)
-	}
-	if params.SubjectInstance != nil {
-		q.Add("subject_instance", *params.SubjectInstance)
 	}
 	if params.Subject != nil {
 		q.Add("subject", *params.Subject)

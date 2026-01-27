@@ -26,7 +26,7 @@ func TestPackageList(t *testing.T) {
 				"object":           "audit_log",
 				"type":             "user.created",
 				"event_time":       1705315800000,
-				"subject_instance": "ins_2xPNClBrCHGhpOITVJlhdhBfGS7",
+				"instance": "ins_2xPNClBrCHGhpOITVJlhdhBfGS7",
 				"actor":            "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
 				"subject":          "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
 				"trace_id":         "00000000000000000000000000000001",
@@ -76,7 +76,7 @@ func TestPackageList(t *testing.T) {
 	assert.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", auditLog.ID)
 	assert.Equal(t, "audit_log", auditLog.Object)
 	assert.Equal(t, "user.created", auditLog.Type)
-	assert.Equal(t, "ins_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.SubjectInstance)
+	assert.Equal(t, "ins_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Instance)
 	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
 	assert.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
 	assert.Equal(t, "00000000000000000000000000000001", auditLog.TraceID)
