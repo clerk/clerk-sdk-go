@@ -23,17 +23,16 @@ func TestList(t *testing.T) {
 	response := map[string]interface{}{
 		"data": []map[string]interface{}{
 			{
-				"id":               "019400f7-c6e4-7f00-8000-000000000001",
-				"object":           "audit_log",
-				"type":             "user.created",
-				"event_time":       1705315800000,
-				"instance": "ins_2xPNClBrCHGhpOITVJlhdhBfGS7",
-				"actor":            "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
-				"subject":          "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
-				"trace_id":         "00000000000000000000000000000001",
-				"span_id":          "0000000000000001",
-				"parent_span_id":   nil,
-				"payload":          map[string]interface{}{},
+				"id":             "019400f7-c6e4-7f00-8000-000000000001",
+				"object":         "audit_log",
+				"type":           "user.created",
+				"event_time":     1705315800000,
+				"actor":          "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
+				"subject":        "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
+				"trace_id":       "00000000000000000000000000000001",
+				"span_id":        "0000000000000001",
+				"parent_span_id": nil,
+				"payload":        map[string]interface{}{},
 			},
 		},
 		"cursor": map[string]interface{}{
@@ -71,7 +70,6 @@ func TestList(t *testing.T) {
 	require.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", auditLog.ID)
 	require.Equal(t, "audit_log", auditLog.Object)
 	require.Equal(t, "user.created", auditLog.Type)
-	require.Equal(t, "ins_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Instance)
 	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
 	require.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
 	require.Equal(t, "00000000000000000000000000000001", auditLog.TraceID)
