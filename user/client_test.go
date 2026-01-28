@@ -73,18 +73,20 @@ func TestUserClientList_Request(t *testing.T) {
 			T:      t,
 			Method: http.MethodGet,
 			Query: &url.Values{
-				"limit":                 []string{"1"},
-				"offset":                []string{"2"},
-				"order_by":              []string{"-created_at"},
-				"email_address":         []string{"foo@bar.com", "baz@bar.com"},
-				"organization_id":       []string{"org_123", "org_456"},
-				"email_address_query":   []string{"@bar.com"},
-				"name_query":            []string{"foobar"},
-				"created_at_before":     []string{"1730333164378"},
-				"created_at_after":      []string{"1730333164378"},
-				"last_active_at_before": []string{"1730333164378"},
-				"last_active_at_after":  []string{"1730333164378"},
-				"banned":                []string{"false"},
+				"limit":                  []string{"1"},
+				"offset":                 []string{"2"},
+				"order_by":               []string{"-created_at"},
+				"email_address":          []string{"foo@bar.com", "baz@bar.com"},
+				"organization_id":        []string{"org_123", "org_456"},
+				"email_address_query":    []string{"@bar.com"},
+				"name_query":             []string{"foobar"},
+				"created_at_before":      []string{"1730333164378"},
+				"created_at_after":       []string{"1730333164378"},
+				"last_active_at_before":  []string{"1730333164378"},
+				"last_active_at_after":   []string{"1730333164378"},
+				"last_sign_in_at_before": []string{"1730333164378"},
+				"last_sign_in_at_after":  []string{"1730333164378"},
+				"banned":                 []string{"false"},
 			},
 		},
 	}
@@ -102,6 +104,8 @@ func TestUserClientList_Request(t *testing.T) {
 	params.CreatedAtAfter = clerk.Int64(1730333164378)
 	params.LastActiveAtBefore = clerk.Int64(1730333164378)
 	params.LastActiveAtAfter = clerk.Int64(1730333164378)
+	params.LastSignInAtBefore = clerk.Int64(1730333164378)
+	params.LastSignInAtAfter = clerk.Int64(1730333164378)
 	params.Banned = clerk.Bool(false)
 	_, err := client.List(context.Background(), params)
 	require.NoError(t, err)
