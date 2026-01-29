@@ -36,6 +36,10 @@ type ListParams struct {
 	EndingBefore *string `json:"ending_before,omitempty"`
 	// Filter audit logs by subject (user ID or organization ID).
 	Subject *string `json:"subject,omitempty"`
+	// Filter audit logs by actor (user ID, session ID, or system).
+	Actor *string `json:"actor,omitempty"`
+	// Filter audit logs by trace ID.
+	TraceID *string `json:"trace_id,omitempty"`
 	// Filter audit logs by event type (e.g., email_send).
 	Type *string `json:"type,omitempty"`
 	// Filter audit logs to events on or after this date (Unix timestamp in milliseconds).
@@ -61,6 +65,12 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.Subject != nil {
 		q.Add("subject", *params.Subject)
+	}
+	if params.Actor != nil {
+		q.Add("actor", *params.Actor)
+	}
+	if params.TraceID != nil {
+		q.Add("trace_id", *params.TraceID)
 	}
 	if params.Type != nil {
 		q.Add("type", *params.Type)
