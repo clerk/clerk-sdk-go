@@ -34,9 +34,9 @@ type ListParams struct {
 	StartingAfter *string `json:"starting_after,omitempty"`
 	// A cursor for pagination. Provide the cursor from a previous response to fetch the previous page.
 	EndingBefore *string `json:"ending_before,omitempty"`
-	// Filter audit logs by subject (user ID or organization ID).
+	// Filter audit logs by subject (Sign Up ID, user ID or organization ID).
 	Subject *string `json:"subject,omitempty"`
-	// Filter audit logs by actor (user ID, session ID, or system).
+	// Filter audit logs by actor (user ID, session ID).
 	Actor *string `json:"actor,omitempty"`
 	// Filter audit logs by trace ID.
 	TraceID *string `json:"trace_id,omitempty"`
