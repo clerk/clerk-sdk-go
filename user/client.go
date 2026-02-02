@@ -242,6 +242,8 @@ type ListParams struct {
 	CreatedAtAfter     *int64 `json:"created_at_after,omitempty"`
 	LastActiveAtBefore *int64 `json:"last_active_at_before,omitempty"`
 	LastActiveAtAfter  *int64 `json:"last_active_at_after,omitempty"`
+	LastSignInAtBefore *int64 `json:"last_sign_in_at_before,omitempty"`
+	LastSignInAtAfter  *int64 `json:"last_sign_in_at_after,omitempty"`
 }
 
 // ToQuery returns url.Values from the params.
@@ -304,6 +306,12 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.LastActiveAtAfter != nil {
 		q.Add("last_active_at_after", strconv.FormatInt(*params.LastActiveAtAfter, 10))
+	}
+	if params.LastSignInAtBefore != nil {
+		q.Add("last_sign_in_at_before", strconv.FormatInt(*params.LastSignInAtBefore, 10))
+	}
+	if params.LastSignInAtAfter != nil {
+		q.Add("last_sign_in_at_after", strconv.FormatInt(*params.LastSignInAtAfter, 10))
 	}
 	return q
 }
