@@ -12,6 +12,11 @@ type WaitlistEntry struct {
 	Invitation   *Invitation `json:"invitation"`
 }
 
+type WaitlistEntries struct {
+	APIResource
+	WaitlistEntries []*WaitlistEntry `json:"data"`
+}
+
 type WaitlistEntriesList struct {
 	APIResource
 	WaitlistEntries []*WaitlistEntry `json:"data"`
