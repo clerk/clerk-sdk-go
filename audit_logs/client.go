@@ -38,8 +38,6 @@ type ListParams struct {
 	Subject *string `json:"subject,omitempty"`
 	// Filter audit logs by actor.
 	Actor *string `json:"actor,omitempty"`
-	// Filter audit logs by client ID.
-	ClientID *string `json:"client_id,omitempty"`
 	// Filter audit logs by trace ID.
 	TraceID *string `json:"trace_id,omitempty"`
 	// Filter audit logs by event type (e.g., email_send).
@@ -70,9 +68,6 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.Actor != nil {
 		q.Add("actor", *params.Actor)
-	}
-	if params.ClientID != nil {
-		q.Add("client_id", *params.ClientID)
 	}
 	if params.TraceID != nil {
 		q.Add("trace_id", *params.TraceID)
