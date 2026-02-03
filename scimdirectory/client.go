@@ -1,4 +1,5 @@
 // Package scimdirectory provides the SCIM Directories API.
+// SCIM directories are an experimental features, not enabled for all instances
 package scimdirectory
 
 import (
