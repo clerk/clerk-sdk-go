@@ -29,10 +29,44 @@ func TestList(t *testing.T) {
 				"event_time":     1705315800000,
 				"actor":          "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
 				"subject":        "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
+				"client_id":      "client_123",
 				"trace_id":       "00000000000000000000000000000001",
 				"span_id":        "0000000000000001",
 				"parent_span_id": nil,
 				"payload":        map[string]interface{}{},
+				"event_context": map[string]interface{}{
+					"environment": map[string]interface{}{
+						"type": "production",
+						"application": map[string]interface{}{
+							"id":   "app_123",
+							"name": "My Application",
+						},
+						"domain": map[string]interface{}{
+							"id":   "domain_123",
+							"name": "example.com",
+						},
+						"primary_domain": map[string]interface{}{
+							"id":   "domain_456",
+							"name": "primary.example.com",
+						},
+					},
+					"device": map[string]interface{}{
+						"ip_address": "192.168.1.1",
+						"user_agent": "Mozilla/5.0",
+						"browser": map[string]interface{}{
+							"name":    "Chrome",
+							"version": "120.0.0",
+						},
+						"device_type":      "desktop",
+						"is_mobile":        false,
+						"clerk_js_version": "5.0.0",
+						"is_native":        false,
+						"location": map[string]interface{}{
+							"city":    "New York",
+							"country": "US",
+						},
+					},
+				},
 			},
 		},
 		"cursor": map[string]interface{}{
@@ -72,10 +106,46 @@ func TestList(t *testing.T) {
 	require.Equal(t, "user.created", auditLog.Type)
 	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
 	require.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
+	require.NotNil(t, auditLog.ClientID)
+	require.Equal(t, "client_123", *auditLog.ClientID)
 	require.Equal(t, "00000000000000000000000000000001", auditLog.TraceID)
 	require.Equal(t, "0000000000000001", auditLog.SpanID)
 	require.Nil(t, auditLog.ParentSpanID)
 	require.NotNil(t, auditLog.Payload)
+
+	// Verify EventContext fields
+	require.NotNil(t, auditLog.EventContext.Environment)
+	require.NotNil(t, auditLog.EventContext.Environment.Type)
+	require.Equal(t, "production", *auditLog.EventContext.Environment.Type)
+	require.NotNil(t, auditLog.EventContext.Environment.Application)
+	require.Equal(t, "app_123", *auditLog.EventContext.Environment.Application.ID)
+	require.Equal(t, "My Application", *auditLog.EventContext.Environment.Application.Name)
+	require.NotNil(t, auditLog.EventContext.Environment.Domain)
+	require.Equal(t, "domain_123", *auditLog.EventContext.Environment.Domain.ID)
+	require.Equal(t, "example.com", *auditLog.EventContext.Environment.Domain.Name)
+	require.NotNil(t, auditLog.EventContext.Environment.PrimaryDomain)
+	require.Equal(t, "domain_456", *auditLog.EventContext.Environment.PrimaryDomain.ID)
+	require.Equal(t, "primary.example.com", *auditLog.EventContext.Environment.PrimaryDomain.Name)
+
+	require.NotNil(t, auditLog.EventContext.DeviceInfo)
+	require.NotNil(t, auditLog.EventContext.DeviceInfo.IPAddress)
+	require.Equal(t, "192.168.1.1", *auditLog.EventContext.DeviceInfo.IPAddress)
+	require.NotNil(t, auditLog.EventContext.DeviceInfo.UserAgent)
+	require.Equal(t, "Mozilla/5.0", *auditLog.EventContext.DeviceInfo.UserAgent)
+	require.NotNil(t, auditLog.EventContext.DeviceInfo.Browser)
+	require.Equal(t, "Chrome", *auditLog.EventContext.DeviceInfo.Browser.Name)
+	require.Equal(t, "120.0.0", *auditLog.EventContext.DeviceInfo.Browser.Version)
+	require.NotNil(t, auditLog.EventContext.DeviceInfo.DeviceType)
+	require.Equal(t, "desktop", *auditLog.EventContext.DeviceInfo.DeviceType)
+	require.NotNil(t, auditLog.EventContext.DeviceInfo.IsMobile)
+	require.False(t, *auditLog.EventContext.DeviceInfo.IsMobile)
+	require.NotNil(t, auditLog.EventContext.DeviceInfo.ClerkJSVersion)
+	require.Equal(t, "5.0.0", *auditLog.EventContext.DeviceInfo.ClerkJSVersion)
+	require.NotNil(t, auditLog.EventContext.DeviceInfo.IsNative)
+	require.False(t, *auditLog.EventContext.DeviceInfo.IsNative)
+	require.NotNil(t, auditLog.EventContext.DeviceInfo.Location)
+	require.Equal(t, "New York", *auditLog.EventContext.DeviceInfo.Location.City)
+	require.Equal(t, "US", *auditLog.EventContext.DeviceInfo.Location.Country)
 
 	require.NotNil(t, list.Cursor)
 	require.Equal(t, expectedCursor, *list.Cursor.StartingAfter)
