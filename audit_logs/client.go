@@ -30,14 +30,16 @@ type ListParams struct {
 	// Applies a limit to the number of results returned.
 	// Can be used for paginating the results together with StartingAfter or EndingBefore.
 	Limit *int64 `json:"limit,omitempty"`
-	// A cursor for pagination. Provide the cursor from a previous response to fetch the next page.
+	// A cursor for pagination. Provide the starting_after cursor from a previous response to fetch the next page.
 	StartingAfter *string `json:"starting_after,omitempty"`
-	// A cursor for pagination. Provide the cursor from a previous response to fetch the previous page.
+	// A cursor for pagination. Provide the ending_before cursor from a previous response to fetch the previous page.
 	EndingBefore *string `json:"ending_before,omitempty"`
-	// Filter audit logs by subject (Sign Up ID, user ID or organization ID).
+	// Filter audit logs by subject.
 	Subject *string `json:"subject,omitempty"`
-	// Filter audit logs by actor (user ID, session ID).
+	// Filter audit logs by actor.
 	Actor *string `json:"actor,omitempty"`
+	// Filter audit logs by client ID.
+	ClientID *string `json:"client_id,omitempty"`
 	// Filter audit logs by trace ID.
 	TraceID *string `json:"trace_id,omitempty"`
 	// Filter audit logs by event type (e.g., email_send).
@@ -68,6 +70,9 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.Actor != nil {
 		q.Add("actor", *params.Actor)
+	}
+	if params.ClientID != nil {
+		q.Add("client_id", *params.ClientID)
 	}
 	if params.TraceID != nil {
 		q.Add("trace_id", *params.TraceID)
