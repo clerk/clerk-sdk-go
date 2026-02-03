@@ -18,12 +18,13 @@ func TestOrganizationInvitationClientCreate(t *testing.T) {
 	id := "orginv_123"
 	organizationID := "org_123"
 	emailAddress := "foo@bar.com"
+	url := "http://example.com"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
 			In:     json.RawMessage(fmt.Sprintf(`{"email_address":"%s", "expires_in_days": 1}`, emailAddress)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","email_address":"%s","organization_id":"%s", "expires_at": 1}`, id, emailAddress, organizationID)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","email_address":"%s","organization_id":"%s", "expires_at": 1, "url":"%s"}`, id, emailAddress, organizationID, url)),
 			Method: http.MethodPost,
 			Path:   "/v1/organizations/" + organizationID + "/invitations",
 		},
@@ -39,6 +40,7 @@ func TestOrganizationInvitationClientCreate(t *testing.T) {
 	require.Equal(t, organizationID, invitation.OrganizationID)
 	require.Equal(t, emailAddress, invitation.EmailAddress)
 	require.Equal(t, int64(1), *invitation.ExpiresAt)
+	require.Equal(t, url, *invitation.URL)
 }
 
 func TestOrganizationInvitationClientCreate_Error(t *testing.T) {
