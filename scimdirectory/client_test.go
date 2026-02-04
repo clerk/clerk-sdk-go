@@ -223,3 +223,39 @@ func TestDelete(t *testing.T) {
 	assert.Equal(t, "scim_test123", deletedResource.ID)
 	assert.True(t, deletedResource.Deleted)
 }
+
+func TestRotateAPIKey(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":                   "scim_directory",
+		"id":                       "scim_test123",
+		"name":                     "Test SCIM Directory",
+		"enterprise_connection_id": "entc_123",
+		"endpoint_url":             "https://scim.example.com",
+		"provider":                 "okta",
+		"enabled":                  true,
+		"api_key":                  "sk_new_rotated_key",
+		"created_at":               1640995200,
+		"updated_at":               1640995200,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(responseJSON),
+			Method: http.MethodPost,
+			Path:   "/v1/scim_directories/scim_test123/rotate_api_key",
+		},
+	}
+
+	client := NewClient(config)
+	scimDirectory, err := client.RotateAPIKey(context.Background(), "scim_test123")
+	require.NoError(t, err)
+	assert.Equal(t, "scim_test123", scimDirectory.ID)
+	assert.Equal(t, "Test SCIM Directory", scimDirectory.Name)
+	assert.Equal(t, "sk_new_rotated_key", *scimDirectory.APIKey)
+}
