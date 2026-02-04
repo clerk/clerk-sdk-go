@@ -110,3 +110,16 @@ func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource,
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
+
+// RotateAPIKey rotates the API key for a SCIM directory.
+// The old API key will be valid for a grace period before expiring.
+func (c *Client) RotateAPIKey(ctx context.Context, id string) (*clerk.SCIMDirectory, error) {
+	path, err := clerk.JoinPath(path, id, "rotate_api_key")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	resource := &clerk.SCIMDirectory{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}

@@ -33,6 +33,12 @@ func Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	return getClient().Delete(ctx, id)
 }
 
+// RotateAPIKey rotates the API key for a SCIM directory.
+// The old API key will be valid for a grace period before expiring.
+func RotateAPIKey(ctx context.Context, id string) (*clerk.SCIMDirectory, error) {
+	return getClient().RotateAPIKey(ctx, id)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
