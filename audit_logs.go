@@ -8,6 +8,7 @@ type AuditLog struct {
 	Actor        string          `json:"actor"`
 	Subject      string          `json:"subject"`
 	Type         string          `json:"type"`
+	Source       string          `json:"source"`
 	ClientID     *string         `json:"client_id"`
 	TraceID      string          `json:"trace_id"`
 	SpanID       string          `json:"span_id"`
