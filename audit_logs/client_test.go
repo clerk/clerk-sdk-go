@@ -26,6 +26,7 @@ func TestList(t *testing.T) {
 				"id":             "019400f7-c6e4-7f00-8000-000000000001",
 				"object":         "audit_log",
 				"type":           "user.created",
+				"source":         "bapi",
 				"event_time":     1705315800000,
 				"actor":          "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
 				"subject":        "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
@@ -104,6 +105,8 @@ func TestList(t *testing.T) {
 	require.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", auditLog.ID)
 	require.Equal(t, "audit_log", auditLog.Object)
 	require.Equal(t, "user.created", auditLog.Type)
+	require.NotNil(t, auditLog.Source)
+	require.Equal(t, "bapi", *auditLog.Source)
 	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
 	require.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
 	require.NotNil(t, auditLog.ClientID)
