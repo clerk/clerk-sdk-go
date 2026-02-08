@@ -2,19 +2,20 @@ package clerk
 
 type AuditLog struct {
 	APIResource
-	Object       string          `json:"object"`
-	ID           string          `json:"id"`
-	EventTime    int64           `json:"event_time"`
-	Actor        string          `json:"actor"`
-	Subject      string          `json:"subject"`
-	Type         string          `json:"type"`
-	Source       *string         `json:"source"`
-	ClientID     *string         `json:"client_id"`
-	TraceID      string          `json:"trace_id"`
-	SpanID       string          `json:"span_id"`
-	ParentSpanID *string         `json:"parent_span_id"`
-	Payload      map[string]any  `json:"payload"`
-	EventContext AuditLogContext `json:"event_context"`
+	Object       string                `json:"object"`
+	ID           string                `json:"id"`
+	EventTime    int64                 `json:"event_time"`
+	Actor        string                `json:"actor"`
+	Impersonator *ImpersonatorResponse `json:"impersonator"`
+	Subject      string                `json:"subject"`
+	Type         string                `json:"type"`
+	Source       *string               `json:"source"`
+	ClientID     *string               `json:"client_id"`
+	TraceID      string                `json:"trace_id"`
+	SpanID       string                `json:"span_id"`
+	ParentSpanID *string               `json:"parent_span_id"`
+	Payload      map[string]any        `json:"payload"`
+	EventContext AuditLogContext       `json:"event_context"`
 }
 
 type AuditLogList struct {
@@ -71,4 +72,8 @@ type BrowserContext struct {
 type LocationContext struct {
 	City    *string `json:"city"`
 	Country *string `json:"country"`
+}
+
+type ImpersonatorResponse struct {
+	UserID *string `json:"user_id"`
 }

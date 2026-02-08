@@ -32,6 +32,9 @@ func TestPackageList(t *testing.T) {
 				"span_id":        "0000000000000001",
 				"parent_span_id": nil,
 				"payload":        map[string]interface{}{},
+				"impersonator": map[string]interface{}{
+					"user_id": "user_2xPNClBrCHGhpOITVJlhdhBfGS8",
+				},
 			},
 		},
 		"cursor": map[string]interface{}{
@@ -81,6 +84,9 @@ func TestPackageList(t *testing.T) {
 	assert.Equal(t, "0000000000000001", auditLog.SpanID)
 	assert.Nil(t, auditLog.ParentSpanID)
 	assert.NotNil(t, auditLog.Payload)
+	assert.NotNil(t, auditLog.Impersonator)
+	assert.NotNil(t, auditLog.Impersonator.UserID)
+	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *auditLog.Impersonator.UserID)
 
 	assert.NotNil(t, auditLogs.Cursor)
 	assert.Equal(t, expectedCursor, *auditLogs.Cursor.StartingAfter)

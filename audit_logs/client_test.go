@@ -35,6 +35,9 @@ func TestList(t *testing.T) {
 				"span_id":        "0000000000000001",
 				"parent_span_id": nil,
 				"payload":        map[string]interface{}{},
+				"impersonator": map[string]interface{}{
+					"user_id": "user_2xPNClBrCHGhpOITVJlhdhBfGS8",
+				},
 				"event_context": map[string]interface{}{
 					"environment": map[string]interface{}{
 						"type": "production",
@@ -149,6 +152,11 @@ func TestList(t *testing.T) {
 	require.NotNil(t, auditLog.EventContext.DeviceInfo.Location)
 	require.Equal(t, "New York", *auditLog.EventContext.DeviceInfo.Location.City)
 	require.Equal(t, "US", *auditLog.EventContext.DeviceInfo.Location.Country)
+
+	// Verify Impersonator field
+	require.NotNil(t, auditLog.Impersonator)
+	require.NotNil(t, auditLog.Impersonator.UserID)
+	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *auditLog.Impersonator.UserID)
 
 	require.NotNil(t, list.Cursor)
 	require.Equal(t, expectedCursor, *list.Cursor.StartingAfter)
