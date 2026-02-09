@@ -90,15 +90,19 @@ func TestList(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/audit_logs",
 			Query: &url.Values{
-				"limit":   []string{"10"},
-				"subject": []string{"user_2xPNCmYKPnPKaF3h0Ll8qas0I0w"},
+				"limit":                []string{"10"},
+				"subject":              []string{"user_2xPNCmYKPnPKaF3h0Ll8qas0I0w"},
+				"client_id":            []string{"client_123"},
+				"impersonator_user_id": []string{"user_2xPNClBrCHGhpOITVJlhdhBfGS8"},
 			},
 		},
 	}
 	client := NewClient(config)
 	params := &ListParams{
-		Limit:   clerk.Int64(10),
-		Subject: clerk.String("user_2xPNCmYKPnPKaF3h0Ll8qas0I0w"),
+		Limit:              clerk.Int64(10),
+		Subject:            clerk.String("user_2xPNCmYKPnPKaF3h0Ll8qas0I0w"),
+		ClientID:           clerk.String("client_123"),
+		ImpersonatorUserID: clerk.String("user_2xPNClBrCHGhpOITVJlhdhBfGS8"),
 	}
 	list, err := client.List(context.Background(), params)
 	require.NoError(t, err)
