@@ -1,7 +1,6 @@
 package oauthapplication
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -42,7 +41,7 @@ func TestOAuthApplicationClientCreate(t *testing.T) {
 		ConsentScreenEnabled: clerk.Bool(true),
 		PKCERequired:         clerk.Bool(true),
 	}
-	oauthApp, err := client.Create(context.Background(), params)
+	oauthApp, err := client.Create(t.Context(), params)
 	require.NoError(t, err)
 	require.Equal(t, id, oauthApp.ID)
 	require.Equal(t, name, oauthApp.Name)
@@ -71,7 +70,7 @@ func TestOrganizationClientCreate_Error(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	_, err := client.Create(context.Background(), &CreateParams{})
+	_, err := client.Create(t.Context(), &CreateParams{})
 	require.Error(t, err)
 	apiErr, ok := err.(*clerk.APIErrorResponse)
 	require.True(t, ok)
@@ -99,7 +98,7 @@ func TestOAuthApplicationClientGet(t *testing.T) {
 	}
 
 	client := NewClient(config)
-	oauthApp, err := client.Get(context.Background(), id)
+	oauthApp, err := client.Get(t.Context(), id)
 	require.NoError(t, err)
 	require.Equal(t, id, oauthApp.ID)
 	require.Equal(t, name, oauthApp.Name)
@@ -136,7 +135,7 @@ func TestOAuthApplicationClientUpdate(t *testing.T) {
 		ConsentScreenEnabled: clerk.Bool(false),
 		PKCERequired:         clerk.Bool(true),
 	}
-	oauthApp, err := client.Update(context.Background(), id, params)
+	oauthApp, err := client.Update(t.Context(), id, params)
 	require.NoError(t, err)
 	require.Equal(t, id, oauthApp.ID)
 	require.Equal(t, updatedName, oauthApp.Name)
@@ -145,6 +144,82 @@ func TestOAuthApplicationClientUpdate(t *testing.T) {
 	require.Equal(t, []string{callbackURL1, callbackURL2}, oauthApp.RedirectURIs)
 	require.False(t, oauthApp.ConsentScreenEnabled)
 	require.Equal(t, true, oauthApp.PKCERequired)
+	require.Nil(t, oauthApp.AccessTokenTTL)
+}
+
+func TestOAuthApplicationClientUpdate_AccessTokenTTL(t *testing.T) {
+	t.Parallel()
+	id := "app_123"
+	updatedTTL := int64(3600)
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"access_token_ttl":%d}`, updatedTTL)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","access_token_ttl":%d}`, id, updatedTTL)),
+			Method: http.MethodPatch,
+			Path:   fmt.Sprintf("/v1/oauth_applications/%s", id),
+		},
+	}
+	client := NewClient(config)
+	params := &UpdateParams{
+		AccessTokenTTL: &clerk.OptionalNullableInt64{Value: &updatedTTL},
+	}
+	oauthApp, err := client.Update(t.Context(), id, params)
+	require.NoError(t, err)
+	require.Equal(t, id, oauthApp.ID)
+	require.Equal(t, updatedTTL, *oauthApp.AccessTokenTTL)
+}
+
+// Demonstrates setting access token TTL to null to reset to default.
+func TestOAuthApplicationClientUpdate_AccessTokenTTL_ResetToDefault_Null(t *testing.T) {
+	t.Parallel()
+	id := "app_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage((`{"access_token_ttl":null}`)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","access_token_ttl":null}`, id)),
+			Method: http.MethodPatch,
+			Path:   fmt.Sprintf("/v1/oauth_applications/%s", id),
+		},
+	}
+	client := NewClient(config)
+	params := &UpdateParams{
+		// Specify null to reset to default
+		AccessTokenTTL: &clerk.OptionalNullableInt64{Value: nil},
+	}
+	oauthApp, err := client.Update(t.Context(), id, params)
+	require.NoError(t, err)
+	require.Equal(t, id, oauthApp.ID)
+	require.Nil(t, oauthApp.AccessTokenTTL)
+}
+
+// Demonstrates that omitting access token TTL does not pass the field to the API, and leaves it unchanged.
+func TestOAuthApplicationClientUpdate_AccessTokenTTL_Omit(t *testing.T) {
+	t.Parallel()
+	id := "app_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage((`{"name":"Test Application"}`)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"Test Application","access_token_ttl":42}`, id)),
+			Method: http.MethodPatch,
+			Path:   fmt.Sprintf("/v1/oauth_applications/%s", id),
+		},
+	}
+	client := NewClient(config)
+	params := &UpdateParams{
+		Name: clerk.String("Test Application"),
+		// Omit access token TTL
+	}
+	oauthApp, err := client.Update(t.Context(), id, params)
+	require.NoError(t, err)
+	require.Equal(t, id, oauthApp.ID)
+	require.Equal(t, int64(42), *oauthApp.AccessTokenTTL)
+	require.Equal(t, "Test Application", oauthApp.Name)
 }
 
 func TestOrganizationClientUpdate_Error(t *testing.T) {
@@ -163,7 +238,7 @@ func TestOrganizationClientUpdate_Error(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	_, err := client.Update(context.Background(), "oauth_123", &UpdateParams{})
+	_, err := client.Update(t.Context(), "oauth_123", &UpdateParams{})
 	require.Error(t, err)
 	apiErr, ok := err.(*clerk.APIErrorResponse)
 	require.True(t, ok)
@@ -185,7 +260,7 @@ func TestOAuthApplicationClientDelete(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	deletedApp, err := client.DeleteOAuthApplication(context.Background(), id)
+	deletedApp, err := client.DeleteOAuthApplication(t.Context(), id)
 	require.NoError(t, err)
 	require.Equal(t, id, deletedApp.ID)
 	require.True(t, deletedApp.Deleted)
@@ -217,7 +292,7 @@ func TestOAuthApplicationClientList(t *testing.T) {
 	params.Offset = clerk.Int64(0)
 	params.OrderBy = clerk.String("-name")
 	params.NameQuery = clerk.String("app_123")
-	appList, err := client.List(context.Background(), params)
+	appList, err := client.List(t.Context(), params)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), appList.TotalCount)
 	require.Equal(t, "oauth_app_123", appList.OAuthApplications[0].ID)
@@ -238,7 +313,7 @@ func TestOAuthApplicationClientRotateClientSecret(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	updatedApp, err := client.RotateClientSecret(context.Background(), id)
+	updatedApp, err := client.RotateClientSecret(t.Context(), id)
 	require.NoError(t, err)
 	require.Equal(t, id, updatedApp.ID)
 	require.Equal(t, newSecret, *updatedApp.ClientSecret)
