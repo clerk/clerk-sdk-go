@@ -104,6 +104,7 @@ type UpdateParams struct {
 	AllowIdpInitiated                *bool                   `json:"allow_idp_initiated,omitempty"`
 	DisableAdditionalIdentifications *bool                   `json:"disable_additional_identifications,omitempty"`
 	ForceAuthn                       *bool                   `json:"force_authn,omitempty"`
+	ConsentVerifiedDomainsDeletion   *bool                   `json:"consent_verified_domains_deletion,omitempty"`
 }
 
 // Update updates the SAML Connection specified by id.
