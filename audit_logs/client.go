@@ -42,6 +42,10 @@ type ListParams struct {
 	TraceID *string `json:"trace_id,omitempty"`
 	// Filter audit logs by event type (e.g., email_send).
 	Type *string `json:"type,omitempty"`
+	// Filter audit logs by client ID.
+	ClientID *string `json:"client_id,omitempty"`
+	// Filter audit logs by impersonator user ID.
+	ImpersonatorUserID *string `json:"impersonator_user_id,omitempty"`
 	// Filter audit logs to events on or after this date (Unix timestamp in milliseconds).
 	EventTimeAfter *int64 `json:"event_time_after,omitempty"`
 	// Filter audit logs to events on or before this date (Unix timestamp in milliseconds).
@@ -74,6 +78,12 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.Type != nil {
 		q.Add("type", *params.Type)
+	}
+	if params.ClientID != nil {
+		q.Add("client_id", *params.ClientID)
+	}
+	if params.ImpersonatorUserID != nil {
+		q.Add("impersonator_user_id", *params.ImpersonatorUserID)
 	}
 	if params.EventTimeAfter != nil {
 		q.Add("event_time_after", strconv.FormatInt(*params.EventTimeAfter, 10))
