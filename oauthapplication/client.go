@@ -96,6 +96,9 @@ type UpdateParams struct {
 	PKCERequired         *bool    `json:"pkce_required,omitempty"`
 	ConsentScreenEnabled *bool    `json:"consent_screen_enabled,omitempty"`
 
+	// AccessTokenTTL is the TTL for access tokens in seconds. Omit = no change; null = reset to default; number = set. Only used when instance has the feature enabled.
+	AccessTokenTTL *clerk.OptionalNullableInt64 `json:"access_token_ttl,omitempty"`
+
 	// Deprecated: Use RedirectURIs instead
 	CallbackURL *string `json:"callback_url,omitempty"`
 }
