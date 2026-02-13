@@ -89,6 +89,7 @@ type ListParams struct {
 	clerk.ListParams
 	Verified        *bool     `json:"verified,omitempty"`
 	EnrollmentModes *[]string `json:"enrollment_mode,omitempty"`
+	Domains         *[]string `json:"domains,omitempty"`
 }
 
 // ToQuery returns the parameters as url.Values so they can be used
@@ -103,6 +104,11 @@ func (params *ListParams) ToQuery() url.Values {
 	if params.EnrollmentModes != nil && len(*params.EnrollmentModes) > 0 {
 		q["enrollment_mode"] = *params.EnrollmentModes
 	}
+
+	if params.Domains != nil && len(*params.Domains) > 0 {
+		q["domains"] = *params.Domains
+	}
+
 	return q
 }
 
