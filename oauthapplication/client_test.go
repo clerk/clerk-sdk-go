@@ -9,6 +9,7 @@ import (
 
 	"github.com/clerk/clerk-sdk-go/v3"
 	"github.com/clerk/clerk-sdk-go/v3/clerktest"
+	"github.com/clerk/clerk-sdk-go/v3/optional"
 	"github.com/stretchr/testify/require"
 )
 
@@ -163,7 +164,7 @@ func TestOAuthApplicationClientUpdate_AccessTokenTTL(t *testing.T) {
 	}
 	client := NewClient(config)
 	params := &UpdateParams{
-		AccessTokenTTL: &clerk.OptionalNullableInt64{Value: &updatedTTL},
+		AccessTokenTTL: optional.Int64FromPtr(&updatedTTL),
 	}
 	oauthApp, err := client.Update(t.Context(), id, params)
 	require.NoError(t, err)
@@ -188,7 +189,7 @@ func TestOAuthApplicationClientUpdate_AccessTokenTTL_ResetToDefault_Null(t *test
 	client := NewClient(config)
 	params := &UpdateParams{
 		// Specify null to reset to default
-		AccessTokenTTL: &clerk.OptionalNullableInt64{Value: nil},
+		AccessTokenTTL: optional.Int64FromPtr(nil),
 	}
 	oauthApp, err := client.Update(t.Context(), id, params)
 	require.NoError(t, err)
