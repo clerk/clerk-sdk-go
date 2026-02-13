@@ -89,7 +89,6 @@ type ListParams struct {
 	clerk.ListParams
 	Verified        *bool     `json:"verified,omitempty"`
 	EnrollmentModes *[]string `json:"enrollment_mode,omitempty"`
-	Domains         *[]string `json:"domains,omitempty"`
 }
 
 // ToQuery returns the parameters as url.Values so they can be used
@@ -103,10 +102,6 @@ func (params *ListParams) ToQuery() url.Values {
 
 	if params.EnrollmentModes != nil && len(*params.EnrollmentModes) > 0 {
 		q["enrollment_mode"] = *params.EnrollmentModes
-	}
-
-	if params.Domains != nil && len(*params.Domains) > 0 {
-		q["domains"] = *params.Domains
 	}
 
 	return q
@@ -128,11 +123,12 @@ func (c *Client) List(ctx context.Context, organizationID string, params *ListPa
 type ListAllFromInstanceParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	Verified       *bool   `json:"verified,omitempty"`
-	EnrollmentMode *string `json:"enrollment_mode,omitempty"`
-	OrganizationID *string `json:"organization_id,omitempty"`
-	OrderBy        *string `json:"order_by,omitempty"`
-	Query          *string `json:"query,omitempty"`
+	Verified       *bool     `json:"verified,omitempty"`
+	EnrollmentMode *string   `json:"enrollment_mode,omitempty"`
+	OrganizationID *string   `json:"organization_id,omitempty"`
+	OrderBy        *string   `json:"order_by,omitempty"`
+	Query          *string   `json:"query,omitempty"`
+	Domains        *[]string `json:"domains,omitempty"`
 }
 
 // ToQuery returns the parameters as url.Values so they can be used
@@ -158,6 +154,10 @@ func (params *ListAllFromInstanceParams) ToQuery() url.Values {
 
 	if params.Query != nil {
 		q.Set("query", *params.Query)
+	}
+
+	if params.Domains != nil && len(*params.Domains) > 0 {
+		q["domains"] = *params.Domains
 	}
 
 	return q
