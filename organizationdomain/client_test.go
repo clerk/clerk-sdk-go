@@ -149,6 +149,7 @@ func TestOrganizationDomainClientList(t *testing.T) {
 	organizationID := "org_123"
 	verified := true
 
+	domainsFilter := []string{"mydomain.com", "other.com"}
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
@@ -167,6 +168,7 @@ func TestOrganizationDomainClientList(t *testing.T) {
 				"offset":          []string{"2"},
 				"verified":        []string{"true"},
 				"enrollment_mode": []string{"automatic_invitation"},
+				"domains":         domainsFilter,
 			},
 		},
 	}
@@ -174,6 +176,7 @@ func TestOrganizationDomainClientList(t *testing.T) {
 	params := &ListParams{
 		Verified:        &verified,
 		EnrollmentModes: &[]string{"automatic_invitation"},
+		Domains:         &domainsFilter,
 	}
 	params.Limit = clerk.Int64(1)
 	params.Offset = clerk.Int64(2)
