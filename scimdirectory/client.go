@@ -59,6 +59,12 @@ type UpdateParams struct {
 	Name     *string `json:"name,omitempty"`
 	Provider *string `json:"provider,omitempty"`
 	Enabled  *bool   `json:"enabled,omitempty"`
+	// AttributeMapping is a map of SCIM attributes to Clerk attributes.
+	// The semantics of the PATCH request are as follows:
+	//   - If the attribute is not present in the request, it will be left unchanged.
+	//   - If the attribute is present in the request, it will be updated to the new value.
+	//   - If the attribute is present in the request and the value is null, it will be removed.
+	AttributeMapping *map[string]string `json:"attribute_mapping,omitempty"`
 }
 
 // Update updates a SCIM directory.
