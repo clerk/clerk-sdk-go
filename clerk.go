@@ -521,36 +521,3 @@ func Bool(v bool) *bool {
 func JSONRawMessage(v json.RawMessage) *json.RawMessage {
 	return &v
 }
-
-// OptionalNullableInt64 represents an optional nullable int64 for PATCH semantics:
-// nil (omit) = do not change; value with Value=nil = reset to default (null); value with Value set = use that number.
-// Use as a pointer field with json:",omitempty" so the key is omitted when nil.
-type OptionalNullableInt64 struct {
-	Value *int64
-}
-
-// Interface implementations
-var _ json.Marshaler = (*OptionalNullableInt64)(nil)
-var _ json.Unmarshaler = (*OptionalNullableInt64)(nil)
-
-// MarshalJSON implements json.Marshaler. When Value is nil outputs null; otherwise outputs the number.
-func (o OptionalNullableInt64) MarshalJSON() ([]byte, error) {
-	if o.Value == nil {
-		return []byte("null"), nil
-	}
-	return json.Marshal(*o.Value)
-}
-
-// UnmarshalJSON implements json.Unmarshaler. Accepts null or a number.
-func (o *OptionalNullableInt64) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
-		o.Value = nil
-		return nil
-	}
-	var v int64
-	if err := json.Unmarshal(data, &v); err != nil {
-		return err
-	}
-	o.Value = &v
-	return nil
-}
