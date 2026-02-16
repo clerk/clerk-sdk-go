@@ -28,6 +28,7 @@ func TestCreate(t *testing.T) {
 		"api_key":                  "sk_test_xxxxx",
 		"created_at":               1640995200,
 		"updated_at":               1640995200,
+		"attribute_mapping":        map[string]string{"first_name": "first_name", "last_name": "last_name"},
 	}
 
 	responseJSON, _ := json.Marshal(response)
@@ -58,6 +59,7 @@ func TestCreate(t *testing.T) {
 	assert.True(t, scimDirectory.Enabled)
 	assert.Equal(t, "sk_test_xxxxx", *scimDirectory.APIKey)
 	assert.Equal(t, enterpriseConnectionID, *scimDirectory.EnterpriseConnectionID)
+	assert.Equal(t, map[string]string{"first_name": "first_name", "last_name": "last_name"}, scimDirectory.AttributeMapping)
 }
 
 func TestGet(t *testing.T) {
@@ -73,6 +75,7 @@ func TestGet(t *testing.T) {
 		"enabled":                  true,
 		"created_at":               1640995200,
 		"updated_at":               1640995200,
+		"attribute_mapping":        map[string]string{"first_name": "given_name", "last_name": "family_name"},
 	}
 
 	responseJSON, _ := json.Marshal(response)
@@ -94,6 +97,7 @@ func TestGet(t *testing.T) {
 	assert.Equal(t, "Test SCIM Directory", scimDirectory.Name)
 	assert.Equal(t, "okta", scimDirectory.Provider)
 	assert.True(t, scimDirectory.Enabled)
+	assert.Equal(t, map[string]string{"first_name": "given_name", "last_name": "family_name"}, scimDirectory.AttributeMapping)
 }
 
 func TestUpdate(t *testing.T) {
@@ -136,6 +140,58 @@ func TestUpdate(t *testing.T) {
 	assert.False(t, scimDirectory.Enabled)
 }
 
+func TestUpdateAttributeMapping(t *testing.T) {
+	t.Parallel()
+
+	attributeMapping := map[string]string{
+		"first_name": "given_name",
+		"last_name":  "family_name",
+		"email":      "primary_email",
+	}
+
+	response := map[string]interface{}{
+		"object":                   "scim_directory",
+		"id":                       "scim_test123",
+		"name":                     "Test SCIM Directory",
+		"enterprise_connection_id": "entc_123",
+		"endpoint_url":             "https://scim.example.com",
+		"provider":                 "okta",
+		"enabled":                  true,
+		"created_at":               1640995200,
+		"updated_at":               1640995200,
+		"attribute_mapping":        attributeMapping,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"attribute_mapping":{"email":"primary_email","first_name":"given_name","last_name":"family_name"}}`),
+			Out:    json.RawMessage(responseJSON),
+			Method: http.MethodPatch,
+			Path:   "/v1/scim_directories/scim_test123",
+		},
+	}
+
+	client := NewClient(config)
+	params := &UpdateParams{
+		AttributeMapping: &map[string]string{
+			"first_name": "given_name",
+			"last_name":  "family_name",
+			"email":      "primary_email",
+		},
+	}
+
+	scimDirectory, err := client.Update(context.Background(), "scim_test123", params)
+	require.NoError(t, err)
+	assert.Equal(t, "scim_test123", scimDirectory.ID)
+	assert.Equal(t, "Test SCIM Directory", scimDirectory.Name)
+	assert.True(t, scimDirectory.Enabled)
+	assert.Equal(t, attributeMapping, scimDirectory.AttributeMapping)
+}
+
 func TestList(t *testing.T) {
 	t.Parallel()
 
@@ -151,6 +207,7 @@ func TestList(t *testing.T) {
 				"enabled":                  true,
 				"created_at":               1640995200,
 				"updated_at":               1640995200,
+				"attribute_mapping":        map[string]string{"first_name": "first_name"},
 			},
 			{
 				"object":                   "scim_directory",
@@ -162,6 +219,7 @@ func TestList(t *testing.T) {
 				"enabled":                  true,
 				"created_at":               1640995200,
 				"updated_at":               1640995200,
+				"attribute_mapping":        map[string]string{"first_name": "given_name"},
 			},
 		},
 		"total_count": int64(2),
@@ -193,7 +251,9 @@ func TestList(t *testing.T) {
 	assert.Equal(t, int64(2), list.TotalCount)
 	assert.Len(t, list.SCIMDirectories, 2)
 	assert.Equal(t, "scim_test123", list.SCIMDirectories[0].ID)
+	assert.Equal(t, map[string]string{"first_name": "first_name"}, list.SCIMDirectories[0].AttributeMapping)
 	assert.Equal(t, "scim_test456", list.SCIMDirectories[1].ID)
+	assert.Equal(t, map[string]string{"first_name": "given_name"}, list.SCIMDirectories[1].AttributeMapping)
 }
 
 func TestDelete(t *testing.T) {
