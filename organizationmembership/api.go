@@ -28,6 +28,11 @@ func List(ctx context.Context, params *ListParams) (*clerk.OrganizationMembershi
 	return getClient().List(ctx, params)
 }
 
+// UpdateMetadata merges and updates organization membership metadata
+func UpdateMetadata(ctx context.Context, params *MetadataParams) (*clerk.OrganizationMembership, error) {
+	return getClient().UpdateMetadata(ctx, params)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
