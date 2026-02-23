@@ -7,10 +7,11 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/clerk/clerk-sdk-go/v2"
-	"github.com/clerk/clerk-sdk-go/v2/clerktest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/clerk/clerk-sdk-go/v2"
+	"github.com/clerk/clerk-sdk-go/v2/clerktest"
 )
 
 func TestCreate(t *testing.T) {
@@ -38,7 +39,7 @@ func TestCreate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"claims":{"foo":"bar"},"seconds_until_expiration":3600}`),
+			In:     json.RawMessage(`{"claims":{"foo":"bar"},"seconds_until_expiration":3600,"token_format":"opaque"}`),
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPost,
 			Path:   "/v1/m2m_tokens",
@@ -50,6 +51,7 @@ func TestCreate(t *testing.T) {
 	params := &CreateParams{
 		Claims:                 &claims,
 		SecondsUntilExpiration: clerk.Int64(3600),
+		TokenFormat:            clerk.String("opaque"),
 	}
 
 	token, err := client.Create(context.Background(), params)
