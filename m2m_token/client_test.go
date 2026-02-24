@@ -194,3 +194,47 @@ func TestVerify(t *testing.T) {
 	assert.Equal(t, "mt_test123", token.ID)
 	assert.False(t, token.Revoked)
 }
+
+func TestCreate_WithJWTFormat(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":            "machine_to_machine_token",
+		"id":                "mt_test123",
+		"subject":           "mch_2xhFjEI5X2qWRvtV13BzSj8H6Dk",
+		"claims":            map[string]interface{}{},
+		"scopes":            []string{"mch_2xhFjEI5X2qWRvtV13BzSj8H6Dk"},
+		"token":             "eyJhbGciOiJSUzI1NiJ9.test.sig",
+		"revoked":           false,
+		"revocation_reason": nil,
+		"expired":           false,
+		"expiration":        1716883200,
+		"last_used_at":      nil,
+		"created_at":        1640995200,
+		"updated_at":        1640995200,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"token_format":"jwt"}`),
+			Out:    json.RawMessage(responseJSON),
+			Method: http.MethodPost,
+			Path:   "/v1/m2m_tokens",
+		},
+	}
+
+	client := NewClient(config)
+	format := "jwt"
+	params := &CreateParams{
+		TokenFormat: &format,
+	}
+
+	token, err := client.Create(context.Background(), params)
+	require.NoError(t, err)
+	assert.Equal(t, "mt_test123", token.ID)
+	assert.Equal(t, "eyJhbGciOiJSUzI1NiJ9.test.sig", token.Token)
+}
