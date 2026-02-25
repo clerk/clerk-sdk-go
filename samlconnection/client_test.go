@@ -146,7 +146,7 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t, "force_authn": %t, "enterprise_connection_id": "entconn_2abc123def456"}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t, "force_authn": %t, "enterprise_connection_id": "entconn_2abc123def456", "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "path": "custom_attribute_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
 			Method: http.MethodGet,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -161,6 +161,13 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	require.Equal(t, provider, samlConnection.Provider)
 	require.Equal(t, disableAdditionalIdentifications, samlConnection.DisableAdditionalIdentifications)
 	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
+	require.Equal(t, &[]clerk.CustomAttribute{
+		{
+			Name: clerk.String("custom_attribute_name"),
+			Key:  clerk.String("custom_attribute_key"),
+			Path: clerk.String("custom_attribute_path"),
+		},
+	}, samlConnection.CustomAttributes)
 }
 
 func TestSAMLConnectionClientUpdate(t *testing.T) {
