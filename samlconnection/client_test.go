@@ -182,8 +182,8 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t}`, name, disableAdditionalIdentifications, forceAuthn)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t, "enterprise_connection_id": null}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "path": "custom_attribute_path"}]}`, name, disableAdditionalIdentifications, forceAuthn)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t, "enterprise_connection_id": null, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "path": "custom_attribute_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
 			Method: http.MethodPatch,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -194,9 +194,23 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 		DisableAdditionalIdentifications: clerk.Bool(disableAdditionalIdentifications),
 		OrganizationID:                   clerk.String(""),
 		ForceAuthn:                       clerk.Bool(forceAuthn),
+		CustomAttributes: &[]clerk.CustomAttribute{
+			{
+				Name: clerk.String("custom_attribute_name"),
+				Key:  clerk.String("custom_attribute_key"),
+				Path: clerk.String("custom_attribute_path"),
+			},
+		},
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
+	require.Equal(t, &[]clerk.CustomAttribute{
+		{
+			Name: clerk.String("custom_attribute_name"),
+			Key:  clerk.String("custom_attribute_key"),
+			Path: clerk.String("custom_attribute_path"),
+		},
+	}, samlConnection.CustomAttributes)
 	require.Equal(t, name, samlConnection.Name)
 	require.Equal(t, disableAdditionalIdentifications, samlConnection.DisableAdditionalIdentifications)
 	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
