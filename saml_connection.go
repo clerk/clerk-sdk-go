@@ -1,5 +1,11 @@
 package clerk
 
+type CustomAttribute struct {
+	Name *string `json:"name"`
+	Key  *string `json:"key"`
+	Path *string `json:"path"`
+}
+
 type SAMLConnection struct {
 	APIResource
 	ID     string `json:"id"`
@@ -27,6 +33,7 @@ type SAMLConnection struct {
 	AllowIdpInitiated                bool                           `json:"allow_idp_initiated"`
 	DisableAdditionalIdentifications bool                           `json:"disable_additional_identifications"`
 	ForceAuthn                       bool                           `json:"force_authn"`
+	CustomAttributes                 *[]CustomAttribute             `json:"custom_attributes,omitempty"`
 	CreatedAt                        int64                          `json:"created_at"`
 	UpdatedAt                        int64                          `json:"updated_at"`
 }
