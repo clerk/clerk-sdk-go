@@ -154,3 +154,35 @@ func (c *Client) UpdateOrganizationSettings(ctx context.Context, params *UpdateO
 	err = c.Backend.Call(ctx, req, orgSettings)
 	return orgSettings, err
 }
+
+type UpdateOAuthApplicationSettingsParams struct {
+	clerk.APIParams
+	DynamicOAuthClientRegistration *bool `json:"dynamic_oauth_client_registration,omitempty"`
+	OAuthJWTAccessTokens           *bool `json:"oauth_jwt_access_tokens,omitempty"`
+	OIDCSignOutEnabled             *bool `json:"oidc_sign_out_enabled,omitempty"`
+}
+
+// ReadOAuthApplicationSettings returns the OAuth application settings of the instance.
+func (c *Client) ReadOAuthApplicationSettings(ctx context.Context) (*clerk.OAuthApplicationSettings, error) {
+	oauthPath, err := clerk.JoinPath(path, "/oauth_application_settings")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, oauthPath)
+	settings := &clerk.OAuthApplicationSettings{}
+	err = c.Backend.Call(ctx, req, settings)
+	return settings, err
+}
+
+// UpdateOAuthApplicationSettings updates the OAuth application settings of the instance.
+func (c *Client) UpdateOAuthApplicationSettings(ctx context.Context, params *UpdateOAuthApplicationSettingsParams) (*clerk.OAuthApplicationSettings, error) {
+	oauthPath, err := clerk.JoinPath(path, "/oauth_application_settings")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPatch, oauthPath)
+	req.SetParams(params)
+	settings := &clerk.OAuthApplicationSettings{}
+	err = c.Backend.Call(ctx, req, settings)
+	return settings, err
+}

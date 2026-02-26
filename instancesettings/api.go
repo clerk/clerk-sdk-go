@@ -23,6 +23,16 @@ func UpdateOrganizationSettings(ctx context.Context, params *UpdateOrganizationS
 	return getClient().UpdateOrganizationSettings(ctx, params)
 }
 
+// ReadOAuthApplicationSettings returns the OAuth application settings of the instance.
+func ReadOAuthApplicationSettings(ctx context.Context) (*clerk.OAuthApplicationSettings, error) {
+	return getClient().ReadOAuthApplicationSettings(ctx)
+}
+
+// UpdateOAuthApplicationSettings updates the OAuth application settings of the instance.
+func UpdateOAuthApplicationSettings(ctx context.Context, params *UpdateOAuthApplicationSettingsParams) (*clerk.OAuthApplicationSettings, error) {
+	return getClient().UpdateOAuthApplicationSettings(ctx, params)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),

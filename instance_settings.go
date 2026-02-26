@@ -55,3 +55,12 @@ type OrganizationNameTemplateSettings struct {
 type FallbackSettings struct {
 	Name string `json:"name"`
 }
+
+// OAuthApplicationSettings represents the OAuth application settings for an instance.
+type OAuthApplicationSettings struct {
+	APIResource
+	Object                         string `json:"object"`
+	DynamicOauthClientRegistration bool   `json:"dynamic_oauth_client_registration"`
+	OAuthJWTAccessTokens           bool   `json:"oauth_jwt_access_tokens"`
+	OIDCSignOutEnabled             bool   `json:"oidc_sign_out_enabled"`
+}

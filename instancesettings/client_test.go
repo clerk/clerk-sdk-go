@@ -1,7 +1,6 @@
 package instancesettings
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -24,7 +23,7 @@ func TestInstanceClientUpdate(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	err := client.Update(context.Background(), &UpdateParams{
+	err := client.Update(t.Context(), &UpdateParams{
 		TestMode: clerk.Bool(true),
 	})
 	require.NoError(t, err)
@@ -46,7 +45,7 @@ func TestInstanceClientUpdate_Error(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	err := client.Update(context.Background(), &UpdateParams{})
+	err := client.Update(t.Context(), &UpdateParams{})
 	require.Error(t, err)
 	apiErr, ok := err.(*clerk.APIErrorResponse)
 	require.True(t, ok)
@@ -68,7 +67,7 @@ func TestInstanceClientUpdateRestrictions(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	restrictions, err := client.UpdateRestrictions(context.Background(), &UpdateRestrictionsParams{
+	restrictions, err := client.UpdateRestrictions(t.Context(), &UpdateRestrictionsParams{
 		Allowlist: clerk.Bool(true),
 	})
 	require.NoError(t, err)
@@ -92,7 +91,7 @@ func TestInstanceClientUpdateRestrictions_Error(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	_, err := client.UpdateRestrictions(context.Background(), &UpdateRestrictionsParams{})
+	_, err := client.UpdateRestrictions(t.Context(), &UpdateRestrictionsParams{})
 	require.Error(t, err)
 	apiErr, ok := err.(*clerk.APIErrorResponse)
 	require.True(t, ok)
@@ -114,7 +113,7 @@ func TestInstanceClientUpdateOrganizationSettings(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	orgSettings, err := client.UpdateOrganizationSettings(context.Background(), &UpdateOrganizationSettingsParams{
+	orgSettings, err := client.UpdateOrganizationSettings(t.Context(), &UpdateOrganizationSettingsParams{
 		Enabled:                    clerk.Bool(true),
 		ForceOrganizationSelection: clerk.Bool(true),
 		SlugDisabled:               clerk.Bool(true),
@@ -138,7 +137,7 @@ func TestInstanceClientUpdateOrganizationSettingsWithInitialRoleSetKey(t *testin
 		},
 	}
 	client := NewClient(config)
-	orgSettings, err := client.UpdateOrganizationSettings(context.Background(), &UpdateOrganizationSettingsParams{
+	orgSettings, err := client.UpdateOrganizationSettings(t.Context(), &UpdateOrganizationSettingsParams{
 		Enabled:           clerk.Bool(true),
 		InitialRoleSetKey: clerk.String(initialRoleSetKey),
 	})
@@ -165,7 +164,7 @@ func TestInstanceClientUpdateOrganizationSettings_Error(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	_, err := client.UpdateOrganizationSettings(context.Background(), &UpdateOrganizationSettingsParams{})
+	_, err := client.UpdateOrganizationSettings(t.Context(), &UpdateOrganizationSettingsParams{})
 	require.Error(t, err)
 	apiErr, ok := err.(*clerk.APIErrorResponse)
 	require.True(t, ok)
@@ -187,7 +186,7 @@ func TestInstanceClientUpdateOrganizationSettingsWithCreationDefaults(t *testing
 		},
 	}
 	client := NewClient(config)
-	orgSettings, err := client.UpdateOrganizationSettings(context.Background(), &UpdateOrganizationSettingsParams{
+	orgSettings, err := client.UpdateOrganizationSettings(t.Context(), &UpdateOrganizationSettingsParams{
 		Enabled: clerk.Bool(true),
 		OrganizationCreationDefaults: &UpdateOrganizationCreationDefaultsParams{
 			Enabled: clerk.Bool(true),
@@ -216,4 +215,74 @@ func TestInstanceClientUpdateOrganizationSettingsWithCreationDefaults(t *testing
 	require.True(t, orgSettings.OrganizationCreationDefaults.OrganizationNameTemplate.Enabled)
 	require.Equal(t, "{{user.first_name}}'s Organization", orgSettings.OrganizationCreationDefaults.OrganizationNameTemplate.Template)
 	require.Equal(t, "My Organization", orgSettings.OrganizationCreationDefaults.Fallback.Name)
+}
+
+func TestInstanceClientReadOAuthApplicationSettings(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(`{"object":"oauth_application_settings","dynamic_oauth_client_registration":false,"oauth_jwt_access_tokens":true,"oidc_sign_out_enabled":true}`),
+			Method: http.MethodGet,
+			Path:   "/v1/instance/oauth_application_settings",
+		},
+	}
+	client := NewClient(config)
+	settings, err := client.ReadOAuthApplicationSettings(t.Context())
+	require.NoError(t, err)
+	require.Equal(t, "oauth_application_settings", settings.Object)
+	require.False(t, settings.DynamicOauthClientRegistration)
+	require.True(t, settings.OAuthJWTAccessTokens)
+	require.True(t, settings.OIDCSignOutEnabled)
+}
+
+func TestInstanceClientUpdateOAuthApplicationSettings(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"dynamic_oauth_client_registration":true,"oauth_jwt_access_tokens":false,"oidc_sign_out_enabled":true}`),
+			Out:    json.RawMessage(`{"object":"oauth_application_settings","dynamic_oauth_client_registration":true,"oauth_jwt_access_tokens":false,"oidc_sign_out_enabled":true}`),
+			Method: http.MethodPatch,
+			Path:   "/v1/instance/oauth_application_settings",
+		},
+	}
+	client := NewClient(config)
+	settings, err := client.UpdateOAuthApplicationSettings(t.Context(), &UpdateOAuthApplicationSettingsParams{
+		DynamicOAuthClientRegistration: clerk.Bool(true),
+		OAuthJWTAccessTokens:           clerk.Bool(false),
+		OIDCSignOutEnabled:             clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, "oauth_application_settings", settings.Object)
+	require.True(t, settings.DynamicOauthClientRegistration)
+	require.False(t, settings.OAuthJWTAccessTokens)
+	require.True(t, settings.OIDCSignOutEnabled)
+}
+
+func TestInstanceClientUpdateOAuthApplicationSettings_Error(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Status: http.StatusBadRequest,
+			Out: json.RawMessage(`{
+  "errors":[{
+		"code":"update-error-code"
+	}],
+	"clerk_trace_id":"update-trace-id"
+}`),
+		},
+	}
+	client := NewClient(config)
+	_, err := client.UpdateOAuthApplicationSettings(t.Context(), &UpdateOAuthApplicationSettingsParams{})
+	require.Error(t, err)
+	apiErr, ok := err.(*clerk.APIErrorResponse)
+	require.True(t, ok)
+	require.Equal(t, "update-trace-id", apiErr.TraceID)
+	require.Equal(t, 1, len(apiErr.Errors))
+	require.Equal(t, "update-error-code", apiErr.Errors[0].Code)
 }
