@@ -53,6 +53,9 @@ type ListParams struct {
 	// When true, only returns events marked as end-user facing.
 	// When false or omitted, returns all events.
 	EndUserFacingOnly *bool `json:"end_user_facing_only,omitempty"`
+	// An offset for pagination. When provided, offset-based pagination is used
+	// instead of cursor-based pagination.
+	Offset *int64 `json:"offset,omitempty"`
 }
 
 // ToQuery returns the params as url.Values.
@@ -93,6 +96,9 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.EndUserFacingOnly != nil {
 		q.Add("end_user_facing_only", strconv.FormatBool(*params.EndUserFacingOnly))
+	}
+	if params.Offset != nil {
+		q.Add("offset", strconv.FormatInt(*params.Offset, 10))
 	}
 	return q
 }

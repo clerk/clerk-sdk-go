@@ -20,8 +20,9 @@ type AuditLog struct {
 
 type AuditLogList struct {
 	APIResource
-	AuditLogs []*AuditLog       `json:"data"`
-	Cursor    *PaginationCursor `json:"cursor"`
+	AuditLogs  []*AuditLog       `json:"data"`
+	Cursor     *PaginationCursor `json:"cursor,omitempty"`
+	TotalCount *int64            `json:"total_count,omitempty"`
 }
 
 // PaginationCursor contains the cursors for pagination.
