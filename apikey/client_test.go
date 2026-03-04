@@ -68,7 +68,7 @@ func TestList(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
-		"api_keys": []map[string]interface{}{
+		"data": []map[string]interface{}{
 			{
 				"object":            "api_key",
 				"id":                "ak_test123",
@@ -88,6 +88,7 @@ func TestList(t *testing.T) {
 				"updated_at":        1640995200,
 			},
 		},
+		"total_count": int64(1),
 	}
 
 	responseJSON, _ := json.Marshal(response)
@@ -114,8 +115,53 @@ func TestList(t *testing.T) {
 
 	apiKeys, err := client.List(context.Background(), params)
 	require.NoError(t, err)
+	assert.Equal(t, int64(1), apiKeys.TotalCount)
 	assert.Len(t, apiKeys.APIKeys, 1)
 	assert.Equal(t, "ak_test123", apiKeys.APIKeys[0].ID)
+}
+
+func TestGet(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":            "api_key",
+		"id":                "ak_test123",
+		"type":              "api_key",
+		"subject":           "user_123",
+		"name":              "test_key",
+		"description":       "Test API key",
+		"claims":            map[string]interface{}{},
+		"scopes":            []string{},
+		"revoked":           false,
+		"revocation_reason": nil,
+		"expired":           false,
+		"expiration":        nil,
+		"created_by":        "user_123",
+		"last_used_at":      nil,
+		"created_at":        1640995200,
+		"updated_at":        1640995200,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(responseJSON),
+			Method: http.MethodGet,
+			Path:   "/v1/api_keys/ak_test123",
+		},
+	}
+
+	client := NewClient(config)
+	apiKey, err := client.Get(context.Background(), "ak_test123")
+	require.NoError(t, err)
+	assert.Equal(t, "ak_test123", apiKey.ID)
+	assert.Equal(t, "test_key", apiKey.Name)
+	assert.Equal(t, "user_123", apiKey.Subject)
+	assert.Equal(t, "Test API key", *apiKey.Description)
+	assert.False(t, apiKey.Revoked)
 }
 
 func TestGetSecret(t *testing.T) {
@@ -279,6 +325,35 @@ func TestUpdateSecondsUntilExpirationOnly(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "ak_test123", apiKey.ID)
 	assert.Equal(t, int64(1716883200), *apiKey.Expiration)
+}
+
+func TestDelete(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":  "api_key",
+		"id":      "ak_test123",
+		"deleted": true,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(responseJSON),
+			Method: http.MethodDelete,
+			Path:   "/v1/api_keys/ak_test123",
+		},
+	}
+
+	client := NewClient(config)
+	deletedResource, err := client.Delete(context.Background(), "ak_test123")
+	require.NoError(t, err)
+	assert.Equal(t, "ak_test123", deletedResource.ID)
+	assert.True(t, deletedResource.Deleted)
+	assert.Equal(t, "api_key", deletedResource.Object)
 }
 
 func TestRevoke(t *testing.T) {

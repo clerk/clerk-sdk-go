@@ -68,11 +68,57 @@ func TestPackageCreate(t *testing.T) {
 	assert.Equal(t, "ak_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", apiKey.Secret)
 }
 
+func TestPackageGet(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":            "api_key",
+		"id":                "ak_test123",
+		"type":              "api_key",
+		"subject":           "user_123",
+		"name":              "test_key",
+		"description":       "Test API key",
+		"claims":            map[string]interface{}{},
+		"scopes":            []string{},
+		"revoked":           false,
+		"revocation_reason": nil,
+		"expired":           false,
+		"expiration":        nil,
+		"created_by":        "user_123",
+		"last_used_at":      nil,
+		"created_at":        1640995200,
+		"updated_at":        1640995200,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	backend := &clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T:      t,
+				Out:    json.RawMessage(responseJSON),
+				Method: http.MethodGet,
+				Path:   "/v1/api_keys/ak_test123",
+			},
+		},
+	}
+
+	clerk.SetBackend(clerk.NewBackend(backend))
+
+	apiKey, err := Get(context.Background(), "ak_test123")
+	require.NoError(t, err)
+	assert.Equal(t, "ak_test123", apiKey.ID)
+	assert.Equal(t, "test_key", apiKey.Name)
+	assert.Equal(t, "user_123", apiKey.Subject)
+	assert.Equal(t, "Test API key", *apiKey.Description)
+	assert.False(t, apiKey.Revoked)
+}
+
 func TestPackageList(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
-		"api_keys": []map[string]interface{}{
+		"data": []map[string]interface{}{
 			{
 				"object":            "api_key",
 				"id":                "ak_test123",
@@ -92,6 +138,7 @@ func TestPackageList(t *testing.T) {
 				"updated_at":        1640995200,
 			},
 		},
+		"total_count": int64(1),
 	}
 
 	responseJSON, _ := json.Marshal(response)
@@ -120,6 +167,7 @@ func TestPackageList(t *testing.T) {
 
 	apiKeys, err := List(context.Background(), params)
 	require.NoError(t, err)
+	assert.Equal(t, int64(1), apiKeys.TotalCount)
 	assert.Len(t, apiKeys.APIKeys, 1)
 	assert.Equal(t, "ak_test123", apiKeys.APIKeys[0].ID)
 }
@@ -196,6 +244,37 @@ func TestPackageUpdate(t *testing.T) {
 	apiKey, err := Update(context.Background(), "ak_test123", params)
 	require.NoError(t, err)
 	assert.Equal(t, "Updated description", *apiKey.Description)
+}
+
+func TestPackageDelete(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":  "api_key",
+		"id":      "ak_test123",
+		"deleted": true,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	backend := &clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T:      t,
+				Out:    json.RawMessage(responseJSON),
+				Method: http.MethodDelete,
+				Path:   "/v1/api_keys/ak_test123",
+			},
+		},
+	}
+
+	clerk.SetBackend(clerk.NewBackend(backend))
+
+	deletedResource, err := Delete(context.Background(), "ak_test123")
+	require.NoError(t, err)
+	assert.Equal(t, "ak_test123", deletedResource.ID)
+	assert.True(t, deletedResource.Deleted)
+	assert.Equal(t, "api_key", deletedResource.Object)
 }
 
 func TestPackageUpdateWithSecondsUntilExpiration(t *testing.T) {

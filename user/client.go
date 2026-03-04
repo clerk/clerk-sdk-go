@@ -50,6 +50,7 @@ type CreateParams struct {
 	TOTPSecret                *string          `json:"totp_secret,omitempty"`
 	BackupCodes               *[]string        `json:"backup_codes,omitempty"`
 	DeleteSelfEnabled         *bool            `json:"delete_self_enabled,omitempty"`
+	BypassClientTrust         *bool            `json:"bypass_client_trust,omitempty"`
 	CreateOrganizationEnabled *bool            `json:"create_organization_enabled,omitempty"`
 	CreateOrganizationsLimit  *int             `json:"create_organizations_limit,omitempty"`
 	// Specified in RFC3339 format
@@ -57,6 +58,8 @@ type CreateParams struct {
 	SkipLegalChecks *bool   `json:"skip_legal_checks,omitempty"`
 	// Specified in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
+	// Specified in BCP-47 format
+	Locale *string `json:"locale,omitempty"`
 }
 
 // Create creates a new user.
@@ -103,6 +106,7 @@ type UpdateParams struct {
 	TOTPSecret                       *string          `json:"totp_secret,omitempty"`
 	BackupCodes                      *[]string        `json:"backup_codes,omitempty"`
 	DeleteSelfEnabled                *bool            `json:"delete_self_enabled,omitempty"`
+	BypassClientTrust                *bool            `json:"bypass_client_trust,omitempty"`
 	CreateOrganizationEnabled        *bool            `json:"create_organization_enabled,omitempty"`
 	CreateOrganizationsLimit         *int             `json:"create_organizations_limit,omitempty"`
 	// Specified in RFC3339 format
@@ -110,6 +114,8 @@ type UpdateParams struct {
 	SkipLegalChecks *bool   `json:"skip_legal_checks,omitempty"`
 	// Specified in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
+	// Specified in BCP-47 format
+	Locale *string `json:"locale,omitempty"`
 }
 
 // Update updates a user.
@@ -236,6 +242,8 @@ type ListParams struct {
 	CreatedAtAfter     *int64 `json:"created_at_after,omitempty"`
 	LastActiveAtBefore *int64 `json:"last_active_at_before,omitempty"`
 	LastActiveAtAfter  *int64 `json:"last_active_at_after,omitempty"`
+	LastSignInAtBefore *int64 `json:"last_sign_in_at_before,omitempty"`
+	LastSignInAtAfter  *int64 `json:"last_sign_in_at_after,omitempty"`
 }
 
 // ToQuery returns url.Values from the params.
@@ -298,6 +306,12 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.LastActiveAtAfter != nil {
 		q.Add("last_active_at_after", strconv.FormatInt(*params.LastActiveAtAfter, 10))
+	}
+	if params.LastSignInAtBefore != nil {
+		q.Add("last_sign_in_at_before", strconv.FormatInt(*params.LastSignInAtBefore, 10))
+	}
+	if params.LastSignInAtAfter != nil {
+		q.Add("last_sign_in_at_after", strconv.FormatInt(*params.LastSignInAtAfter, 10))
 	}
 	return q
 }
@@ -579,6 +593,37 @@ func (c *Client) DeleteExternalAccount(ctx context.Context, params *DeleteExtern
 	}
 	req := clerk.NewAPIRequest(http.MethodDelete, path)
 	resource := &clerk.DeletedResource{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
+type SetPasswordCompromisedParams struct {
+	clerk.APIParams
+	UserID            string `json:"-"`
+	RevokeAllSessions *bool  `json:"revoke_all_sessions,omitempty"`
+}
+
+// SetPasswordCompromised sets the user's password as compromised.
+func (c *Client) SetPasswordCompromised(ctx context.Context, params *SetPasswordCompromisedParams) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, params.UserID, "password", "set_compromised")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	resource := &clerk.User{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
+// UnsetPasswordCompromised unsets the user's password as compromised.
+func (c *Client) UnsetPasswordCompromised(ctx context.Context, userID string) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, userID, "password", "unset_compromised")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	resource := &clerk.User{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }

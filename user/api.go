@@ -49,6 +49,12 @@ func List(ctx context.Context, params *ListParams) (*clerk.UserList, error) {
 	return getClient().List(ctx, params)
 }
 
+// ListWithoutCount returns a list of users without fetching the total count.
+// This is more efficient than List when you don't need the total count.
+func ListWithoutCount(ctx context.Context, params *ListParams) ([]*clerk.User, error) {
+	return getClient().ListWithoutCount(ctx, params)
+}
+
 // Count returns the total count of users satisfying the parameters.
 func Count(ctx context.Context, params *ListParams) (*TotalCount, error) {
 	return getClient().Count(ctx, params)
@@ -118,6 +124,16 @@ func DeleteBackupCode(ctx context.Context, userID string) (*MultifactorAuthentic
 // DeleteExternalAccount deletes an external account by its ID.
 func DeleteExternalAccount(ctx context.Context, params *DeleteExternalAccountParams) (*clerk.DeletedResource, error) {
 	return getClient().DeleteExternalAccount(ctx, params)
+}
+
+// SetPasswordCompromised sets the user's password as compromised.
+func SetPasswordCompromised(ctx context.Context, params *SetPasswordCompromisedParams) (*clerk.User, error) {
+	return getClient().SetPasswordCompromised(ctx, params)
+}
+
+// UnsetPasswordCompromised unsets the user's password as compromised.
+func UnsetPasswordCompromised(ctx context.Context, userID string) (*clerk.User, error) {
+	return getClient().UnsetPasswordCompromised(ctx, userID)
 }
 
 func getClient() *Client {

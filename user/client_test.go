@@ -39,6 +39,32 @@ func TestUserClientCreate(t *testing.T) {
 	require.Equal(t, username, *user.Username)
 }
 
+func TestUserClientCreate_WithLocale(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	username := "username"
+	locale := "en-US"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"username":"%s","locale":"%s"}`, username, locale)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","username":"%s","locale":"%s"}`, id, username, locale)),
+			Method: http.MethodPost,
+			Path:   "/v1/users",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Create(context.Background(), &CreateParams{
+		Username: clerk.String(username),
+		Locale:   clerk.String(locale),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Equal(t, username, *user.Username)
+	require.Equal(t, locale, *user.Locale)
+}
+
 func TestUserClientList_Request(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
@@ -47,18 +73,20 @@ func TestUserClientList_Request(t *testing.T) {
 			T:      t,
 			Method: http.MethodGet,
 			Query: &url.Values{
-				"limit":                 []string{"1"},
-				"offset":                []string{"2"},
-				"order_by":              []string{"-created_at"},
-				"email_address":         []string{"foo@bar.com", "baz@bar.com"},
-				"organization_id":       []string{"org_123", "org_456"},
-				"email_address_query":   []string{"@bar.com"},
-				"name_query":            []string{"foobar"},
-				"created_at_before":     []string{"1730333164378"},
-				"created_at_after":      []string{"1730333164378"},
-				"last_active_at_before": []string{"1730333164378"},
-				"last_active_at_after":  []string{"1730333164378"},
-				"banned":                []string{"false"},
+				"limit":                  []string{"1"},
+				"offset":                 []string{"2"},
+				"order_by":               []string{"-created_at"},
+				"email_address":          []string{"foo@bar.com", "baz@bar.com"},
+				"organization_id":        []string{"org_123", "org_456"},
+				"email_address_query":    []string{"@bar.com"},
+				"name_query":             []string{"foobar"},
+				"created_at_before":      []string{"1730333164378"},
+				"created_at_after":       []string{"1730333164378"},
+				"last_active_at_before":  []string{"1730333164378"},
+				"last_active_at_after":   []string{"1730333164378"},
+				"last_sign_in_at_before": []string{"1730333164378"},
+				"last_sign_in_at_after":  []string{"1730333164378"},
+				"banned":                 []string{"false"},
 			},
 		},
 	}
@@ -76,6 +104,8 @@ func TestUserClientList_Request(t *testing.T) {
 	params.CreatedAtAfter = clerk.Int64(1730333164378)
 	params.LastActiveAtBefore = clerk.Int64(1730333164378)
 	params.LastActiveAtAfter = clerk.Int64(1730333164378)
+	params.LastSignInAtBefore = clerk.Int64(1730333164378)
+	params.LastSignInAtAfter = clerk.Int64(1730333164378)
 	params.Banned = clerk.Bool(false)
 	_, err := client.List(context.Background(), params)
 	require.NoError(t, err)
@@ -228,6 +258,29 @@ func TestUserClientUpdate(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, user.ID)
 	require.Equal(t, username, *user.Username)
+}
+
+func TestUserClientUpdate_WithLocale(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	locale := "fr-FR"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"locale":"%s"}`, locale)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","locale":"%s"}`, id, locale)),
+			Method: http.MethodPatch,
+			Path:   "/v1/users/" + id,
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Update(context.Background(), id, &UpdateParams{
+		Locale: clerk.String(locale),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Equal(t, locale, *user.Locale)
 }
 
 type testFile struct {
@@ -601,4 +654,45 @@ func TestUserClientDeleteExternalAccount(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, externalAccountID, externalAccount.ID)
 	require.Equal(t, "external_account", externalAccount.Object)
+}
+
+func TestUserClientPasswordCompromised(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Method: http.MethodPost,
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"user","id":"%s","requires_password_reset":true}`, userID)),
+			Path:   fmt.Sprintf("/v1/users/%s/password/set_compromised", userID),
+		},
+	}
+	client := NewClient(config)
+	user, err := client.SetPasswordCompromised(context.Background(), &SetPasswordCompromisedParams{
+		UserID:            userID,
+		RevokeAllSessions: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, userID, user.ID)
+	require.True(t, *user.RequiresPasswordReset)
+}
+
+func TestUserClientUnsetPasswordCompromised(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Method: http.MethodPost,
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"user","id":"%s","requires_password_reset":false}`, userID)),
+			Path:   fmt.Sprintf("/v1/users/%s/password/unset_compromised", userID),
+		},
+	}
+	client := NewClient(config)
+	user, err := client.UnsetPasswordCompromised(context.Background(), userID)
+	require.NoError(t, err)
+	require.Equal(t, userID, user.ID)
+	require.False(t, *user.RequiresPasswordReset)
 }

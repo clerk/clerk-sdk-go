@@ -18,12 +18,13 @@ func TestOrganizationInvitationClientCreate(t *testing.T) {
 	id := "orginv_123"
 	organizationID := "org_123"
 	emailAddress := "foo@bar.com"
+	url := "http://example.com"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
 			In:     json.RawMessage(fmt.Sprintf(`{"email_address":"%s", "expires_in_days": 1}`, emailAddress)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","email_address":"%s","organization_id":"%s", "expires_at": 1}`, id, emailAddress, organizationID)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","email_address":"%s","organization_id":"%s", "expires_at": 1, "url":"%s"}`, id, emailAddress, organizationID, url)),
 			Method: http.MethodPost,
 			Path:   "/v1/organizations/" + organizationID + "/invitations",
 		},
@@ -39,6 +40,7 @@ func TestOrganizationInvitationClientCreate(t *testing.T) {
 	require.Equal(t, organizationID, invitation.OrganizationID)
 	require.Equal(t, emailAddress, invitation.EmailAddress)
 	require.Equal(t, int64(1), *invitation.ExpiresAt)
+	require.Equal(t, url, *invitation.URL)
 }
 
 func TestOrganizationInvitationClientCreate_Error(t *testing.T) {
@@ -70,6 +72,7 @@ func TestOrganizationInvitationClientList(t *testing.T) {
 	t.Parallel()
 	organizationID := "org_123"
 	id := "orginv_123"
+	inviterID := "inviter_123"
 	statuses := []string{"pending", "accepted"}
 	emailAddress := "string"
 	orderBy := "-created_at"
@@ -78,7 +81,7 @@ func TestOrganizationInvitationClientList(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"data":[{"id":"%s","object":"organization_invitation","email_address":"string","role":"string","organization_id":"%s","status":"string","public_metadata":{},"private_metadata":{},"expires_at":1,"created_at":0,"updated_at":0}],"total_count":1}`, id, organizationID)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"data":[{"id":"%s","object":"organization_invitation","email_address":"string","role":"string","organization_id":"%s","inviter_id":"%s","status":"string","public_metadata":{},"private_metadata":{},"expires_at":1,"created_at":0,"updated_at":0,"public_inviter_data":{"user_id":"inviter_123"}}],"total_count":1}`, id, organizationID, inviterID)),
 			Method: http.MethodGet,
 			Path:   "/v1/organizations/" + organizationID + "/invitations",
 			Query: &url.Values{
@@ -103,7 +106,9 @@ func TestOrganizationInvitationClientList(t *testing.T) {
 	require.Len(t, response.OrganizationInvitations, 1)
 	require.Equal(t, id, response.OrganizationInvitations[0].ID)
 	require.Equal(t, organizationID, response.OrganizationInvitations[0].OrganizationID)
+	require.Equal(t, inviterID, response.OrganizationInvitations[0].InviterID)
 	require.Equal(t, int64(1), *response.OrganizationInvitations[0].ExpiresAt)
+	require.Equal(t, "inviter_123", response.OrganizationInvitations[0].PublicInviterData.UserID)
 	require.Equal(t, int64(1), response.TotalCount)
 }
 
@@ -135,12 +140,13 @@ func TestOrganizationInvitationClientList_Error(t *testing.T) {
 func TestOrganizationInvitationClientGet(t *testing.T) {
 	t.Parallel()
 	organizationID := "org_123"
+	inviterID := "inviter_123"
 	id := "orginv_123"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"organization_invitation","email_address":"string","role":"string","role_name":"string","organization_id":"%s","status":"string","public_metadata":{},"private_metadata":{},"expires_at": 1,"created_at":0,"updated_at":0}`, id, organizationID)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"organization_invitation","email_address":"string","role":"string","role_name":"string","organization_id":"%s","inviter_id":"%s","status":"string","public_metadata":{},"private_metadata":{},"expires_at": 1,"created_at":0,"updated_at":0,"public_inviter_data":{"user_id":"inviter_123"}}`, id, organizationID, inviterID)),
 			Method: http.MethodGet,
 			Path:   "/v1/organizations/" + organizationID + "/invitations/" + id,
 		},
@@ -153,8 +159,10 @@ func TestOrganizationInvitationClientGet(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, response.ID)
 	require.Equal(t, organizationID, response.OrganizationID)
+	require.Equal(t, inviterID, response.InviterID)
 	require.Equal(t, "string", response.RoleName)
 	require.Equal(t, "string", response.Role)
+	require.Equal(t, "inviter_123", response.PublicInviterData.UserID)
 	require.Equal(t, int64(1), *response.ExpiresAt)
 }
 
@@ -249,7 +257,7 @@ func TestOrganizationInvitationClientListFromInstance(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(`{"data":[{"id":"orginv_123","object":"organization_invitation","email_address":"string","role":"string","organization_id":"org_123","status":"string","public_metadata":{},"private_metadata":{},"created_at":0,"updated_at":0}],"total_count":1}`),
+			Out:    json.RawMessage(`{"data":[{"id":"orginv_123","object":"organization_invitation","email_address":"string","role":"string","organization_id":"org_123","status":"string","public_metadata":{},"private_metadata":{},"created_at":0,"updated_at":0,"public_inviter_data":{"user_id":"inviter_123"}}],"total_count":1}`),
 			Method: http.MethodGet,
 			Path:   "/v1/organization_invitations",
 			Query: &url.Values{
@@ -273,6 +281,7 @@ func TestOrganizationInvitationClientListFromInstance(t *testing.T) {
 	require.Len(t, response.OrganizationInvitations, 1)
 	require.Equal(t, int64(1), response.TotalCount)
 	require.Equal(t, "orginv_123", response.OrganizationInvitations[0].ID)
+	require.Equal(t, "inviter_123", response.OrganizationInvitations[0].PublicInviterData.UserID)
 }
 
 func TestOrganizationInvitationClientListFromInstance_Error(t *testing.T) {
