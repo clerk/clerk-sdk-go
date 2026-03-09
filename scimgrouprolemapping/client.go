@@ -63,9 +63,9 @@ func (c *Client) ListGroups(ctx context.Context, scimDirectoryID string) ([]*cle
 
 type CreateParams struct {
 	clerk.APIParams
-	SCIMGroupID string  `json:"scim_group_id"`
-	RoleID      string  `json:"role_id"`
-	Precedence  *int    `json:"precedence,omitempty"`
+	SCIMGroupID string `json:"scim_group_id"`
+	RoleID      string `json:"role_id"`
+	Precedence  *int   `json:"precedence,omitempty"`
 }
 
 // Create creates a new group role mapping.

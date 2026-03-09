@@ -17,11 +17,11 @@ func TestList(t *testing.T) {
 
 	response := []map[string]interface{}{
 		{
-			"object":                   "scim_group_role_mapping",
-			"id":                       "scim_grp_role_123",
-			"scim_directory_id":        "scim_dir_123",
-			"scim_group_id":            "group_123",
-			"scim_group_display_name":  "Admins",
+			"object":                  "scim_group_role_mapping",
+			"id":                      "scim_grp_role_123",
+			"scim_directory_id":       "scim_dir_123",
+			"scim_group_id":           "group_123",
+			"scim_group_display_name": "Admins",
 			"role": map[string]interface{}{
 				"object":      "role",
 				"id":          "role_admin",
@@ -30,16 +30,16 @@ func TestList(t *testing.T) {
 				"description": "Administrator role",
 				"permissions": []string{},
 			},
-			"precedence":  1,
-			"created_at":  1640995200000,
-			"updated_at":  1640995200000,
+			"precedence": 1,
+			"created_at": 1640995200000,
+			"updated_at": 1640995200000,
 		},
 		{
-			"object":                   "scim_group_role_mapping",
-			"id":                       "scim_grp_role_456",
-			"scim_directory_id":        "scim_dir_123",
-			"scim_group_id":            "group_456",
-			"scim_group_display_name":  "Members",
+			"object":                  "scim_group_role_mapping",
+			"id":                      "scim_grp_role_456",
+			"scim_directory_id":       "scim_dir_123",
+			"scim_group_id":           "group_456",
+			"scim_group_display_name": "Members",
 			"role": map[string]interface{}{
 				"object":      "role",
 				"id":          "role_member",
@@ -48,9 +48,9 @@ func TestList(t *testing.T) {
 				"description": "Member role",
 				"permissions": []string{},
 			},
-			"precedence":  2,
-			"created_at":  1640995200000,
-			"updated_at":  1640995200000,
+			"precedence": 2,
+			"created_at": 1640995200000,
+			"updated_at": 1640995200000,
 		},
 	}
 
@@ -124,11 +124,11 @@ func TestCreate(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
-		"object":                   "scim_group_role_mapping",
-		"id":                       "scim_grp_role_123",
-		"scim_directory_id":        "scim_dir_123",
-		"scim_group_id":            "group_123",
-		"scim_group_display_name":  "Admins",
+		"object":                  "scim_group_role_mapping",
+		"id":                      "scim_grp_role_123",
+		"scim_directory_id":       "scim_dir_123",
+		"scim_group_id":           "group_123",
+		"scim_group_display_name": "Admins",
 		"role": map[string]interface{}{
 			"object":      "role",
 			"id":          "role_admin",
@@ -136,9 +136,9 @@ func TestCreate(t *testing.T) {
 			"key":         "org:admin",
 			"permissions": []string{},
 		},
-		"precedence":  1,
-		"created_at":  1640995200000,
-		"updated_at":  1640995200000,
+		"precedence": 1,
+		"created_at": 1640995200000,
+		"updated_at": 1640995200000,
 	}
 
 	responseJSON, _ := json.Marshal(response)
@@ -174,11 +174,11 @@ func TestBulkUpdate(t *testing.T) {
 
 	response := []map[string]interface{}{
 		{
-			"object":                   "scim_group_role_mapping",
-			"id":                       "scim_grp_role_456",
-			"scim_directory_id":        "scim_dir_123",
-			"scim_group_id":            "group_456",
-			"scim_group_display_name":  "Members",
+			"object":                  "scim_group_role_mapping",
+			"id":                      "scim_grp_role_456",
+			"scim_directory_id":       "scim_dir_123",
+			"scim_group_id":           "group_456",
+			"scim_group_display_name": "Members",
 			"role": map[string]interface{}{
 				"object":      "role",
 				"id":          "role_member",
@@ -186,16 +186,16 @@ func TestBulkUpdate(t *testing.T) {
 				"key":         "org:member",
 				"permissions": []string{},
 			},
-			"precedence":  1,
-			"created_at":  1640995200000,
-			"updated_at":  1640995200000,
+			"precedence": 1,
+			"created_at": 1640995200000,
+			"updated_at": 1640995200000,
 		},
 		{
-			"object":                   "scim_group_role_mapping",
-			"id":                       "scim_grp_role_123",
-			"scim_directory_id":        "scim_dir_123",
-			"scim_group_id":            "group_123",
-			"scim_group_display_name":  "Admins",
+			"object":                  "scim_group_role_mapping",
+			"id":                      "scim_grp_role_123",
+			"scim_directory_id":       "scim_dir_123",
+			"scim_group_id":           "group_123",
+			"scim_group_display_name": "Admins",
 			"role": map[string]interface{}{
 				"object":      "role",
 				"id":          "role_admin",
@@ -203,9 +203,9 @@ func TestBulkUpdate(t *testing.T) {
 				"key":         "org:admin",
 				"permissions": []string{},
 			},
-			"precedence":  2,
-			"created_at":  1640995200000,
-			"updated_at":  1640995200000,
+			"precedence": 2,
+			"created_at": 1640995200000,
+			"updated_at": 1640995200000,
 		},
 	}
 
@@ -247,11 +247,11 @@ func TestBulkUpdateWithRoleChange(t *testing.T) {
 	newRoleID := "role_new"
 	response := []map[string]interface{}{
 		{
-			"object":                   "scim_group_role_mapping",
-			"id":                       "scim_grp_role_123",
-			"scim_directory_id":        "scim_dir_123",
-			"scim_group_id":            "group_123",
-			"scim_group_display_name":  "Admins",
+			"object":                  "scim_group_role_mapping",
+			"id":                      "scim_grp_role_123",
+			"scim_directory_id":       "scim_dir_123",
+			"scim_group_id":           "group_123",
+			"scim_group_display_name": "Admins",
 			"role": map[string]interface{}{
 				"object":      "role",
 				"id":          newRoleID,
@@ -259,9 +259,9 @@ func TestBulkUpdateWithRoleChange(t *testing.T) {
 				"key":         "org:new",
 				"permissions": []string{},
 			},
-			"precedence":  1,
-			"created_at":  1640995200000,
-			"updated_at":  1640995200000,
+			"precedence": 1,
+			"created_at": 1640995200000,
+			"updated_at": 1640995200000,
 		},
 	}
 
