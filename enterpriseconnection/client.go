@@ -32,17 +32,10 @@ type AttributeMappingParams struct {
 	LastName     string `json:"last_name"`
 }
 
-// CreateParams holds parameters for creating an enterprise connection.
-type CreateParams struct {
-	clerk.APIParams
-	// Common
-	Name           *string   `json:"name,omitempty"`
-	OrganizationID *string   `json:"organization_id,omitempty"`
-	Protocol       *string   `json:"protocol,omitempty"` // "saml" or "oauth_oidc"
-	Provider       *string   `json:"provider,omitempty"`
-	Domains        *[]string `json:"domains,omitempty"`
-
-	// SAML (protocol "saml"): https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.saml
+// CreateParamsSaml is the request body for creating a SAML enterprise connection.
+// Pass as CreateParams.Saml when Protocol is "saml".
+// See: https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.saml
+type CreateParamsSaml struct {
 	IdpEntityID      *string                 `json:"idp_entity_id,omitempty"`
 	IdpSsoURL        *string                 `json:"idp_sso_url,omitempty"`
 	IdpCertificate   *string                 `json:"idp_certificate,omitempty"`
@@ -50,8 +43,12 @@ type CreateParams struct {
 	IdpMetadata      *string                 `json:"idp_metadata,omitempty"`
 	AttributeMapping *AttributeMappingParams `json:"attribute_mapping,omitempty"`
 	ForceAuthn       *bool                   `json:"force_authn,omitempty"`
+}
 
-	// OIDC (protocol "oauth_oidc"): https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.oidc
+// CreateParamsOidc is the request body for creating an OIDC enterprise connection.
+// Pass as CreateParams.Oidc when Protocol is "oauth_oidc".
+// See: https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.oidc
+type CreateParamsOidc struct {
 	ClientID         *string `json:"client_id,omitempty"`
 	ClientSecret     *string `json:"client_secret,omitempty"`
 	IssuerURL        *string `json:"issuer_url,omitempty"`
@@ -59,6 +56,19 @@ type CreateParams struct {
 	TokenURL         *string `json:"token_url,omitempty"`
 	UserInfoURL      *string `json:"user_info_url,omitempty"`
 	Scopes           *string `json:"scopes,omitempty"`
+}
+
+// CreateParams holds parameters for creating an enterprise connection.
+// Set Saml when protocol is "saml"; set Oidc when protocol is "oauth_oidc".
+type CreateParams struct {
+	clerk.APIParams
+	Name           *string   `json:"name,omitempty"`
+	OrganizationID *string   `json:"organization_id,omitempty"`
+	Protocol       *string   `json:"protocol,omitempty"` // "saml" or "oauth_oidc"
+	Provider       *string   `json:"provider,omitempty"`
+	Domains        *[]string `json:"domains,omitempty"`
+	Saml           *CreateParamsSaml `json:"saml,omitempty"`
+	Oidc           *CreateParamsOidc `json:"oidc,omitempty"`
 }
 
 // Create creates a new enterprise connection.
@@ -82,32 +92,27 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.EnterpriseConnectio
 	return conn, err
 }
 
-// UpdateParams holds parameters for updating an enterprise connection.
-// Use SAML fields for SAML connections; use OIDC fields for OIDC connections.
-type UpdateParams struct {
-	clerk.APIParams
-	// Common
-	Name                             *string   `json:"name,omitempty"`
-	OrganizationID                   *string   `json:"organization_id,omitempty"`
-	Domains                          *[]string `json:"domains,omitempty"`
-	Active                           *bool     `json:"active,omitempty"`
-	SyncUserAttributes               *bool     `json:"sync_user_attributes,omitempty"`
-	DisableAdditionalIdentifications *bool     `json:"disable_additional_identifications,omitempty"`
-
-	// SAML: https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.saml
+// UpdateParamsSaml is the request body for updating a SAML enterprise connection.
+// Pass as UpdateParams.Saml for SAML connections.
+// See: https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.saml
+type UpdateParamsSaml struct {
 	IdpEntityID                    *string                  `json:"idp_entity_id,omitempty"`
 	IdpSsoURL                      *string                  `json:"idp_sso_url,omitempty"`
-	IdpCertificate                 *string                  `json:"idp_certificate,omitempty"`
+	IdpCertificate                 *string                 `json:"idp_certificate,omitempty"`
 	IdpMetadataURL                 *string                  `json:"idp_metadata_url,omitempty"`
 	IdpMetadata                    *string                  `json:"idp_metadata,omitempty"`
 	AttributeMapping               *AttributeMappingParams  `json:"attribute_mapping,omitempty"`
-	AllowSubdomains                *bool                    `json:"allow_subdomains,omitempty"`
-	AllowIdpInitiated              *bool                    `json:"allow_idp_initiated,omitempty"`
-	ForceAuthn                     *bool                    `json:"force_authn,omitempty"`
-	ConsentVerifiedDomainsDeletion *bool                    `json:"consent_verified_domains_deletion,omitempty"`
+	AllowSubdomains                *bool                   `json:"allow_subdomains,omitempty"`
+	AllowIdpInitiated              *bool                   `json:"allow_idp_initiated,omitempty"`
+	ForceAuthn                     *bool                   `json:"force_authn,omitempty"`
+	ConsentVerifiedDomainsDeletion *bool                   `json:"consent_verified_domains_deletion,omitempty"`
 	CustomAttributes               *[]clerk.CustomAttribute `json:"custom_attributes,omitempty"`
+}
 
-	// OIDC: https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.oidc
+// UpdateParamsOidc is the request body for updating an OIDC enterprise connection.
+// Pass as UpdateParams.Oidc for OIDC connections.
+// See: https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.oidc
+type UpdateParamsOidc struct {
 	ClientID         *string `json:"client_id,omitempty"`
 	ClientSecret     *string `json:"client_secret,omitempty"`
 	IssuerURL        *string `json:"issuer_url,omitempty"`
@@ -115,6 +120,20 @@ type UpdateParams struct {
 	TokenURL         *string `json:"token_url,omitempty"`
 	UserInfoURL      *string `json:"user_info_url,omitempty"`
 	Scopes           *string `json:"scopes,omitempty"`
+}
+
+// UpdateParams holds parameters for updating an enterprise connection.
+// Set Saml for SAML connections; set Oidc for OIDC connections.
+type UpdateParams struct {
+	clerk.APIParams
+	Name                             *string   `json:"name,omitempty"`
+	OrganizationID                    *string   `json:"organization_id,omitempty"`
+	Domains                           *[]string `json:"domains,omitempty"`
+	Active                            *bool     `json:"active,omitempty"`
+	SyncUserAttributes                *bool     `json:"sync_user_attributes,omitempty"`
+	DisableAdditionalIdentifications *bool     `json:"disable_additional_identifications,omitempty"`
+	Saml                              *UpdateParamsSaml `json:"saml,omitempty"`
+	Oidc                              *UpdateParamsOidc `json:"oidc,omitempty"`
 }
 
 // Update updates an enterprise connection by ID.
