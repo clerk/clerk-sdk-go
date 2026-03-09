@@ -33,7 +33,6 @@ type AttributeMappingParams struct {
 }
 
 // CreateParamsSaml is the request body for creating a SAML enterprise connection.
-// Pass as CreateParams.Saml when Protocol is "saml".
 // See: https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.saml
 type CreateParamsSaml struct {
 	IdpEntityID      *string                 `json:"idp_entity_id,omitempty"`
@@ -46,7 +45,6 @@ type CreateParamsSaml struct {
 }
 
 // CreateParamsOidc is the request body for creating an OIDC enterprise connection.
-// Pass as CreateParams.Oidc when Protocol is "oauth_oidc".
 // See: https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.oidc
 type CreateParamsOidc struct {
 	ClientID         *string `json:"client_id,omitempty"`
@@ -62,11 +60,11 @@ type CreateParamsOidc struct {
 // Set Saml when protocol is "saml"; set Oidc when protocol is "oauth_oidc".
 type CreateParams struct {
 	clerk.APIParams
-	Name           *string   `json:"name,omitempty"`
-	OrganizationID *string   `json:"organization_id,omitempty"`
-	Protocol       *string   `json:"protocol,omitempty"` // "saml" or "oauth_oidc"
-	Provider       *string   `json:"provider,omitempty"`
-	Domains        *[]string `json:"domains,omitempty"`
+	Name           *string           `json:"name,omitempty"`
+	OrganizationID *string           `json:"organization_id,omitempty"`
+	Protocol       *string           `json:"protocol,omitempty"` // "saml" or "oauth_oidc"
+	Provider       *string           `json:"provider,omitempty"`
+	Domains        *[]string         `json:"domains,omitempty"`
 	Saml           *CreateParamsSaml `json:"saml,omitempty"`
 	Oidc           *CreateParamsOidc `json:"oidc,omitempty"`
 }
@@ -98,14 +96,14 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.EnterpriseConnectio
 type UpdateParamsSaml struct {
 	IdpEntityID                    *string                  `json:"idp_entity_id,omitempty"`
 	IdpSsoURL                      *string                  `json:"idp_sso_url,omitempty"`
-	IdpCertificate                 *string                 `json:"idp_certificate,omitempty"`
+	IdpCertificate                 *string                  `json:"idp_certificate,omitempty"`
 	IdpMetadataURL                 *string                  `json:"idp_metadata_url,omitempty"`
 	IdpMetadata                    *string                  `json:"idp_metadata,omitempty"`
 	AttributeMapping               *AttributeMappingParams  `json:"attribute_mapping,omitempty"`
-	AllowSubdomains                *bool                   `json:"allow_subdomains,omitempty"`
-	AllowIdpInitiated              *bool                   `json:"allow_idp_initiated,omitempty"`
-	ForceAuthn                     *bool                   `json:"force_authn,omitempty"`
-	ConsentVerifiedDomainsDeletion *bool                   `json:"consent_verified_domains_deletion,omitempty"`
+	AllowSubdomains                *bool                    `json:"allow_subdomains,omitempty"`
+	AllowIdpInitiated              *bool                    `json:"allow_idp_initiated,omitempty"`
+	ForceAuthn                     *bool                    `json:"force_authn,omitempty"`
+	ConsentVerifiedDomainsDeletion *bool                    `json:"consent_verified_domains_deletion,omitempty"`
 	CustomAttributes               *[]clerk.CustomAttribute `json:"custom_attributes,omitempty"`
 }
 
@@ -126,14 +124,14 @@ type UpdateParamsOidc struct {
 // Set Saml for SAML connections; set Oidc for OIDC connections.
 type UpdateParams struct {
 	clerk.APIParams
-	Name                             *string   `json:"name,omitempty"`
-	OrganizationID                    *string   `json:"organization_id,omitempty"`
-	Domains                           *[]string `json:"domains,omitempty"`
-	Active                            *bool     `json:"active,omitempty"`
-	SyncUserAttributes                *bool     `json:"sync_user_attributes,omitempty"`
-	DisableAdditionalIdentifications *bool     `json:"disable_additional_identifications,omitempty"`
-	Saml                              *UpdateParamsSaml `json:"saml,omitempty"`
-	Oidc                              *UpdateParamsOidc `json:"oidc,omitempty"`
+	Name                             *string           `json:"name,omitempty"`
+	OrganizationID                   *string           `json:"organization_id,omitempty"`
+	Domains                          *[]string         `json:"domains,omitempty"`
+	Active                           *bool             `json:"active,omitempty"`
+	SyncUserAttributes               *bool             `json:"sync_user_attributes,omitempty"`
+	DisableAdditionalIdentifications *bool             `json:"disable_additional_identifications,omitempty"`
+	Saml                             *UpdateParamsSaml `json:"saml,omitempty"`
+	Oidc                             *UpdateParamsOidc `json:"oidc,omitempty"`
 }
 
 // Update updates an enterprise connection by ID.

@@ -22,13 +22,13 @@ type EnterpriseConnection struct {
 	UpdatedAt                        int64    `json:"updated_at"`
 
 	// SAML-specific fields (when protocol is "saml")
-	IdpEntityID      *string                           `json:"idp_entity_id,omitempty"`
-	IdpSsoURL        *string                           `json:"idp_sso_url,omitempty"`
-	AcsURL           string                            `json:"acs_url,omitempty"`
-	SPEntityID       string                            `json:"sp_entity_id,omitempty"`
-	SPMetadataURL    string                            `json:"sp_metadata_url,omitempty"`
-	AttributeMapping *SAMLConnectionAttributeMapping   `json:"attribute_mapping,omitempty"`
-	CustomAttributes *[]CustomAttribute                 `json:"custom_attributes,omitempty"`
+	IdpEntityID      *string                         `json:"idp_entity_id,omitempty"`
+	IdpSsoURL        *string                         `json:"idp_sso_url,omitempty"`
+	AcsURL           string                          `json:"acs_url,omitempty"`
+	SPEntityID       string                          `json:"sp_entity_id,omitempty"`
+	SPMetadataURL    string                          `json:"sp_metadata_url,omitempty"`
+	AttributeMapping *SAMLConnectionAttributeMapping `json:"attribute_mapping,omitempty"`
+	CustomAttributes *[]CustomAttribute              `json:"custom_attributes,omitempty"`
 
 	// OIDC-specific fields (when protocol is "oauth_oidc")
 	ClientID         *string `json:"client_id,omitempty"`
@@ -43,5 +43,5 @@ type EnterpriseConnection struct {
 type EnterpriseConnectionList struct {
 	APIResource
 	EnterpriseConnections []*EnterpriseConnection `json:"data"`
-	TotalCount            int64                  `json:"total_count"`
+	TotalCount            int64                   `json:"total_count"`
 }

@@ -21,9 +21,9 @@ func TestEnterpriseConnectionClientCreate(t *testing.T) {
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
-			T:  t,
-			In: json.RawMessage(fmt.Sprintf(`{"name":"%s","provider":"%s","protocol":"%s"}`, name, provider, protocol)),
-			Out: json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","provider":"%s","protocol":"%s","object":"enterprise_connection","active":true}`, id, name, provider, protocol)),
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","provider":"%s","protocol":"%s"}`, name, provider, protocol)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","provider":"%s","protocol":"%s","object":"enterprise_connection","active":true}`, id, name, provider, protocol)),
 			Method: http.MethodPost,
 			Path:   "/v1/enterprise_connections",
 		},
@@ -48,8 +48,8 @@ func TestEnterpriseConnectionClientGet(t *testing.T) {
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
-			T: t,
-			Out: json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","object":"enterprise_connection","protocol":"saml","provider":"okta","active":true}`, id, name)),
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","object":"enterprise_connection","protocol":"saml","provider":"okta","active":true}`, id, name)),
 			Method: http.MethodGet,
 			Path:   "/v1/enterprise_connections/" + id,
 		},
@@ -67,8 +67,8 @@ func TestEnterpriseConnectionClientList(t *testing.T) {
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
-			T: t,
-			Out: json.RawMessage(fmt.Sprintf(`{"data":[{"id":"%s","name":"Test","object":"enterprise_connection","protocol":"saml","provider":"okta","active":true}],"total_count":1}`, id)),
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"data":[{"id":"%s","name":"Test","object":"enterprise_connection","protocol":"saml","provider":"okta","active":true}],"total_count":1}`, id)),
 			Method: http.MethodGet,
 			Path:   "/v1/enterprise_connections",
 		},
@@ -88,9 +88,9 @@ func TestEnterpriseConnectionClientUpdate(t *testing.T) {
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
-			T:  t,
-			In: json.RawMessage(fmt.Sprintf(`{"name":"%s"}`, name)),
-			Out: json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","object":"enterprise_connection","protocol":"saml","provider":"okta","active":true}`, id, name)),
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s"}`, name)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","object":"enterprise_connection","protocol":"saml","provider":"okta","active":true}`, id, name)),
 			Method: http.MethodPatch,
 			Path:   "/v1/enterprise_connections/" + id,
 		},
@@ -110,8 +110,8 @@ func TestEnterpriseConnectionClientDelete(t *testing.T) {
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
-			T: t,
-			Out: json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"enterprise_connection","deleted":true}`, id)),
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"enterprise_connection","deleted":true}`, id)),
 			Method: http.MethodDelete,
 			Path:   "/v1/enterprise_connections/" + id,
 		},
