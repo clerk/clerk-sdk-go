@@ -176,7 +176,7 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.Organizat
 	return list, err
 }
 
-type MetadataParams struct {
+type UpdateMetadataParams struct {
 	clerk.APIParams
 	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
 	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
@@ -184,8 +184,9 @@ type MetadataParams struct {
 	OrganizationID  string           `json:"-"`
 }
 
-// UpdateMetadata merges and updates organization membership metadata
-func (c *Client) UpdateMetadata(ctx context.Context, params *MetadataParams) (*clerk.OrganizationMembership, error) {
+// UpdateMetadata updates the organization membership's metadata by merging the
+// provided values with the existing ones.
+func (c *Client) UpdateMetadata(ctx context.Context, params *UpdateMetadataParams) (*clerk.OrganizationMembership, error) {
 	path, err := clerk.JoinPath(path, params.OrganizationID, "/memberships", params.UserID, "/metadata")
 	if err != nil {
 		return nil, err

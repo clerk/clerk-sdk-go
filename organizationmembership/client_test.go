@@ -311,7 +311,7 @@ func TestOrganizationMembershipClientUpdateMetadata(t *testing.T) {
 	client := NewClient(config)
 	pubMeta := json.RawMessage(publicMeta)
 	privMeta := json.RawMessage(privateMeta)
-	membership, err := client.UpdateMetadata(context.Background(), &MetadataParams{
+	membership, err := client.UpdateMetadata(context.Background(), &UpdateMetadataParams{
 		OrganizationID:  organizationID,
 		UserID:          userID,
 		PublicMetadata:  &pubMeta,
@@ -341,7 +341,7 @@ func TestOrganizationMembershipClientUpdateMetadata_Error(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	_, err := client.UpdateMetadata(context.Background(), &MetadataParams{})
+	_, err := client.UpdateMetadata(context.Background(), &UpdateMetadataParams{})
 	require.Error(t, err)
 	apiErr, ok := err.(*clerk.APIErrorResponse)
 	require.True(t, ok)
