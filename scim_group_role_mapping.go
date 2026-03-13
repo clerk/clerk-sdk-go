@@ -27,6 +27,13 @@ type SCIMGroupRoleMapping struct {
 	UpdatedAt            int64                     `json:"updated_at"`
 }
 
+// SCIMGroupRoleMappingList represents a list of SCIM group role mappings.
+type SCIMGroupRoleMappingList struct {
+	APIResource
+	Data       []*SCIMGroupRoleMapping `json:"data"`
+	TotalCount int64                   `json:"total_count"`
+}
+
 // SCIMGroup represents a SCIM group from the directory provider.
 type SCIMGroup struct {
 	APIResource
@@ -34,4 +41,11 @@ type SCIMGroup struct {
 	ID          string `json:"id"`
 	DisplayName string `json:"display_name"`
 	UpdatedAt   int64  `json:"updated_at"`
+}
+
+// SCIMGroupList represents a paginated list of SCIM groups.
+type SCIMGroupList struct {
+	APIResource
+	Data   []*SCIMGroup      `json:"data"`
+	Cursor *PaginationCursor `json:"cursor"`
 }

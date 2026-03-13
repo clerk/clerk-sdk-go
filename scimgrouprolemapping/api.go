@@ -9,13 +9,13 @@ import (
 )
 
 // List returns all group role mappings for a SCIM directory.
-func List(ctx context.Context, scimDirectoryID string) ([]*clerk.SCIMGroupRoleMapping, error) {
+func List(ctx context.Context, scimDirectoryID string) (*clerk.SCIMGroupRoleMappingList, error) {
 	return getClient().List(ctx, scimDirectoryID)
 }
 
-// ListGroups returns all SCIM groups for a directory.
-func ListGroups(ctx context.Context, scimDirectoryID string) ([]*clerk.SCIMGroup, error) {
-	return getClient().ListGroups(ctx, scimDirectoryID)
+// ListGroups returns SCIM groups for a directory with cursor pagination.
+func ListGroups(ctx context.Context, scimDirectoryID string, params *ListGroupsParams) (*clerk.SCIMGroupList, error) {
+	return getClient().ListGroups(ctx, scimDirectoryID, params)
 }
 
 // Create creates a new group role mapping.
@@ -26,7 +26,7 @@ func Create(ctx context.Context, scimDirectoryID string, params *CreateParams) (
 // BulkUpdate updates multiple group role mappings at once.
 // The array position determines precedence (1-indexed).
 // All mappings in the directory must be included.
-func BulkUpdate(ctx context.Context, scimDirectoryID string, params *BulkUpdateParams) ([]*clerk.SCIMGroupRoleMapping, error) {
+func BulkUpdate(ctx context.Context, scimDirectoryID string, params *BulkUpdateParams) (*clerk.SCIMGroupRoleMappingList, error) {
 	return getClient().BulkUpdate(ctx, scimDirectoryID, params)
 }
 
