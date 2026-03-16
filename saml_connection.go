@@ -34,6 +34,7 @@ type SAMLConnection struct {
 	DisableAdditionalIdentifications bool                           `json:"disable_additional_identifications"`
 	ForceAuthn                       bool                           `json:"force_authn"`
 	CustomAttributes                 *[]CustomAttribute             `json:"custom_attributes,omitempty"`
+	AllowAccountLinking              bool                           `json:"allow_account_linking"`
 	CreatedAt                        int64                          `json:"created_at"`
 	UpdatedAt                        int64                          `json:"updated_at"`
 }

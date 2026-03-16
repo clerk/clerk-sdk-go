@@ -44,16 +44,17 @@ type CreateParams struct {
 	Name           *string `json:"name,omitempty"`
 	OrganizationID *string `json:"organization_id,omitempty"`
 	// Deprecated: Use `domains` instead.
-	Domain           *string                 `json:"domain,omitempty"`
-	Domains          *[]string               `json:"domains,omitempty"`
-	Provider         *string                 `json:"provider,omitempty"`
-	IdpEntityID      *string                 `json:"idp_entity_id,omitempty"`
-	IdpSsoURL        *string                 `json:"idp_sso_url,omitempty"`
-	IdpCertificate   *string                 `json:"idp_certificate,omitempty"`
-	IdpMetadataURL   *string                 `json:"idp_metadata_url,omitempty"`
-	IdpMetadata      *string                 `json:"idp_metadata,omitempty"`
-	AttributeMapping *AttributeMappingParams `json:"attribute_mapping,omitempty"`
-	ForceAuthn       *bool                   `json:"force_authn,omitempty"`
+	Domain              *string                 `json:"domain,omitempty"`
+	Domains             *[]string               `json:"domains,omitempty"`
+	Provider            *string                 `json:"provider,omitempty"`
+	IdpEntityID         *string                 `json:"idp_entity_id,omitempty"`
+	IdpSsoURL           *string                 `json:"idp_sso_url,omitempty"`
+	IdpCertificate      *string                 `json:"idp_certificate,omitempty"`
+	IdpMetadataURL      *string                 `json:"idp_metadata_url,omitempty"`
+	IdpMetadata         *string                 `json:"idp_metadata,omitempty"`
+	AttributeMapping    *AttributeMappingParams `json:"attribute_mapping,omitempty"`
+	ForceAuthn          *bool                   `json:"force_authn,omitempty"`
+	AllowAccountLinking *bool                   `json:"allow_account_linking,omitempty"`
 }
 
 // Create creates a new SAML Connection.
@@ -118,7 +119,8 @@ type UpdateParams struct {
 	ForceAuthn                       *bool                   `json:"force_authn,omitempty"`
 	ConsentVerifiedDomainsDeletion   *bool                   `json:"consent_verified_domains_deletion,omitempty"`
 	// CustomAttributes is an Experimental feature, not available for all customers.
-	CustomAttributes *[]clerk.CustomAttribute `json:"custom_attributes,omitempty"`
+	CustomAttributes    *[]clerk.CustomAttribute `json:"custom_attributes,omitempty"`
+	AllowAccountLinking *bool                    `json:"allow_account_linking,omitempty"`
 }
 
 // Update updates the SAML Connection specified by id.

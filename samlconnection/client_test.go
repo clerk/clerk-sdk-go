@@ -20,22 +20,24 @@ func TestSAMLConnectionClientCreate(t *testing.T) {
 	domain := "example.com"
 	provider := "saml_custom"
 	forceAuthn := true
+	allowAccountLinking := true
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s","force_authn":%t}`, name, domain, provider, forceAuthn)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","force_authn":%t}`, id, name, domain, provider, forceAuthn)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s","force_authn":%t,"allow_account_linking":%t}`, name, domain, provider, forceAuthn, allowAccountLinking)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","force_authn":%t,"allow_account_linking":%t}`, id, name, domain, provider, forceAuthn, allowAccountLinking)),
 			Method: http.MethodPost,
 			Path:   "/v1/saml_connections",
 		},
 	}
 	client := NewClient(config)
 	samlConnection, err := client.Create(context.Background(), &CreateParams{
-		Name:       clerk.String(name),
-		Domain:     clerk.String(domain),
-		Provider:   clerk.String(provider),
-		ForceAuthn: clerk.Bool(forceAuthn),
+		Name:                clerk.String(name),
+		Domain:              clerk.String(domain),
+		Provider:            clerk.String(provider),
+		ForceAuthn:          clerk.Bool(forceAuthn),
+		AllowAccountLinking: clerk.Bool(allowAccountLinking),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
@@ -44,6 +46,7 @@ func TestSAMLConnectionClientCreate(t *testing.T) {
 	require.Equal(t, domain, samlConnection.Domain)
 	require.Equal(t, provider, samlConnection.Provider)
 	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
+	require.Equal(t, allowAccountLinking, samlConnection.AllowAccountLinking)
 }
 
 // TestSAMLConnectionClientCreate_WithBothDomainAndDomains tests that the client can not create a SAML connection
@@ -178,12 +181,13 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	provider := "saml_custom"
 	disableAdditionalIdentifications := true
 	forceAuthn := true
+	allowAccountLinking := true
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "path": "custom_attribute_path"}]}`, name, disableAdditionalIdentifications, forceAuthn)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t, "enterprise_connection_id": null, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "path": "custom_attribute_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t, "allow_account_linking": %t, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "path": "custom_attribute_path"}]}`, name, disableAdditionalIdentifications, forceAuthn, allowAccountLinking)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t, "allow_account_linking": %t, "enterprise_connection_id": null, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "path": "custom_attribute_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn, allowAccountLinking)),
 			Method: http.MethodPatch,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -194,6 +198,7 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 		DisableAdditionalIdentifications: clerk.Bool(disableAdditionalIdentifications),
 		OrganizationID:                   clerk.String(""),
 		ForceAuthn:                       clerk.Bool(forceAuthn),
+		AllowAccountLinking:              clerk.Bool(allowAccountLinking),
 		CustomAttributes: &[]clerk.CustomAttribute{
 			{
 				Name: clerk.String("custom_attribute_name"),
@@ -214,6 +219,7 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	require.Equal(t, name, samlConnection.Name)
 	require.Equal(t, disableAdditionalIdentifications, samlConnection.DisableAdditionalIdentifications)
 	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
+	require.Equal(t, allowAccountLinking, samlConnection.AllowAccountLinking)
 }
 
 func TestSAMLConnectionClientUpdate_Error(t *testing.T) {
