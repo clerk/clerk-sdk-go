@@ -106,8 +106,8 @@ func TestInstanceClientUpdateOrganizationSettings(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"enabled":true,"force_organization_selection": true,"slug_disabled": true}`),
-			Out:    json.RawMessage(`{"enabled":true,"max_allowed_memberships":3}`),
+			In:     json.RawMessage(`{"enabled":true,"max_allowed_domains":20,"force_organization_selection": true,"slug_disabled": true}`),
+			Out:    json.RawMessage(`{"enabled":true,"max_allowed_memberships":3,"max_allowed_domains":20}`),
 			Method: http.MethodPatch,
 			Path:   "/v1/instance/organization_settings",
 		},
@@ -115,12 +115,14 @@ func TestInstanceClientUpdateOrganizationSettings(t *testing.T) {
 	client := NewClient(config)
 	orgSettings, err := client.UpdateOrganizationSettings(t.Context(), &UpdateOrganizationSettingsParams{
 		Enabled:                    clerk.Bool(true),
+		MaxAllowedDomains:          clerk.Int64(20),
 		ForceOrganizationSelection: clerk.Bool(true),
 		SlugDisabled:               clerk.Bool(true),
 	})
 	require.NoError(t, err)
 	require.True(t, orgSettings.Enabled)
 	require.Equal(t, int64(3), orgSettings.MaxAllowedMemberships)
+	require.Equal(t, int64(20), orgSettings.MaxAllowedDomains)
 }
 
 func TestInstanceClientUpdateOrganizationSettingsWithInitialRoleSetKey(t *testing.T) {
