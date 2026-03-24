@@ -124,12 +124,13 @@ type UpdateParamsOidc struct {
 // Set Saml for SAML connections; set Oidc for OIDC connections.
 type UpdateParams struct {
 	clerk.APIParams
-	Name                             *string           `json:"name,omitempty"`
-	OrganizationID                   *string           `json:"organization_id,omitempty"`
-	Domains                          *[]string         `json:"domains,omitempty"`
-	Active                           *bool             `json:"active,omitempty"`
-	SyncUserAttributes               *bool             `json:"sync_user_attributes,omitempty"`
-	DisableAdditionalIdentifications *bool             `json:"disable_additional_identifications,omitempty"`
+	Name                             *string   `json:"name,omitempty"`
+	OrganizationID                   *string   `json:"organization_id,omitempty"`
+	Domains                          *[]string `json:"domains,omitempty"`
+	Active                           *bool     `json:"active,omitempty"`
+	SyncUserAttributes               *bool     `json:"sync_user_attributes,omitempty"`
+	DisableAdditionalIdentifications *bool     `json:"disable_additional_identifications,omitempty"`
+	AllowOrganizationAccountLinking  *bool
 	Saml                             *UpdateParamsSaml `json:"saml,omitempty"`
 	Oidc                             *UpdateParamsOidc `json:"oidc,omitempty"`
 }
