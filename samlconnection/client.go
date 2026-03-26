@@ -115,6 +115,7 @@ type UpdateParams struct {
 	AllowSubdomains                  *bool                   `json:"allow_subdomains,omitempty"`
 	AllowIdpInitiated                *bool                   `json:"allow_idp_initiated,omitempty"`
 	DisableAdditionalIdentifications *bool                   `json:"disable_additional_identifications,omitempty"`
+	AllowOrganizationAccountLinking  *bool                   `json:"allow_organization_account_linking,omitempty"`
 	ForceAuthn                       *bool                   `json:"force_authn,omitempty"`
 	ConsentVerifiedDomainsDeletion   *bool                   `json:"consent_verified_domains_deletion,omitempty"`
 	// CustomAttributes is an Experimental feature, not available for all customers.

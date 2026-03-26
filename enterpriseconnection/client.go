@@ -130,6 +130,7 @@ type UpdateParams struct {
 	Active                           *bool             `json:"active,omitempty"`
 	SyncUserAttributes               *bool             `json:"sync_user_attributes,omitempty"`
 	DisableAdditionalIdentifications *bool             `json:"disable_additional_identifications,omitempty"`
+	AllowOrganizationAccountLinking  *bool             `json:"allow_organization_account_linking,omitempty"`
 	Saml                             *UpdateParamsSaml `json:"saml,omitempty"`
 	Oidc                             *UpdateParamsOidc `json:"oidc,omitempty"`
 }
