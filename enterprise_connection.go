@@ -19,6 +19,7 @@ type EnterpriseConnection struct {
 	AllowIdpInitiated                bool     `json:"allow_idp_initiated"`
 	ForceAuthn                       bool     `json:"force_authn"`
 	AllowOrganizationAccountLinking  bool     `json:"allow_organization_account_linking"`
+	Authenticatable                  bool     `json:"authenticatable"`
 	CreatedAt                        int64    `json:"created_at"`
 	UpdatedAt                        int64    `json:"updated_at"`
 
