@@ -56,6 +56,7 @@ type Plan struct {
 	Slug             string          `json:"slug"`
 	AvatarURL        string          `json:"avatar_url"`
 	Features         []Feature       `json:"features"`
+	UnitPrices       []PlanUnitPrice `json:"unit_prices,omitempty"`
 	FreeTrialEnabled bool            `json:"free_trial_enabled"`
 	FreeTrialDays    *int            `json:"free_trial_days"`
 }
@@ -124,11 +125,29 @@ type Payer struct {
 	UpdatedAt int64 `json:"updated_at"`
 }
 
-// SubscriptionItemSeats represents seat information for a subscription item.
-type SubscriptionItemSeats struct {
+// BillingSubscriptionItemSeats represents seat information for a subscription item.
+type BillingSubscriptionItemSeats struct {
 	APIResource
 
 	Quantity *int64 `json:"quantity"`
+}
+
+// PlanUnitPrice represents a unit price associated with a plan.
+type PlanUnitPrice struct {
+	APIResource
+
+	Name      string              `json:"name"`
+	BlockSize int64               `json:"block_size"`
+	Tiers     []PlanUnitPriceTier `json:"tiers"`
+}
+
+// PlanUnitPriceTier represents a pricing tier within a unit price.
+type PlanUnitPriceTier struct {
+	APIResource
+
+	StartsAtBlock  int64         `json:"starts_at_block"`
+	EndsAfterBlock *int64        `json:"ends_after_block"`
+	FeePerBlock    *BillingMoney `json:"fee_per_block"`
 }
 
 // SubscriptionItem represents a billing subscription item.
@@ -158,7 +177,7 @@ type SubscriptionItem struct {
 	EndedAt         *int64                              `json:"ended_at"`
 	CreatedAt       int64                               `json:"created_at"`
 	UpdatedAt       int64                               `json:"updated_at"`
-	Seats           *SubscriptionItemSeats              `json:"seats,omitempty"`
+	Seats           *BillingSubscriptionItemSeats       `json:"seats,omitempty"`
 }
 
 // SubscriptionItemList contains a list of subscription items.
