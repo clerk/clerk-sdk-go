@@ -19,7 +19,7 @@ func TestBillingClientListPlans(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(`{"data": [{"object":"plan","id":"plan_123","name":"Basic Plan","for_payer_type":"user","features":[{"object":"feature","id":"feature_456","name":"Feature 1","key":"feature_1"}]}],"total_count": 1}`),
+			Out:    json.RawMessage(`{"data": [{"object":"plan","id":"plan_123","name":"Basic Plan","for_payer_type":"user","features":[{"object":"feature","id":"feature_456","name":"Feature 1","key":"feature_1"}],"unit_prices":[{"name":"Seats","block_size":1,"tiers":[{"starts_at_block":1,"ends_after_block":10,"fee_per_block":{"amount":500,"amount_formatted":"$5.00","currency":"usd","currency_symbol":"$"}},{"starts_at_block":11,"ends_after_block":null,"fee_per_block":{"amount":400,"amount_formatted":"$4.00","currency":"usd","currency_symbol":"$"}}]}]}],"total_count": 1}`),
 			Method: http.MethodGet,
 			Path:   "/v1/billing/plans",
 			Query: &url.Values{
@@ -45,6 +45,17 @@ func TestBillingClientListPlans(t *testing.T) {
 	require.Equal(t, 1, len(planList.Data[0].Features))
 	require.Equal(t, "feature_456", planList.Data[0].Features[0].ID)
 	require.Equal(t, "Feature 1", planList.Data[0].Features[0].Name)
+	require.Equal(t, 1, len(planList.Data[0].UnitPrices))
+	require.Equal(t, "Seats", planList.Data[0].UnitPrices[0].Name)
+	require.Equal(t, int64(1), planList.Data[0].UnitPrices[0].BlockSize)
+	require.Equal(t, 2, len(planList.Data[0].UnitPrices[0].Tiers))
+	require.Equal(t, int64(1), planList.Data[0].UnitPrices[0].Tiers[0].StartsAtBlock)
+	require.Equal(t, int64(10), *planList.Data[0].UnitPrices[0].Tiers[0].EndsAfterBlock)
+	require.Equal(t, int64(500), planList.Data[0].UnitPrices[0].Tiers[0].FeePerBlock.Amount)
+	require.Equal(t, "$5.00", planList.Data[0].UnitPrices[0].Tiers[0].FeePerBlock.AmountFormatted)
+	require.Equal(t, int64(11), planList.Data[0].UnitPrices[0].Tiers[1].StartsAtBlock)
+	require.Nil(t, planList.Data[0].UnitPrices[0].Tiers[1].EndsAfterBlock)
+	require.Equal(t, int64(400), planList.Data[0].UnitPrices[0].Tiers[1].FeePerBlock.Amount)
 }
 
 func TestBillingClientListPlans_Error(t *testing.T) {
