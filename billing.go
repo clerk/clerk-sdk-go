@@ -124,6 +124,13 @@ type Payer struct {
 	UpdatedAt int64 `json:"updated_at"`
 }
 
+// SubscriptionItemSeats represents seat information for a subscription item.
+type SubscriptionItemSeats struct {
+	APIResource
+
+	Quantity *int64 `json:"quantity"`
+}
+
 // SubscriptionItem represents a billing subscription item.
 type SubscriptionItem struct {
 	APIResource
@@ -151,6 +158,7 @@ type SubscriptionItem struct {
 	EndedAt         *int64                              `json:"ended_at"`
 	CreatedAt       int64                               `json:"created_at"`
 	UpdatedAt       int64                               `json:"updated_at"`
+	Seats           *SubscriptionItemSeats              `json:"seats,omitempty"`
 }
 
 // SubscriptionItemList contains a list of subscription items.
