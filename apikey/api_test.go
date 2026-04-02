@@ -14,7 +14,6 @@ import (
 )
 
 func TestPackageCreate(t *testing.T) {
-	t.Parallel()
 
 	response := map[string]interface{}{
 		"object":            "api_key",
@@ -69,7 +68,6 @@ func TestPackageCreate(t *testing.T) {
 }
 
 func TestPackageGet(t *testing.T) {
-	t.Parallel()
 
 	response := map[string]interface{}{
 		"object":            "api_key",
@@ -115,7 +113,6 @@ func TestPackageGet(t *testing.T) {
 }
 
 func TestPackageList(t *testing.T) {
-	t.Parallel()
 
 	response := map[string]interface{}{
 		"data": []map[string]interface{}{
@@ -173,7 +170,6 @@ func TestPackageList(t *testing.T) {
 }
 
 func TestPackageGetSecret(t *testing.T) {
-	t.Parallel()
 
 	response := map[string]interface{}{
 		"secret": "ak_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -200,7 +196,6 @@ func TestPackageGetSecret(t *testing.T) {
 }
 
 func TestPackageUpdate(t *testing.T) {
-	t.Parallel()
 
 	response := map[string]interface{}{
 		"object":            "api_key",
@@ -247,7 +242,6 @@ func TestPackageUpdate(t *testing.T) {
 }
 
 func TestPackageDelete(t *testing.T) {
-	t.Parallel()
 
 	response := map[string]interface{}{
 		"object":  "api_key",
@@ -278,7 +272,6 @@ func TestPackageDelete(t *testing.T) {
 }
 
 func TestPackageUpdateWithSecondsUntilExpiration(t *testing.T) {
-	t.Parallel()
 
 	response := map[string]interface{}{
 		"object":            "api_key",
@@ -327,7 +320,6 @@ func TestPackageUpdateWithSecondsUntilExpiration(t *testing.T) {
 }
 
 func TestPackageUpdateSecondsUntilExpirationOnly(t *testing.T) {
-	t.Parallel()
 
 	response := map[string]interface{}{
 		"object":            "api_key",
@@ -375,7 +367,6 @@ func TestPackageUpdateSecondsUntilExpirationOnly(t *testing.T) {
 }
 
 func TestPackageRevoke(t *testing.T) {
-	t.Parallel()
 
 	response := map[string]interface{}{
 		"object":            "api_key",
@@ -423,7 +414,6 @@ func TestPackageRevoke(t *testing.T) {
 }
 
 func TestPackageVerify(t *testing.T) {
-	t.Parallel()
 
 	response := map[string]interface{}{
 		"object":            "api_key",
