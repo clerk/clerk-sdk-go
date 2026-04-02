@@ -13,6 +13,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Note: tests in this file cannot run in parallel because they call clerk.SetBackend,
+// which modifies a global variable. Parallel tests would race on that shared state.
+
 func TestPackageCreate(t *testing.T) {
 
 	response := map[string]interface{}{
