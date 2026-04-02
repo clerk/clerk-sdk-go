@@ -76,7 +76,7 @@ func TestList(t *testing.T) {
 		"cursor": map[string]interface{}{
 			"starting_after": expectedCursor,
 			"ending_before":  expectedCursor,
-			"has_next_page":  true,
+			"has_next_page":  "true",
 		},
 	}
 
@@ -165,5 +165,5 @@ func TestList(t *testing.T) {
 	require.NotNil(t, list.Cursor)
 	require.Equal(t, expectedCursor, *list.Cursor.StartingAfter)
 	require.Equal(t, expectedCursor, *list.Cursor.EndingBefore)
-	require.True(t, list.Cursor.HasNextPage)
+	require.Equal(t, clerk.NextPageTrue, list.Cursor.HasNextPage)
 }
