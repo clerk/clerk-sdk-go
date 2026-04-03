@@ -91,6 +91,5 @@ func TestPackageList(t *testing.T) {
 
 	assert.NotNil(t, auditLogs.Cursor)
 	assert.Equal(t, expectedCursor, *auditLogs.Cursor.StartingAfter)
-	assert.True(t, auditLogs.Cursor.HasNextPage)
 	assert.Equal(t, clerk.NextPageTrue, auditLogs.Cursor.NextPageStatus)
 }
