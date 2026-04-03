@@ -20,8 +20,29 @@ type AuditLog struct {
 
 type AuditLogList struct {
 	APIResource
-	AuditLogs []*AuditLog       `json:"data"`
-	Cursor    *PaginationCursor `json:"cursor"`
+	AuditLogs []*AuditLog               `json:"data"`
+	Cursor    *ExtendedPaginationCursor `json:"cursor"`
+}
+
+// NextPageStatus is the tri-state value for has_next_page in cursor pagination.
+// It is "true" when there is a next page, "false" when there is not, and
+// "unknown" when the query was bounded by a time window and more results may
+// exist beyond that window.
+type NextPageStatus string
+
+const (
+	NextPageTrue    NextPageStatus = "true"
+	NextPageFalse   NextPageStatus = "false"
+	NextPageUnknown NextPageStatus = "unknown"
+)
+
+type ExtendedPaginationCursor struct {
+	StartingAfter *string `json:"starting_after"`
+	EndingBefore  *string `json:"ending_before"`
+	// Deprecated: Use NextPageStatus instead. HasNextPage is kept for backwards
+	// compatibility and is derived as NextPageStatus != NextPageFalse.
+	HasNextPage    bool           `json:"has_next_page"`
+	NextPageStatus NextPageStatus `json:"next_page_status"`
 }
 
 // PaginationCursor contains the cursors for pagination.
