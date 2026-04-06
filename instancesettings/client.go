@@ -104,6 +104,7 @@ type UpdateOrganizationSettingsParams struct {
 	clerk.APIParams
 	Enabled                      *bool                                     `json:"enabled,omitempty"`
 	MaxAllowedMemberships        *int64                                    `json:"max_allowed_memberships,omitempty"`
+	MaxAllowedDomains            *int64                                    `json:"max_allowed_domains,omitempty"`
 	CreatorRoleID                *string                                   `json:"creator_role_id,omitempty"`
 	AdminDeleteEnabled           *bool                                     `json:"admin_delete_enabled,omitempty"`
 	DomainsEnabled               *bool                                     `json:"domains_enabled,omitempty"`
