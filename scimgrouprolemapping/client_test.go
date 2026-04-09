@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/clerk/clerk-sdk-go/v3"
@@ -130,6 +131,114 @@ func TestListGroups(t *testing.T) {
 	assert.Equal(t, "group_456", groups.Data[1].ID)
 	assert.Equal(t, "Members", groups.Data[1].DisplayName)
 	assert.False(t, groups.Cursor.HasNextPage)
+}
+
+func TestListGroupsParams_ToQuery(t *testing.T) {
+	t.Parallel()
+
+	startingAfter := "group_123"
+	endingBefore := "group_456"
+	limit := 25
+
+	t.Run("nil receiver produces empty query", func(t *testing.T) {
+		var p *ListGroupsParams
+		assert.Equal(t, url.Values{}, p.ToQuery())
+	})
+
+	t.Run("empty params produces empty query", func(t *testing.T) {
+		p := &ListGroupsParams{}
+		assert.Equal(t, url.Values{}, p.ToQuery())
+	})
+
+	t.Run("starting_after only", func(t *testing.T) {
+		p := &ListGroupsParams{StartingAfter: &startingAfter}
+		q := p.ToQuery()
+		assert.Equal(t, "group_123", q.Get("starting_after"))
+		assert.Empty(t, q.Get("ending_before"))
+		assert.Empty(t, q.Get("limit"))
+	})
+
+	t.Run("ending_before only", func(t *testing.T) {
+		p := &ListGroupsParams{EndingBefore: &endingBefore}
+		q := p.ToQuery()
+		assert.Equal(t, "group_456", q.Get("ending_before"))
+		assert.Empty(t, q.Get("starting_after"))
+		assert.Empty(t, q.Get("limit"))
+	})
+
+	t.Run("limit only", func(t *testing.T) {
+		p := &ListGroupsParams{Limit: &limit}
+		q := p.ToQuery()
+		assert.Equal(t, "25", q.Get("limit"))
+		assert.Empty(t, q.Get("starting_after"))
+		assert.Empty(t, q.Get("ending_before"))
+	})
+
+	t.Run("all params combined", func(t *testing.T) {
+		p := &ListGroupsParams{
+			StartingAfter: &startingAfter,
+			EndingBefore:  &endingBefore,
+			Limit:         &limit,
+		}
+		q := p.ToQuery()
+		assert.Equal(t, "group_123", q.Get("starting_after"))
+		assert.Equal(t, "group_456", q.Get("ending_before"))
+		assert.Equal(t, "25", q.Get("limit"))
+	})
+}
+
+func TestListGroupsWithPaginationParams(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"data": []map[string]interface{}{
+			{
+				"object":       "scim_group",
+				"id":           "group_456",
+				"display_name": "Members",
+				"updated_at":   1640995200000,
+			},
+		},
+		"cursor": map[string]interface{}{
+			"starting_after": "group_456",
+			"ending_before":  nil,
+			"has_next_page":  true,
+		},
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	expectedQuery := url.Values{
+		"starting_after": []string{"group_123"},
+		"limit":          []string{"1"},
+	}
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(responseJSON),
+			Method: http.MethodGet,
+			Path:   "/v1/scim_directories/scim_dir_123/groups",
+			Query:  &expectedQuery,
+		},
+	}
+
+	client := NewClient(config)
+	startingAfter := "group_123"
+	limit := 1
+	params := &ListGroupsParams{
+		StartingAfter: &startingAfter,
+		Limit:         &limit,
+	}
+
+	groups, err := client.ListGroups(context.Background(), "scim_dir_123", params)
+	require.NoError(t, err)
+	assert.Len(t, groups.Data, 1)
+	assert.Equal(t, "group_456", groups.Data[0].ID)
+	assert.True(t, groups.Cursor.HasNextPage)
+	require.NotNil(t, groups.Cursor.StartingAfter)
+	assert.Equal(t, "group_456", *groups.Cursor.StartingAfter)
 }
 
 func TestCreate(t *testing.T) {
