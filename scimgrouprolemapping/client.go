@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/clerk/clerk-sdk-go/v3"
 )
@@ -27,15 +28,26 @@ func NewClient(config *clerk.ClientConfig) *Client {
 // ListGroupsParams are the parameters for listing groups.
 type ListGroupsParams struct {
 	clerk.APIParams
-	Cursor *string `json:"cursor,omitempty"`
+	StartingAfter *string `json:"starting_after,omitempty"`
+	EndingBefore  *string `json:"ending_before,omitempty"`
+	Limit         *int    `json:"limit,omitempty"`
 }
 
 // ToQuery returns the parameters as url.Values so they can be used
 // in a URL query string.
 func (p *ListGroupsParams) ToQuery() url.Values {
 	q := url.Values{}
-	if p != nil && p.Cursor != nil {
-		q.Set("cursor", *p.Cursor)
+	if p == nil {
+		return q
+	}
+	if p.StartingAfter != nil {
+		q.Set("starting_after", *p.StartingAfter)
+	}
+	if p.EndingBefore != nil {
+		q.Set("ending_before", *p.EndingBefore)
+	}
+	if p.Limit != nil {
+		q.Set("limit", strconv.Itoa(*p.Limit))
 	}
 	return q
 }
