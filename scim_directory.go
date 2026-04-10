@@ -13,8 +13,7 @@ type SCIMDirectory struct {
 	APIKey                 *string           `json:"api_key,omitempty"`
 	CreatedAt              int64             `json:"created_at"`
 	UpdatedAt              int64             `json:"updated_at"`
-	AttributeMapping       map[string]string  `json:"attribute_mapping,omitempty"`
-	CustomAttributes       *[]CustomAttribute `json:"custom_attributes,omitempty"`
+	AttributeMapping       map[string]string `json:"attribute_mapping,omitempty"`
 }
 
 // SCIMDirectoryList represents a paginated list of SCIM directories.
