@@ -43,6 +43,10 @@ type ExtendedPaginationCursor struct {
 	// compatibility and is derived as NextPageStatus != NextPageFalse.
 	HasNextPage    bool           `json:"has_next_page"`
 	NextPageStatus NextPageStatus `json:"next_page_status"`
+	// RetentionLimitReached is true when next_page_status is "false" and the limit
+	// was the plan's retention period, not the caller's event_time_after bound.
+	// When true, extending event_time_after further back will not yield more results.
+	RetentionLimitReached bool `json:"retention_limit_reached"`
 }
 
 // PaginationCursor contains the cursors for pagination.
