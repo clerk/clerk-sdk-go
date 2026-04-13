@@ -146,7 +146,7 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t, "force_authn": %t, "enterprise_connection_id": "entconn_2abc123def456", "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "path": "custom_attribute_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t, "force_authn": %t, "enterprise_connection_id": "entconn_2abc123def456", "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
 			Method: http.MethodGet,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -163,9 +163,10 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
 	require.Equal(t, &[]clerk.CustomAttribute{
 		{
-			Name: clerk.String("custom_attribute_name"),
-			Key:  clerk.String("custom_attribute_key"),
-			Path: clerk.String("custom_attribute_path"),
+			Name:     clerk.String("custom_attribute_name"),
+			Key:      clerk.String("custom_attribute_key"),
+			SSOPath:  clerk.String("custom_attribute_sso_path"),
+			SCIMPath: clerk.String("custom_attribute_scim_path"),
 		},
 	}, samlConnection.CustomAttributes)
 }
@@ -182,8 +183,8 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "path": "custom_attribute_path"}]}`, name, disableAdditionalIdentifications, forceAuthn)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t, "enterprise_connection_id": null, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "path": "custom_attribute_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, name, disableAdditionalIdentifications, forceAuthn)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t, "enterprise_connection_id": null, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
 			Method: http.MethodPatch,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -196,9 +197,10 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 		ForceAuthn:                       clerk.Bool(forceAuthn),
 		CustomAttributes: &[]clerk.CustomAttribute{
 			{
-				Name: clerk.String("custom_attribute_name"),
-				Key:  clerk.String("custom_attribute_key"),
-				Path: clerk.String("custom_attribute_path"),
+				Name:     clerk.String("custom_attribute_name"),
+				Key:      clerk.String("custom_attribute_key"),
+				SSOPath:  clerk.String("custom_attribute_sso_path"),
+				SCIMPath: clerk.String("custom_attribute_scim_path"),
 			},
 		},
 	})
@@ -206,9 +208,10 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	require.Equal(t, id, samlConnection.ID)
 	require.Equal(t, &[]clerk.CustomAttribute{
 		{
-			Name: clerk.String("custom_attribute_name"),
-			Key:  clerk.String("custom_attribute_key"),
-			Path: clerk.String("custom_attribute_path"),
+			Name:     clerk.String("custom_attribute_name"),
+			Key:      clerk.String("custom_attribute_key"),
+			SSOPath:  clerk.String("custom_attribute_sso_path"),
+			SCIMPath: clerk.String("custom_attribute_scim_path"),
 		},
 	}, samlConnection.CustomAttributes)
 	require.Equal(t, name, samlConnection.Name)
