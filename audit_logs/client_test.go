@@ -34,6 +34,7 @@ func TestList(t *testing.T) {
 				"trace_id":       "00000000000000000000000000000001",
 				"span_id":        "0000000000000001",
 				"parent_span_id": nil,
+				"session_id":     "0000000000000001",
 				"payload":        map[string]interface{}{},
 				"impersonator": map[string]interface{}{
 					"user_id": "user_2xPNClBrCHGhpOITVJlhdhBfGS8",
@@ -121,6 +122,7 @@ func TestList(t *testing.T) {
 	require.Equal(t, "client_123", *auditLog.ClientID)
 	require.Equal(t, "00000000000000000000000000000001", auditLog.TraceID)
 	require.Equal(t, "0000000000000001", auditLog.SpanID)
+	require.Equal(t, "0000000000000001", *auditLog.SessionID)
 	require.Nil(t, auditLog.ParentSpanID)
 	require.NotNil(t, auditLog.Payload)
 

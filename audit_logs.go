@@ -14,6 +14,7 @@ type AuditLog struct {
 	TraceID      string                `json:"trace_id"`
 	SpanID       string                `json:"span_id"`
 	ParentSpanID *string               `json:"parent_span_id"`
+	SessionID    *string               `json:"session_id"`
 	Payload      map[string]any        `json:"payload"`
 	EventContext AuditLogContext       `json:"event_context"`
 }
