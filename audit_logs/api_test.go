@@ -94,4 +94,5 @@ func TestPackageList(t *testing.T) {
 	assert.NotNil(t, auditLogs.Cursor)
 	assert.Equal(t, expectedCursor, *auditLogs.Cursor.StartingAfter)
 	assert.Equal(t, clerk.NextPageTrue, auditLogs.Cursor.NextPageStatus)
+	assert.False(t, auditLogs.Cursor.RetentionLimitReached)
 }

@@ -169,4 +169,38 @@ func TestList(t *testing.T) {
 	require.Equal(t, expectedCursor, *list.Cursor.StartingAfter)
 	require.Equal(t, expectedCursor, *list.Cursor.EndingBefore)
 	require.Equal(t, clerk.NextPageTrue, list.Cursor.NextPageStatus)
+	require.False(t, list.Cursor.RetentionLimitReached)
+}
+
+func TestList_RetentionLimitReached(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"data": []map[string]interface{}{},
+		"cursor": map[string]interface{}{
+			"starting_after":          nil,
+			"ending_before":           nil,
+			"has_next_page":           false,
+			"next_page_status":        "false",
+			"retention_limit_reached": true,
+		},
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    responseJSON,
+			Method: http.MethodGet,
+			Path:   "/v1/audit_logs",
+		},
+	}
+	client := NewClient(config)
+	list, err := client.List(context.Background(), &ListParams{})
+	require.NoError(t, err)
+	require.NotNil(t, list.Cursor)
+	require.Equal(t, clerk.NextPageFalse, list.Cursor.NextPageStatus)
+	require.True(t, list.Cursor.RetentionLimitReached)
 }
