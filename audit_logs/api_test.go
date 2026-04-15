@@ -32,7 +32,6 @@ func TestPackageList(t *testing.T) {
 				"span_id":        "0000000000000001",
 				"parent_span_id": nil,
 				"session_id":     "0000000000000001",
-				"payload":        map[string]interface{}{},
 				"impersonator": map[string]interface{}{
 					"user_id": "user_2xPNClBrCHGhpOITVJlhdhBfGS8",
 				},
@@ -86,7 +85,6 @@ func TestPackageList(t *testing.T) {
 	assert.Equal(t, "0000000000000001", auditLog.SpanID)
 	assert.Equal(t, "0000000000000001", *auditLog.SessionID)
 	assert.Nil(t, auditLog.ParentSpanID)
-	assert.NotNil(t, auditLog.Payload)
 	assert.NotNil(t, auditLog.Impersonator)
 	assert.NotNil(t, auditLog.Impersonator.UserID)
 	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *auditLog.Impersonator.UserID)
@@ -95,4 +93,59 @@ func TestPackageList(t *testing.T) {
 	assert.Equal(t, expectedCursor, *auditLogs.Cursor.StartingAfter)
 	assert.Equal(t, clerk.NextPageTrue, auditLogs.Cursor.NextPageStatus)
 	assert.False(t, auditLogs.Cursor.RetentionLimitReached)
+}
+
+func TestPackageGet(t *testing.T) {
+	response := map[string]interface{}{
+		"id":             "019400f7-c6e4-7f00-8000-000000000001",
+		"object":         "audit_log",
+		"type":           "user.created",
+		"event_time":     1705315800000,
+		"actor":          "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
+		"subject":        "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
+		"trace_id":       "00000000000000000000000000000001",
+		"span_id":        "0000000000000001",
+		"parent_span_id": nil,
+		"session_id":     "0000000000000001",
+		"payload":        map[string]interface{}{"user_id": "user_123"},
+		"impersonator": map[string]interface{}{
+			"user_id": "user_2xPNClBrCHGhpOITVJlhdhBfGS8",
+		},
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	backend := &clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T:      t,
+				Out:    json.RawMessage(responseJSON),
+				Method: http.MethodGet,
+				Path:   "/v1/audit_logs/1705315800000:019400f7-c6e4-7f00-8000-000000000001",
+			},
+		},
+	}
+
+	clerk.SetBackend(clerk.NewBackend(backend))
+
+	auditLog, err := Get(context.Background(), &GetParams{
+		EventTimeMs: 1705315800000,
+		EventID:     "019400f7-c6e4-7f00-8000-000000000001",
+	})
+	require.NoError(t, err)
+
+	assert.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", auditLog.ID)
+	assert.Equal(t, "audit_log", auditLog.Object)
+	assert.Equal(t, "user.created", auditLog.Type)
+	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
+	assert.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
+	assert.Equal(t, "00000000000000000000000000000001", auditLog.TraceID)
+	assert.Equal(t, "0000000000000001", auditLog.SpanID)
+	assert.Equal(t, "0000000000000001", *auditLog.SessionID)
+	assert.Nil(t, auditLog.ParentSpanID)
+	assert.NotNil(t, auditLog.Payload)
+	assert.Equal(t, "user_123", auditLog.Payload["user_id"])
+	assert.NotNil(t, auditLog.Impersonator)
+	assert.NotNil(t, auditLog.Impersonator.UserID)
+	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *auditLog.Impersonator.UserID)
 }

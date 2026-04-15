@@ -15,8 +15,14 @@ type AuditLog struct {
 	SpanID       string                `json:"span_id"`
 	ParentSpanID *string               `json:"parent_span_id"`
 	SessionID    *string               `json:"session_id"`
-	Payload      map[string]any        `json:"payload"`
 	EventContext AuditLogContext       `json:"event_context"`
+}
+
+// AuditLogWithPayload is returned by the single-event endpoint and includes
+// the full event payload. List responses use AuditLog which omits payload.
+type AuditLogWithPayload struct {
+	AuditLog
+	Payload map[string]any `json:"payload"`
 }
 
 type AuditLogList struct {
