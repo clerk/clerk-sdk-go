@@ -13,6 +13,11 @@ func List(ctx context.Context, params *ListParams) (*clerk.AuditLogList, error) 
 	return getClient().List(ctx, params)
 }
 
+// Get retrieves a single audit log by its composite key.
+func Get(ctx context.Context, params *GetParams) (*clerk.AuditLogWithPayload, error) {
+	return getClient().Get(ctx, params)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),

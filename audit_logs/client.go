@@ -3,6 +3,7 @@ package audit_logs
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -95,6 +96,25 @@ func (params *ListParams) ToQuery() url.Values {
 		q.Add("end_user_facing_only", strconv.FormatBool(*params.EndUserFacingOnly))
 	}
 	return q
+}
+
+type GetParams struct {
+	EventTimeMs int64
+	EventID     string
+}
+
+// Get retrieves a single audit log by its composite key (event_time_ms:event_id).
+// Unlike List, the returned object includes the full event payload.
+func (c *Client) Get(ctx context.Context, params *GetParams) (*clerk.AuditLogWithPayload, error) {
+	compositeID := fmt.Sprintf("%d:%s", params.EventTimeMs, params.EventID)
+	path, err := clerk.JoinPath(path, compositeID)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	resource := &clerk.AuditLogWithPayload{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
 }
 
 // List returns a list of audit logs.
