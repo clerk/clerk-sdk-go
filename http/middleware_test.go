@@ -166,6 +166,73 @@ func TestWithHeaderAuthorization_Caching(t *testing.T) {
 	require.Equal(t, 2, totalJWKSRequests)
 }
 
+// Regression test: cache entries must expire at a fixed TTL from their
+// original fetch time, not on a sliding window that resets on every
+// cache hit. Otherwise a revoked key could remain trusted indefinitely
+// on a server that receives at least one request per TTL window.
+func TestWithHeaderAuthorization_CacheFixedTTL(t *testing.T) {
+	kid := "kid-" + t.Name()
+	clock := clerktest.NewClockAt(time.Now().UTC())
+
+	totalJWKSRequests := 0
+	clerkAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
+			totalJWKSRequests++
+			_, err := w.Write([]byte(
+				fmt.Sprintf(
+					`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
+					kid,
+				),
+			))
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer clerkAPI.Close()
+
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: clerkAPI.Client(),
+		URL:        &clerkAPI.URL,
+	}))
+
+	ts := httptest.NewServer(WithHeaderAuthorization(Clock(clock))(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := w.Write([]byte("{}"))
+		require.NoError(t, err)
+	})))
+	defer ts.Close()
+
+	tokenClaims := map[string]any{
+		"sid": "sess_123",
+		"sub": "user_123",
+		"iss": "https://clerk.com",
+	}
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	require.NoError(t, err)
+
+	// Initial fetch populates the cache at t=0. Expiry is t=60min.
+	_, err = ts.Client().Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 1, totalJWKSRequests)
+
+	// At t=30min, cache is still valid and must be used without refetching.
+	// Critically, this hit must NOT extend the expiry (no sliding window).
+	clock.Advance(30 * time.Minute)
+	_, err = ts.Client().Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 1, totalJWKSRequests)
+
+	// At t=65min, the original TTL has elapsed. If the previous cache hit
+	// had extended the expiry to t=90min (sliding window), this request
+	// would still use the stale cache and totalJWKSRequests would be 1.
+	// With a fixed TTL, the cache is expired and the JWKS is refetched.
+	clock.Advance(35 * time.Minute)
+	_, err = ts.Client().Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 2, totalJWKSRequests)
+}
+
 func TestWithHeaderAuthorization_CustomFailureHandler(t *testing.T) {
 	kid := "kid-" + t.Name()
 	// Mock the Clerk API server. We expect requests to GET /jwks.

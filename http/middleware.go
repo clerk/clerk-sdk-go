@@ -115,8 +115,8 @@ func getJWK(ctx context.Context, jwksClient *jwks.Client, kid string, clock cler
 		if err != nil {
 			return nil, err
 		}
+		getCache().Set(kid, jwk, clock.Now().UTC().Add(time.Hour))
 	}
-	getCache().Set(kid, jwk, clock.Now().UTC().Add(time.Hour))
 	return jwk, nil
 }
 
