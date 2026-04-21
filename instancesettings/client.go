@@ -156,6 +156,18 @@ func (c *Client) UpdateOrganizationSettings(ctx context.Context, params *UpdateO
 	return orgSettings, err
 }
 
+// GetOrganizationSettings retrieves the organization settings of the instance.
+func (c *Client) GetOrganizationSettings(ctx context.Context) (*clerk.OrganizationSettings, error) {
+	path, err := clerk.JoinPath(path, "/organization_settings")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	orgSettings := &clerk.OrganizationSettings{}
+	err = c.Backend.Call(ctx, req, orgSettings)
+	return orgSettings, err
+}
+
 type UpdateOAuthApplicationSettingsParams struct {
 	clerk.APIParams
 	DynamicOAuthClientRegistration *bool `json:"dynamic_oauth_client_registration,omitempty"`
