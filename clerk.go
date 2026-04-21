@@ -477,9 +477,44 @@ func NewClock() Clock {
 // Regular expression that matches multiple forward slashes in a row.
 var extraForwardslashesRE = regexp.MustCompile("(^/+|([^:])//+)")
 
+// checkPathTraversal returns an error if el contains a "." or ".." segment
+// in its path portion, either raw or (repeatedly) percent-encoded. Query
+// strings and fragments are ignored since they are not part of the request
+// path.
+func checkPathTraversal(el string) error {
+	p := el
+	if i := strings.IndexAny(p, "?#"); i >= 0 {
+		p = p[:i]
+	}
+	// Decode until the string no longer changes to catch double-encoded
+	// sequences like %252e%252e. Reject input that remains encoded after
+	// maxDecodeIterations passes to guard against pathological input.
+	const maxDecodeIterations = 10
+	for range maxDecodeIterations {
+		for seg := range strings.SplitSeq(p, "/") {
+			if seg == "." || seg == ".." {
+				return fmt.Errorf("clerk: path traversal sequence in path element %q", el)
+			}
+		}
+		decoded, err := url.PathUnescape(p)
+		if err != nil || decoded == p {
+			return nil
+		}
+		p = decoded
+	}
+	return fmt.Errorf("clerk: path element %q exceeds maximum decode iterations", el)
+}
+
 // JoinPath returns a URL string with the provided path elements joined
 // with the base path.
 func JoinPath(base string, elem ...string) (string, error) {
+	// Reject path traversal sequences in any element so that user-provided
+	// IDs cannot redirect requests to unintended API endpoints.
+	for _, el := range elem {
+		if err := checkPathTraversal(el); err != nil {
+			return "", err
+		}
+	}
 	// Concatenate all paths.
 	var sb strings.Builder
 	sb.WriteString(base)

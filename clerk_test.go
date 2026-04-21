@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 
@@ -488,4 +489,33 @@ func TestJoinPath(t *testing.T) {
 
 	_, err := JoinPath("https://clerk.com", "*%{wontwork$")
 	require.Error(t, err)
+}
+
+func TestJoinPath_RejectsPathTraversal(t *testing.T) {
+	t.Parallel()
+	for _, id := range []string{
+		"..",
+		".",
+		"../../v1/instance",
+		"foo/../bar",
+		"foo/./bar",
+		"foo/%2e./bar",
+		"foo/%252e%252e/bar",
+		"%2e%2e/v1/instance",
+		"%2E%2E%2Fv1%2Finstance",
+		"foo/%2e%2e/bar",
+	} {
+		_, err := JoinPath("https://api.clerk.com/v1", "users", id)
+		require.Error(t, err, "expected error for id %q", id)
+	}
+}
+
+func TestJoinPath_RejectsExcessiveEncoding(t *testing.T) {
+	t.Parallel()
+	// 12 layers of percent-encoding of "A": "%" + "25"*12 + "41" decodes
+	// one layer per pass (each "%25" -> "%"), requiring 13 decode passes
+	// to reach plain "A". That exceeds the decode iteration cap in JoinPath.
+	id := "%" + strings.Repeat("25", 12) + "41"
+	_, err := JoinPath("https://api.clerk.com/v1", "users", id)
+	require.ErrorContains(t, err, "exceeds maximum decode iterations")
 }
