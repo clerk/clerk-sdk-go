@@ -18,6 +18,21 @@ func Create(ctx context.Context, params *CreateParams) (*clerk.WaitlistEntry, er
 	return getClient().Create(ctx, params)
 }
 
+// BulkCreate creates multiple waitlist entries.
+func BulkCreate(ctx context.Context, params *BulkCreateParams) (*clerk.WaitlistEntries, error) {
+	return getClient().BulkCreate(ctx, params)
+}
+
+// Invite accepts a waitlist entry
+func Invite(ctx context.Context, id string, params *InviteParams) (*clerk.WaitlistEntry, error) {
+	return getClient().Invite(ctx, id, params)
+}
+
+// Reject denies a waitlist entry
+func Reject(ctx context.Context, id string) (*clerk.WaitlistEntry, error) {
+	return getClient().Reject(ctx, id)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),

@@ -9,6 +9,7 @@ type OAuthAccessToken struct {
 	Provider          string          `json:"provider"`
 	PublicMetadata    json.RawMessage `json:"public_metadata"`
 	Label             *string         `json:"label"`
+	ExpiresAt         *int64          `json:"expires_at"`
 	// Only set in OAuth 2.0 tokens
 	Scopes []string `json:"scopes,omitempty"`
 	// Only set in OAuth 1.0 tokens

@@ -37,6 +37,32 @@ func TestOrganizationClientCreate(t *testing.T) {
 	require.Equal(t, name, organization.Name)
 }
 
+func TestOrganizationClientCreateWithRoleSet(t *testing.T) {
+	t.Parallel()
+	id := "org_123"
+	name := "Acme Inc"
+	roleSetKey := "admin-roles"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","role_set_key":"%s"}`, name, roleSetKey)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","role_set_key":"%s"}`, id, name, roleSetKey)),
+			Method: http.MethodPost,
+			Path:   "/v1/organizations",
+		},
+	}
+	client := NewClient(config)
+	organization, err := client.Create(context.Background(), &CreateParams{
+		Name:       clerk.String(name),
+		RoleSetKey: clerk.String(roleSetKey),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, organization.ID)
+	require.Equal(t, name, organization.Name)
+	require.Equal(t, roleSetKey, *organization.RoleSetKey)
+}
+
 func TestOrganizationClientCreate_Error(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
@@ -115,7 +141,7 @@ func TestOrganizationClientUpdate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s"}`, name)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","reassignment_mappings":{"org:member":"org:admin"},"role_set_key":"admin-roles"}`, name)),
 			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s"}`, id, name)),
 			Method: http.MethodPatch,
 			Path:   "/v1/organizations/" + id,
@@ -124,6 +150,10 @@ func TestOrganizationClientUpdate(t *testing.T) {
 	client := NewClient(config)
 	organization, err := client.Update(context.Background(), id, &UpdateParams{
 		Name: clerk.String(name),
+		ReassignmentMappings: &clerk.ReassignmentMappings{
+			"org:member": "org:admin",
+		},
+		RoleSetKey: clerk.String("admin-roles"),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, organization.ID)
@@ -195,6 +225,10 @@ func TestOrganizationClientList(t *testing.T) {
 				"filter_by":             []string{"missing_member_with_elevated_permissions"},
 				"include_members_count": []string{"true"},
 				"include_missing_member_with_elevated_permissions": []string{"true"},
+				"created_at_before": []string{"1730333164378"},
+				"created_at_after":  []string{"1730333164378"},
+				"slug":              []string{"acme"},
+				"name":              []string{"Acme Inc"},
 			},
 		},
 	}
@@ -206,6 +240,10 @@ func TestOrganizationClientList(t *testing.T) {
 		FilterBy:            []string{"missing_member_with_elevated_permissions"},
 		IncludeMembersCount: clerk.Bool(true),
 		IncludeMissingMemberWithElevatedPermissions: clerk.Bool(true),
+		CreatedAtBefore: clerk.Int64(1730333164378),
+		CreatedAtAfter:  clerk.Int64(1730333164378),
+		Slug:            clerk.String("acme"),
+		Name:            clerk.String("Acme Inc"),
 	}
 	params.Limit = clerk.Int64(1)
 	params.Offset = clerk.Int64(2)

@@ -1,5 +1,12 @@
 package clerk
 
+type CustomAttribute struct {
+	Name     *string `json:"name"`
+	Key      *string `json:"key"`
+	SSOPath  *string `json:"sso_path"`
+	SCIMPath *string `json:"scim_path"`
+}
+
 type SAMLConnection struct {
 	APIResource
 	ID     string `json:"id"`
@@ -10,6 +17,7 @@ type SAMLConnection struct {
 	Domains                          []string                       `json:"domains"`
 	IdpEntityID                      *string                        `json:"idp_entity_id"`
 	OrganizationID                   *string                        `json:"organization_id"`
+	EnterpriseConnectionID           *string                        `json:"enterprise_connection_id"`
 	IdpSsoURL                        *string                        `json:"idp_sso_url"`
 	IdpCertificate                   *string                        `json:"idp_certificate"`
 	IdpMetadataURL                   *string                        `json:"idp_metadata_url"`
@@ -25,6 +33,10 @@ type SAMLConnection struct {
 	AllowSubdomains                  bool                           `json:"allow_subdomains"`
 	AllowIdpInitiated                bool                           `json:"allow_idp_initiated"`
 	DisableAdditionalIdentifications bool                           `json:"disable_additional_identifications"`
+	ForceAuthn                       bool                           `json:"force_authn"`
+	AllowOrganizationAccountLinking  bool                           `json:"allow_organization_account_linking"`
+	CustomAttributes                 *[]CustomAttribute             `json:"custom_attributes,omitempty"`
+	Authenticatable                  bool                           `json:"authenticatable"`
 	CreatedAt                        int64                          `json:"created_at"`
 	UpdatedAt                        int64                          `json:"updated_at"`
 }

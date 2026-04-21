@@ -18,9 +18,50 @@ type OrganizationSettings struct {
 	MaxAllowedMemberships  int64    `json:"max_allowed_memberships"`
 	MaxAllowedRoles        int64    `json:"max_allowed_roles"`
 	MaxAllowedPermissions  int64    `json:"max_allowed_permissions"`
+	MaxRoleSetsAllowed     int64    `json:"max_role_sets_allowed"`
+	MaxAllowedDomains      int64    `json:"max_allowed_domains"`
 	CreatorRole            string   `json:"creator_role"`
 	AdminDeleteEnabled     bool     `json:"admin_delete_enabled"`
 	DomainsEnabled         bool     `json:"domains_enabled"`
+	SlugDisabled           bool     `json:"slug_disabled"`
 	DomainsEnrollmentModes []string `json:"domains_enrollment_modes"`
 	DomainsDefaultRole     string   `json:"domains_default_role"`
+	// TODO(gabriel): remove Remove omitempty when feat is out
+	OrganizationCreationDefaults *OrganizationCreationDefaults `json:"organization_creation_defaults,omitempty"`
+	// TODO(nicolas): Remove omitempty when it's GA
+	InitialRoleSetKey *string `json:"initial_role_set_key,omitempty"`
+}
+
+type OrganizationCreationDefaults struct {
+	Enabled                       bool                                  `json:"enabled"`
+	AutomaticOrganizationCreation AutomaticOrganizationCreationSettings `json:"automatic_organization_creation"`
+	DetectFromEmailDomain         DetectFromEmailDomainSettings         `json:"detect_from_email_domain"`
+	OrganizationNameTemplate      OrganizationNameTemplateSettings      `json:"organization_name_template"`
+	Fallback                      FallbackSettings                      `json:"fallback"`
+}
+
+type AutomaticOrganizationCreationSettings struct {
+	Enabled bool `json:"enabled"`
+}
+
+type DetectFromEmailDomainSettings struct {
+	Enabled bool `json:"enabled"`
+}
+
+type OrganizationNameTemplateSettings struct {
+	Enabled  bool   `json:"enabled"`
+	Template string `json:"template"`
+}
+
+type FallbackSettings struct {
+	Name string `json:"name"`
+}
+
+// OAuthApplicationSettings represents the OAuth application settings for an instance.
+type OAuthApplicationSettings struct {
+	APIResource
+	Object                         string `json:"object"`
+	DynamicOauthClientRegistration bool   `json:"dynamic_oauth_client_registration"`
+	OAuthJWTAccessTokens           bool   `json:"oauth_jwt_access_tokens"`
+	OIDCSignOutEnabled             bool   `json:"oidc_sign_out_enabled"`
 }

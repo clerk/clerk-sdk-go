@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/clerk/clerk-sdk-go/v3"
+	"github.com/clerk/clerk-sdk-go/v3/optional"
 )
 
 //go:generate go run ../cmd/gen/main.go
@@ -95,6 +96,9 @@ type UpdateParams struct {
 	Public               *bool    `json:"public,omitempty"`
 	PKCERequired         *bool    `json:"pkce_required,omitempty"`
 	ConsentScreenEnabled *bool    `json:"consent_screen_enabled,omitempty"`
+
+	// AccessTokenTTL is the TTL for access tokens in seconds. Omit = no change; null = reset to default; number = set. Only used when instance has the feature enabled.
+	AccessTokenTTL optional.Int64 `json:"access_token_ttl,omitzero"`
 
 	// Deprecated: Use RedirectURIs instead
 	CallbackURL *string `json:"callback_url,omitempty"`

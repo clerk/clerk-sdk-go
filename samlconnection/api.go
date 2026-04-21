@@ -9,26 +9,36 @@ import (
 )
 
 // Create creates a new SAML Connection.
+//
+// Deprecated: Use enterpriseconnection.Create instead.
 func Create(ctx context.Context, params *CreateParams) (*clerk.SAMLConnection, error) {
 	return getClient().Create(ctx, params)
 }
 
 // Get returns details about a SAML Connection.
+//
+// Deprecated: Use enterpriseconnection.Get instead.
 func Get(ctx context.Context, id string) (*clerk.SAMLConnection, error) {
 	return getClient().Get(ctx, id)
 }
 
 // Update updates the SAML Connection specified by id.
+//
+// Deprecated: Use enterpriseconnection.Update instead.
 func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.SAMLConnection, error) {
 	return getClient().Update(ctx, id, params)
 }
 
 // Delete deletes a SAML Connection.
+//
+// Deprecated: Use enterpriseconnection.Delete instead.
 func Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	return getClient().Delete(ctx, id)
 }
 
 // List returns a list of SAML Connections.
+//
+// Deprecated: Use enterpriseconnection.List instead.
 func List(ctx context.Context, params *ListParams) (*clerk.SAMLConnectionList, error) {
 	return getClient().List(ctx, params)
 }

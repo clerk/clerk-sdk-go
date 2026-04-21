@@ -102,16 +102,45 @@ func (c *Client) UpdateRestrictions(ctx context.Context, params *UpdateRestricti
 
 type UpdateOrganizationSettingsParams struct {
 	clerk.APIParams
-	Enabled                *bool     `json:"enabled,omitempty"`
-	MaxAllowedMemberships  *int64    `json:"max_allowed_memberships,omitempty"`
-	CreatorRoleID          *string   `json:"creator_role_id,omitempty"`
-	AdminDeleteEnabled     *bool     `json:"admin_delete_enabled,omitempty"`
-	DomainsEnabled         *bool     `json:"domains_enabled,omitempty"`
-	DomainsEnrollmentModes *[]string `json:"domains_enrollment_modes,omitempty"`
-	DomainsDefaultRoleID   *string   `json:"domains_default_role_id,omitempty"`
+	Enabled                      *bool                                     `json:"enabled,omitempty"`
+	MaxAllowedMemberships        *int64                                    `json:"max_allowed_memberships,omitempty"`
+	MaxAllowedDomains            *int64                                    `json:"max_allowed_domains,omitempty"`
+	CreatorRoleID                *string                                   `json:"creator_role_id,omitempty"`
+	AdminDeleteEnabled           *bool                                     `json:"admin_delete_enabled,omitempty"`
+	DomainsEnabled               *bool                                     `json:"domains_enabled,omitempty"`
+	SlugDisabled                 *bool                                     `json:"slug_disabled,omitempty"`
+	DomainsEnrollmentModes       *[]string                                 `json:"domains_enrollment_modes,omitempty"`
+	DomainsDefaultRoleID         *string                                   `json:"domains_default_role_id,omitempty"`
+	OrganizationCreationDefaults *UpdateOrganizationCreationDefaultsParams `json:"organization_creation_defaults,omitempty"`
 	// This feature is currently in beta and is not yet available for all instances.
 	// do not use this feature in production.
-	ForceOrganizationSelection *bool `json:"force_organization_selection,omitempty"`
+	ForceOrganizationSelection *bool   `json:"force_organization_selection,omitempty"`
+	InitialRoleSetKey          *string `json:"initial_role_set_key,omitempty"`
+}
+
+type UpdateOrganizationCreationDefaultsParams struct {
+	Enabled                       *bool                                        `json:"enabled,omitempty"`
+	AutomaticOrganizationCreation *AutomaticOrganizationCreationSettingsParams `json:"automatic_organization_creation,omitempty"`
+	DetectFromEmailDomain         *DetectFromEmailDomainSettingsParams         `json:"detect_from_email_domain,omitempty"`
+	OrganizationNameTemplate      *OrganizationNameTemplateSettingsParams      `json:"organization_name_template,omitempty"`
+	Fallback                      *FallbackSettingsParams                      `json:"fallback,omitempty"`
+}
+
+type AutomaticOrganizationCreationSettingsParams struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+type DetectFromEmailDomainSettingsParams struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+type OrganizationNameTemplateSettingsParams struct {
+	Enabled  *bool   `json:"enabled,omitempty"`
+	Template *string `json:"template,omitempty"`
+}
+
+type FallbackSettingsParams struct {
+	Name *string `json:"name,omitempty"`
 }
 
 // UpdateOrganizationSettings updates the organization settings of the instance.
@@ -137,4 +166,36 @@ func (c *Client) GetOrganizationSettings(ctx context.Context) (*clerk.Organizati
 	orgSettings := &clerk.OrganizationSettings{}
 	err = c.Backend.Call(ctx, req, orgSettings)
 	return orgSettings, err
+}
+
+type UpdateOAuthApplicationSettingsParams struct {
+	clerk.APIParams
+	DynamicOAuthClientRegistration *bool `json:"dynamic_oauth_client_registration,omitempty"`
+	OAuthJWTAccessTokens           *bool `json:"oauth_jwt_access_tokens,omitempty"`
+	OIDCSignOutEnabled             *bool `json:"oidc_sign_out_enabled,omitempty"`
+}
+
+// ReadOAuthApplicationSettings returns the OAuth application settings of the instance.
+func (c *Client) ReadOAuthApplicationSettings(ctx context.Context) (*clerk.OAuthApplicationSettings, error) {
+	oauthPath, err := clerk.JoinPath(path, "/oauth_application_settings")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, oauthPath)
+	settings := &clerk.OAuthApplicationSettings{}
+	err = c.Backend.Call(ctx, req, settings)
+	return settings, err
+}
+
+// UpdateOAuthApplicationSettings updates the OAuth application settings of the instance.
+func (c *Client) UpdateOAuthApplicationSettings(ctx context.Context, params *UpdateOAuthApplicationSettingsParams) (*clerk.OAuthApplicationSettings, error) {
+	oauthPath, err := clerk.JoinPath(path, "/oauth_application_settings")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPatch, oauthPath)
+	req.SetParams(params)
+	settings := &clerk.OAuthApplicationSettings{}
+	err = c.Backend.Call(ctx, req, settings)
+	return settings, err
 }

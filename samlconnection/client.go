@@ -1,4 +1,7 @@
 // Package samlconnection provides the SAML Connections API.
+//
+// Deprecated: Use the enterpriseconnection package and the Enterprise Connections
+// Backend API (https://clerk.com/docs/reference/backend-api/tag/enterprise-connections) instead.
 package samlconnection
 
 import (
@@ -14,10 +17,15 @@ import (
 const path = "/saml_connections"
 
 // Client is used to invoke the SAML Connections API.
+//
+// Deprecated: Use enterpriseconnection.Client instead.
 type Client struct {
 	Backend clerk.Backend
 }
 
+// NewClient returns a Client for the SAML Connections API.
+//
+// Deprecated: Use enterpriseconnection.NewClient instead.
 func NewClient(config *clerk.ClientConfig) *Client {
 	return &Client{
 		Backend: clerk.NewBackend(&config.BackendConfig),
@@ -45,9 +53,12 @@ type CreateParams struct {
 	IdpMetadataURL   *string                 `json:"idp_metadata_url,omitempty"`
 	IdpMetadata      *string                 `json:"idp_metadata,omitempty"`
 	AttributeMapping *AttributeMappingParams `json:"attribute_mapping,omitempty"`
+	ForceAuthn       *bool                   `json:"force_authn,omitempty"`
 }
 
 // Create creates a new SAML Connection.
+//
+// Deprecated: Use enterpriseconnection.Create instead.
 func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.SAMLConnection, error) {
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
@@ -57,6 +68,8 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.SAMLC
 }
 
 // Get returns details about a SAML Connection.
+//
+// Deprecated: Use enterpriseconnection.Get instead.
 func (c *Client) Get(ctx context.Context, id string) (*clerk.SAMLConnection, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
@@ -102,9 +115,17 @@ type UpdateParams struct {
 	AllowSubdomains                  *bool                   `json:"allow_subdomains,omitempty"`
 	AllowIdpInitiated                *bool                   `json:"allow_idp_initiated,omitempty"`
 	DisableAdditionalIdentifications *bool                   `json:"disable_additional_identifications,omitempty"`
+	AllowOrganizationAccountLinking  *bool                   `json:"allow_organization_account_linking,omitempty"`
+	ForceAuthn                       *bool                   `json:"force_authn,omitempty"`
+	ConsentVerifiedDomainsDeletion   *bool                   `json:"consent_verified_domains_deletion,omitempty"`
+	Authenticatable                  *bool                   `json:"authenticatable,omitempty"`
+	// CustomAttributes is an Experimental feature, not available for all customers.
+	CustomAttributes *[]clerk.CustomAttribute `json:"custom_attributes,omitempty"`
 }
 
 // Update updates the SAML Connection specified by id.
+//
+// Deprecated: Use enterpriseconnection.Update instead.
 func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*clerk.SAMLConnection, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
@@ -118,6 +139,8 @@ func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*
 }
 
 // Delete deletes a SAML Connection.
+//
+// Deprecated: Use enterpriseconnection.Delete instead.
 func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
@@ -149,6 +172,8 @@ func (params *ListParams) ToQuery() url.Values {
 }
 
 // List returns a list of SAML Connections.
+//
+// Deprecated: Use enterpriseconnection.List instead.
 func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.SAMLConnectionList, error) {
 	req := clerk.NewAPIRequest(http.MethodGet, path)
 	req.SetParams(params)

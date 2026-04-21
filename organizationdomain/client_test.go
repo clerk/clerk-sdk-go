@@ -193,6 +193,7 @@ func TestOrganizationDomainClientListFromInstance(t *testing.T) {
 	organizationID2 := "org_456"
 	verified := true
 	query := "mydomain.com"
+	domainsFilter := []string{"mydomain.com", "other.com"}
 
 	publicOrganizationData := `{"id": "org_123", "name": "My Organization", "slug": "my-organization", "image_url": "https://example.com/image.png", "has_image": true}`
 
@@ -218,6 +219,7 @@ func TestOrganizationDomainClientListFromInstance(t *testing.T) {
 				"organization_id": []string{"org_123"},
 				"order_by":        []string{"-created_at"},
 				"query":           []string{"mydomain.com"},
+				"domains":         domainsFilter,
 			},
 		},
 	}
@@ -228,6 +230,7 @@ func TestOrganizationDomainClientListFromInstance(t *testing.T) {
 		OrganizationID: clerk.String("org_123"),
 		OrderBy:        clerk.String("-created_at"),
 		Query:          clerk.String(query),
+		Domains:        &domainsFilter,
 	}
 	params.Limit = clerk.Int64(10)
 	params.Offset = clerk.Int64(0)

@@ -64,6 +64,24 @@ func (c *Client) GetSecretKey(ctx context.Context, id string) (*clerk.MachineSec
 	return secretKey, err
 }
 
+type RotateSecretKeyParams struct {
+	clerk.APIParams
+	PreviousTokenTTL int64 `json:"previous_token_ttl"`
+}
+
+// RotateSecretKey rotates the secret key for a machine.
+func (c *Client) RotateSecretKey(ctx context.Context, machineID string, params *RotateSecretKeyParams) (*clerk.MachineSecretKey, error) {
+	path, err := clerk.JoinPath(path, machineID, "secret_key", "rotate")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	secretKey := &clerk.MachineSecretKey{}
+	err = c.Backend.Call(ctx, req, secretKey)
+	return secretKey, err
+}
+
 type UpdateParams struct {
 	clerk.APIParams
 	Name            *string `json:"name,omitempty"`

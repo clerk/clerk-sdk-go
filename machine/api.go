@@ -23,6 +23,11 @@ func GetSecretKey(ctx context.Context, id string) (*clerk.MachineSecretKey, erro
 	return getClient().GetSecretKey(ctx, id)
 }
 
+// RotateSecretKey rotates the secret key for a machine.
+func RotateSecretKey(ctx context.Context, machineID string, params *RotateSecretKeyParams) (*clerk.MachineSecretKey, error) {
+	return getClient().RotateSecretKey(ctx, machineID, params)
+}
+
 // Update updates a machine.
 func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.MachineWithScopedMachines, error) {
 	return getClient().Update(ctx, id, params)

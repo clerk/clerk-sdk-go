@@ -24,6 +24,9 @@ type OAuthApplication struct {
 	CreatedAt             int64    `json:"created_at"`
 	UpdatedAt             int64    `json:"updated_at"`
 
+	// AccessTokenTTL is the TTL for access tokens issued by this OAuth application, in seconds. Nil means use default.
+	AccessTokenTTL *int64 `json:"access_token_ttl,omitempty"`
+
 	// Deprecated: Use RedirectURIs instead
 	CallbackURL string `json:"callback_url"`
 }

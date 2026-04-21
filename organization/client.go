@@ -31,12 +31,15 @@ func NewClient(config *clerk.ClientConfig) *Client {
 
 type CreateParams struct {
 	clerk.APIParams
-	Name                  *string          `json:"name,omitempty"`
-	Slug                  *string          `json:"slug,omitempty"`
-	CreatedBy             *string          `json:"created_by,omitempty"`
-	MaxAllowedMemberships *int64           `json:"max_allowed_memberships,omitempty"`
-	PublicMetadata        *json.RawMessage `json:"public_metadata,omitempty"`
-	PrivateMetadata       *json.RawMessage `json:"private_metadata,omitempty"`
+	Name                  *string `json:"name,omitempty"`
+	Slug                  *string `json:"slug,omitempty"`
+	CreatedBy             *string `json:"created_by,omitempty"`
+	MaxAllowedMemberships *int64  `json:"max_allowed_memberships,omitempty"`
+	// RoleSetKey is a preview field and is not available yet for all customers.
+	// The use of this field will cause an error to be returned.
+	RoleSetKey      *string          `json:"role_set_key,omitempty"`
+	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
 }
 
 // Create creates a new organization.
@@ -83,6 +86,10 @@ type UpdateParams struct {
 	PublicMetadata        *json.RawMessage `json:"public_metadata,omitempty"`
 	PrivateMetadata       *json.RawMessage `json:"private_metadata,omitempty"`
 	AdminDeleteEnabled    *bool            `json:"admin_delete_enabled,omitempty"`
+	// RoleSetKey and ReassignmentMappings are preview fields and are not available yet for all customers.
+	// The use of this field will cause an error to be returned.
+	RoleSetKey           *string                     `json:"role_set_key,omitempty"`
+	ReassignmentMappings *clerk.ReassignmentMappings `json:"reassignment_mappings,omitempty"`
 }
 
 // Update updates an organization.
@@ -205,6 +212,10 @@ type ListParams struct {
 	Query                                       *string  `json:"query,omitempty"`
 	UserIDs                                     []string `json:"user_id,omitempty"`
 	FilterBy                                    []string `json:"filter_by,omitempty"`
+	CreatedAtBefore                             *int64   `json:"created_at_before,omitempty"`
+	CreatedAtAfter                              *int64   `json:"created_at_after,omitempty"`
+	Slug                                        *string  `json:"slug,omitempty"`
+	Name                                        *string  `json:"name,omitempty"`
 }
 
 // ToQuery returns query string values from the params.
@@ -230,6 +241,18 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.FilterBy != nil {
 		q["filter_by"] = params.FilterBy
+	}
+	if params.CreatedAtBefore != nil {
+		q.Set("created_at_before", strconv.FormatInt(*params.CreatedAtBefore, 10))
+	}
+	if params.CreatedAtAfter != nil {
+		q.Set("created_at_after", strconv.FormatInt(*params.CreatedAtAfter, 10))
+	}
+	if params.Slug != nil {
+		q.Set("slug", *params.Slug)
+	}
+	if params.Name != nil {
+		q.Set("name", *params.Name)
 	}
 	return q
 }
