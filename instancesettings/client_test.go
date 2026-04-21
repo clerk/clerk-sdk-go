@@ -301,7 +301,7 @@ func TestInstanceClientGetOrganizationSettings(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	orgSettings, err := client.GetOrganizationSettings(context.Background())
+	orgSettings, err := client.GetOrganizationSettings(t.Context())
 	require.NoError(t, err)
 	require.True(t, orgSettings.Enabled)
 	require.Equal(t, int64(3), orgSettings.MaxAllowedMemberships)
@@ -323,7 +323,7 @@ func TestInstanceClientGetOrganizationSettings_Error(t *testing.T) {
 		},
 	}
 	client := NewClient(config)
-	_, err := client.GetOrganizationSettings(context.Background())
+	_, err := client.GetOrganizationSettings(t.Context())
 	require.Error(t, err)
 	apiErr, ok := err.(*clerk.APIErrorResponse)
 	require.True(t, ok)
