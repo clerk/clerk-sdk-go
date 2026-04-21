@@ -23,6 +23,11 @@ func UpdateOrganizationSettings(ctx context.Context, params *UpdateOrganizationS
 	return getClient().UpdateOrganizationSettings(ctx, params)
 }
 
+// GetOrganizationSettings retrieves the organization settings of the instance.
+func GetOrganizationSettings(ctx context.Context) (*clerk.OrganizationSettings, error) {
+	return getClient().GetOrganizationSettings(ctx)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),

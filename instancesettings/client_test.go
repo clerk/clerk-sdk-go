@@ -147,3 +147,46 @@ func TestInstanceClientUpdateOrganizationSettings_Error(t *testing.T) {
 	require.Equal(t, 1, len(apiErr.Errors))
 	require.Equal(t, "update-error-code", apiErr.Errors[0].Code)
 }
+
+func TestInstanceClientGetOrganizationSettings(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(`{"enabled":true,"max_allowed_memberships":3}`),
+			Method: http.MethodGet,
+			Path:   "/v1/instance/organization_settings",
+		},
+	}
+	client := NewClient(config)
+	orgSettings, err := client.GetOrganizationSettings(context.Background())
+	require.NoError(t, err)
+	require.True(t, orgSettings.Enabled)
+	require.Equal(t, int64(3), orgSettings.MaxAllowedMemberships)
+}
+
+func TestInstanceClientGetOrganizationSettings_Error(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Status: http.StatusBadRequest,
+			Out: json.RawMessage(`{
+  "errors":[{
+		"code":"get-error-code"
+	}],
+	"clerk_trace_id":"get-trace-id"
+}`),
+		},
+	}
+	client := NewClient(config)
+	_, err := client.GetOrganizationSettings(context.Background())
+	require.Error(t, err)
+	apiErr, ok := err.(*clerk.APIErrorResponse)
+	require.True(t, ok)
+	require.Equal(t, "get-trace-id", apiErr.TraceID)
+	require.Equal(t, 1, len(apiErr.Errors))
+	require.Equal(t, "get-error-code", apiErr.Errors[0].Code)
+}
