@@ -10,6 +10,7 @@ type SCIMDirectory struct {
 	EndpointURL            string            `json:"endpoint_url"`
 	Provider               string            `json:"provider"`
 	Enabled                bool              `json:"enabled"`
+	GroupRoleMappingEnabled bool             `json:"group_role_mapping_enabled"`
 	APIKey                 *string           `json:"api_key,omitempty"`
 	CreatedAt              int64             `json:"created_at"`
 	UpdatedAt              int64             `json:"updated_at"`
