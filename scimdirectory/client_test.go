@@ -18,18 +18,18 @@ func TestCreate(t *testing.T) {
 
 	enterpriseConnectionID := "entc_123"
 	response := map[string]interface{}{
-		"object":                       "scim_directory",
-		"id":                           "scim_test123",
-		"name":                         "Test SCIM Directory",
-		"enterprise_connection_id":     enterpriseConnectionID,
-		"endpoint_url":                 "https://scim.example.com",
-		"provider":                     "okta",
-		"enabled":                      true,
-		"group_role_mapping_enabled":   true,
-		"api_key":                      "sk_test_xxxxx",
-		"created_at":                   1640995200,
-		"updated_at":                   1640995200,
-		"attribute_mapping":            map[string]string{"first_name": "first_name", "last_name": "last_name"},
+		"object":                     "scim_directory",
+		"id":                         "scim_test123",
+		"name":                       "Test SCIM Directory",
+		"enterprise_connection_id":   enterpriseConnectionID,
+		"endpoint_url":               "https://scim.example.com",
+		"provider":                   "okta",
+		"enabled":                    true,
+		"group_role_mapping_enabled": true,
+		"api_key":                    "sk_test_xxxxx",
+		"created_at":                 1640995200,
+		"updated_at":                 1640995200,
+		"attribute_mapping":          map[string]string{"first_name": "first_name", "last_name": "last_name"},
 	}
 
 	responseJSON, _ := json.Marshal(response)
