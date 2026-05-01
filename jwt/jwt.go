@@ -286,7 +286,7 @@ func GetJSONWebKey(ctx context.Context, params *GetJSONWebKeyParams) (*clerk.JSO
 		}
 	}
 
-	othersMsg := "no other keys returned from endpoint"
+	othersMsg := "no keys returned from endpoint"
 	if matched {
 		othersMsg = "other keys found that did not match"
 	}
