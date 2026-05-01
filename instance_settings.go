@@ -1,5 +1,11 @@
 package clerk
 
+type InstanceCommunication struct {
+	APIResource
+	Object              string   `json:"object"`
+	BlockedCountryCodes []string `json:"blocked_country_codes"`
+}
+
 type InstanceRestrictions struct {
 	APIResource
 	Object                             string `json:"object"`
