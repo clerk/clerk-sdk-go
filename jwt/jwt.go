@@ -275,10 +275,20 @@ func GetJSONWebKey(ctx context.Context, params *GetJSONWebKeyParams) (*clerk.JSO
 		return nil, fmt.Errorf("no jwks found")
 	}
 
+	matched := false
 	for _, k := range jwks.Keys {
-		if k != nil && k.KeyID == params.KeyID {
-			return k, nil
+		if k != nil {
+			if k.KeyID == params.KeyID  {
+				return k, nil
+			} else {
+				matched = true
+			}
 		}
 	}
-	return nil, fmt.Errorf("no json web key found for kid: %q", params.KeyID)
+
+	othersMsg := "no other keys returned from endpoint"
+	if matched {
+		othersMsg = "other keys found that did not match"
+	}
+	return nil, fmt.Errorf("no json web key found for kid: %q; %s", params.KeyID, othersMsg)
 }
