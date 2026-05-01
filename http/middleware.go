@@ -130,6 +130,8 @@ type AuthorizationParams struct {
 	// fails. Pass a custom http.Handler to control the http.Response for
 	// invalid authorization. The default is a Response with an empty body
 	// and 401 Unauthorized status.
+	// Errors are passed to the handler in the http.Request context under
+	// the auth_error key.
 	AuthorizationFailureHandler http.Handler
 	// JWKSClient is the jwks.Client that will be used to fetch the
 	// JSON Web Key Set. A default client will be used if none is
