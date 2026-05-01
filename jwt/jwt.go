@@ -280,5 +280,5 @@ func GetJSONWebKey(ctx context.Context, params *GetJSONWebKeyParams) (*clerk.JSO
 			return k, nil
 		}
 	}
-	return nil, fmt.Errorf("missing json web key")
+	return nil, fmt.Errorf("no json web key found for kid: %q", params.KeyID)
 }
