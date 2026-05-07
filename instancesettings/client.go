@@ -100,6 +100,39 @@ func (c *Client) UpdateRestrictions(ctx context.Context, params *UpdateRestricti
 	return instanceRestrictions, err
 }
 
+type UpdateCommunicationParams struct {
+	clerk.APIParams
+	// BlockedCountryCodes is the list of ISO-3166-1 alpha-2 country codes
+	// for which SMS messages will not be delivered. Pass an empty slice to
+	// clear the blocklist.
+	BlockedCountryCodes *[]string `json:"blocked_country_codes,omitempty"`
+}
+
+// GetCommunication retrieves the communication settings of the instance.
+func (c *Client) GetCommunication(ctx context.Context) (*clerk.InstanceCommunication, error) {
+	path, err := clerk.JoinPath(path, "/communication")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	communication := &clerk.InstanceCommunication{}
+	err = c.Backend.Call(ctx, req, communication)
+	return communication, err
+}
+
+// UpdateCommunication updates the communication settings of the instance.
+func (c *Client) UpdateCommunication(ctx context.Context, params *UpdateCommunicationParams) (*clerk.InstanceCommunication, error) {
+	path, err := clerk.JoinPath(path, "/communication")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPatch, path)
+	req.SetParams(params)
+	communication := &clerk.InstanceCommunication{}
+	err = c.Backend.Call(ctx, req, communication)
+	return communication, err
+}
+
 type UpdateOrganizationSettingsParams struct {
 	clerk.APIParams
 	Enabled                      *bool                                     `json:"enabled,omitempty"`

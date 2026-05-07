@@ -100,6 +100,45 @@ func TestInstanceClientUpdateRestrictions_Error(t *testing.T) {
 	require.Equal(t, "update-error-code", apiErr.Errors[0].Code)
 }
 
+func TestInstanceClientGetCommunication(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(`{"object":"instance_communication","blocked_country_codes":["CN","RU"]}`),
+			Method: http.MethodGet,
+			Path:   "/v1/instance/communication",
+		},
+	}
+	client := NewClient(config)
+	communication, err := client.GetCommunication(t.Context())
+	require.NoError(t, err)
+	require.Equal(t, "instance_communication", communication.Object)
+	require.Equal(t, []string{"CN", "RU"}, communication.BlockedCountryCodes)
+}
+
+func TestInstanceClientUpdateCommunication(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"blocked_country_codes":["CN","RU"]}`),
+			Out:    json.RawMessage(`{"object":"instance_communication","blocked_country_codes":["CN","RU"]}`),
+			Method: http.MethodPatch,
+			Path:   "/v1/instance/communication",
+		},
+	}
+	client := NewClient(config)
+	communication, err := client.UpdateCommunication(t.Context(), &UpdateCommunicationParams{
+		BlockedCountryCodes: &[]string{"CN", "RU"},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "instance_communication", communication.Object)
+	require.Equal(t, []string{"CN", "RU"}, communication.BlockedCountryCodes)
+}
+
 func TestInstanceClientUpdateOrganizationSettings(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
