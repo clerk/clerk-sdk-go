@@ -18,6 +18,16 @@ func UpdateRestrictions(ctx context.Context, params *UpdateRestrictionsParams) (
 	return getClient().UpdateRestrictions(ctx, params)
 }
 
+// GetCommunication retrieves the communication settings of the instance.
+func GetCommunication(ctx context.Context) (*clerk.InstanceCommunication, error) {
+	return getClient().GetCommunication(ctx)
+}
+
+// UpdateCommunication updates the communication settings of the instance.
+func UpdateCommunication(ctx context.Context, params *UpdateCommunicationParams) (*clerk.InstanceCommunication, error) {
+	return getClient().UpdateCommunication(ctx, params)
+}
+
 // UpdateOrganizationSettings updates the organization settings of the instance.
 func UpdateOrganizationSettings(ctx context.Context, params *UpdateOrganizationSettingsParams) (*clerk.OrganizationSettings, error) {
 	return getClient().UpdateOrganizationSettings(ctx, params)
