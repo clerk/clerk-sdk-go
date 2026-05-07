@@ -314,7 +314,7 @@ func TestWithHeaderAuthorization_CacheFixedTTL(t *testing.T) {
 		"sub": "user_123",
 		"iss": "https://clerk.com",
 	}
-	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 	require.NoError(t, err)
