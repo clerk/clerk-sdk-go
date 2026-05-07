@@ -209,6 +209,40 @@ func TestOAuthApplicationClientList(t *testing.T) {
 	require.Equal(t, "OAuth App 1", appList.OAuthApplications[0].Name)
 }
 
+func TestOAuthApplicationClientList_DynamicallyRegistered(t *testing.T) {
+	t.Parallel()
+	for _, dynamicallyRegistered := range []bool{true, false} {
+		t.Run(fmt.Sprintf("%v", dynamicallyRegistered), func(t *testing.T) {
+			t.Parallel()
+			config := &clerk.ClientConfig{}
+			config.HTTPClient = &http.Client{
+				Transport: &clerktest.RoundTripper{
+					T: t,
+					Out: json.RawMessage(`{
+						"data": [{"id":"oauth_app_123","name":"OAuth App 1"}],
+						"total_count": 1
+					}`),
+					Method: http.MethodGet,
+					Path:   "/v1/oauth_applications",
+					Query: &url.Values{
+						"limit":                  []string{"10"},
+						"offset":                 []string{"0"},
+						"dynamically_registered": []string{fmt.Sprintf("%v", dynamicallyRegistered)},
+					},
+				},
+			}
+			client := NewClient(config)
+			params := &ListParams{}
+			params.Limit = clerk.Int64(10)
+			params.Offset = clerk.Int64(0)
+			params.DynamicallyRegistered = clerk.Bool(dynamicallyRegistered)
+			appList, err := client.List(t.Context(), params)
+			require.NoError(t, err)
+			require.Equal(t, int64(1), appList.TotalCount)
+		})
+	}
+}
+
 func TestOAuthApplicationClientRotateClientSecret(t *testing.T) {
 	t.Parallel()
 	id := "oauth_app_123"
