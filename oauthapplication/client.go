@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/clerk/clerk-sdk-go/v3"
 	"github.com/clerk/clerk-sdk-go/v3/optional"
@@ -39,8 +40,9 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.OAuthApplication, e
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	OrderBy   *string `json:"order_by,omitempty"`
-	NameQuery *string `json:"name_query,omitempty"`
+	OrderBy               *string `json:"order_by,omitempty"`
+	NameQuery             *string `json:"name_query,omitempty"`
+	DynamicallyRegistered *bool   `json:"dynamically_registered,omitempty"`
 }
 
 func (params *ListParams) ToQuery() url.Values {
@@ -52,6 +54,10 @@ func (params *ListParams) ToQuery() url.Values {
 
 	if params.NameQuery != nil {
 		q.Set("name_query", *params.NameQuery)
+	}
+
+	if params.DynamicallyRegistered != nil {
+		q.Set("dynamically_registered", strconv.FormatBool(*params.DynamicallyRegistered))
 	}
 
 	return q

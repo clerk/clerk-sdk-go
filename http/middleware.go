@@ -263,6 +263,25 @@ func Satellite(isSatellite bool) AuthorizationOption {
 	}
 }
 
+// IgnoreJWTHeaderType skips validation of the JWT "typ" header during
+// verification. By default, the typ header must be "JWT" (or the value
+// set with ExpectedJWTHeaderType). If both options are set, ignore wins.
+func IgnoreJWTHeaderType() AuthorizationOption {
+	return func(params *AuthorizationParams) error {
+		params.IgnoreJWTHeaderType = true
+		return nil
+	}
+}
+
+// ExpectedJWTHeaderType sets the required value of the JWT "typ" header.
+// The empty string means "JWT". Ignored when IgnoreJWTHeaderType is used.
+func ExpectedJWTHeaderType(typ string) AuthorizationOption {
+	return func(params *AuthorizationParams) error {
+		params.ExpectedJWTHeaderType = typ
+		return nil
+	}
+}
+
 // JSONWebKey allows to provide a custom JSON Web Key (JWK) based on
 // which the authorization JWT will be verified.
 // When verifying the authorization JWT without a custom key, the JWK
