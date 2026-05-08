@@ -11,6 +11,7 @@ import (
 
 	"github.com/clerk/clerk-sdk-go/v3"
 	"github.com/clerk/clerk-sdk-go/v3/jwks"
+	jose "github.com/go-jose/go-jose/v3"
 	"github.com/go-jose/go-jose/v3/jwt"
 )
 
@@ -63,6 +64,14 @@ type VerifyParams struct {
 	// AuthorizedPartyHandler can be used to perform validations on the
 	// 'azp' claim.
 	AuthorizedPartyHandler AuthorizedPartyHandler
+	// IgnoreJWTHeaderType, when true, skips validation of the JWS "typ"
+	// header. When false (default), the typ header must match
+	// ExpectedJWTHeaderType, or "JWT" if ExpectedJWTHeaderType is empty.
+	IgnoreJWTHeaderType bool
+	// ExpectedJWTHeaderType is the required value of the JWT "typ" header
+	// for verification to succeed. The empty string means "JWT".
+	// Ignored when IgnoreJWTHeaderType is true.
+	ExpectedJWTHeaderType string
 }
 
 type version2Claims struct {
@@ -87,6 +96,17 @@ func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, er
 	}
 	if len(parsedToken.Headers) == 0 {
 		return nil, fmt.Errorf("missing JWT headers")
+	}
+	if !params.IgnoreJWTHeaderType {
+		// Default to requiring typ = "JWT" if no expected type is provided.
+		want := params.ExpectedJWTHeaderType
+		if want == "" {
+			want = "JWT"
+		}
+		got := jwtHeaderType(parsedToken.Headers[0])
+		if got != want {
+			return nil, fmt.Errorf("invalid JWT typ header: got %q, want %q", got, want)
+		}
 	}
 	jwk := params.JWK
 	if jwk == nil {
@@ -207,6 +227,24 @@ func isValidIssuer(iss string, proxyURL *string) bool {
 	}
 	return strings.HasPrefix(iss, "https://clerk.") ||
 		strings.Contains(iss, ".clerk.accounts")
+}
+
+// jwtHeaderType returns the JWS "typ" header value from a parsed go-jose header.
+// Returns empty string if the header is missing.
+func jwtHeaderType(h jose.Header) string {
+	if h.ExtraHeaders == nil {
+		return ""
+	}
+	v, ok := h.ExtraHeaders[jose.HeaderType]
+	if !ok || v == nil {
+		return ""
+	}
+	switch s := v.(type) {
+	case string:
+		return s
+	default:
+		return fmt.Sprint(v)
+	}
 }
 
 type DecodeParams struct {
