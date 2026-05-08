@@ -29,6 +29,7 @@ func NewClient(config *clerk.ClientConfig) *Client {
 type CreateParams struct {
 	clerk.APIParams
 	SecondsUntilExpiration *int64           `json:"seconds_until_expiration,omitempty"`
+	MinRemainingTTLSeconds *int64           `json:"min_remaining_ttl_seconds,omitempty"`
 	Claims                 *json.RawMessage `json:"claims,omitempty"`
 	TokenFormat            *string          `json:"token_format,omitempty"`
 }
