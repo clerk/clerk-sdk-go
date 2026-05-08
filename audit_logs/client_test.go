@@ -170,6 +170,169 @@ func TestList(t *testing.T) {
 	require.False(t, list.Cursor.RetentionLimitReached)
 }
 
+// TestList_FilterMatchAny verifies that the filter_match query parameter is
+// serialized correctly when set to the OR-mode value, and exercises a
+// multi-axis filter combination similar to a real "show me everything for
+// this user OR this trace" query.
+func TestList_FilterMatchAny(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"data": []map[string]interface{}{},
+		"cursor": map[string]interface{}{
+			"starting_after":   nil,
+			"ending_before":    nil,
+			"has_next_page":    false,
+			"next_page_status": "false",
+		},
+	}
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    responseJSON,
+			Method: http.MethodGet,
+			Path:   "/v1/audit_logs",
+			Query: &url.Values{
+				"subject":      []string{"user_alpha"},
+				"actor":        []string{"actor_b"},
+				"trace_id":     []string{"00000000000000000000000000000001"},
+				"filter_match": []string{"any"},
+			},
+		},
+	}
+	client := NewClient(config)
+
+	filterMatch := clerk.AuditLogFilterMatchAny
+	params := &ListParams{
+		Subject:     clerk.String("user_alpha"),
+		Actor:       clerk.String("actor_b"),
+		TraceID:     clerk.String("00000000000000000000000000000001"),
+		FilterMatch: &filterMatch,
+	}
+	_, err := client.List(context.Background(), params)
+	require.NoError(t, err)
+}
+
+// TestList_FilterMatchAll verifies the explicit AND-mode value also
+// round-trips as a query parameter.
+func TestList_FilterMatchAll(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"data": []map[string]interface{}{},
+		"cursor": map[string]interface{}{
+			"starting_after":   nil,
+			"ending_before":    nil,
+			"has_next_page":    false,
+			"next_page_status": "false",
+		},
+	}
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    responseJSON,
+			Method: http.MethodGet,
+			Path:   "/v1/audit_logs",
+			Query: &url.Values{
+				"subject":      []string{"user_alpha"},
+				"type":         []string{"user.created"},
+				"filter_match": []string{"all"},
+			},
+		},
+	}
+	client := NewClient(config)
+
+	filterMatch := clerk.AuditLogFilterMatchAll
+	params := &ListParams{
+		Subject:     clerk.String("user_alpha"),
+		Type:        clerk.String("user.created"),
+		FilterMatch: &filterMatch,
+	}
+	_, err := client.List(context.Background(), params)
+	require.NoError(t, err)
+}
+
+// TestList_FilterMatchOmitted verifies that a nil FilterMatch is not
+// emitted to the query string at all (preserving the API's default
+// behavior).
+func TestList_FilterMatchOmitted(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"data": []map[string]interface{}{},
+		"cursor": map[string]interface{}{
+			"starting_after":   nil,
+			"ending_before":    nil,
+			"has_next_page":    false,
+			"next_page_status": "false",
+		},
+	}
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    responseJSON,
+			Method: http.MethodGet,
+			Path:   "/v1/audit_logs",
+			Query: &url.Values{
+				"subject": []string{"user_alpha"},
+			},
+		},
+	}
+	client := NewClient(config)
+
+	params := &ListParams{
+		Subject: clerk.String("user_alpha"),
+	}
+	_, err := client.List(context.Background(), params)
+	require.NoError(t, err)
+}
+
+// TestListParams_ToQuery_FilterMatch unit-tests ListParams.ToQuery
+// directly to lock the query parameter name and serialized value.
+func TestListParams_ToQuery_FilterMatch(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name        string
+		filterMatch *clerk.AuditLogFilterMatch
+		want        []string
+	}{
+		{name: "nil omits the param", filterMatch: nil, want: nil},
+		{
+			name:        "any serializes as \"any\"",
+			filterMatch: filterMatchPtr(clerk.AuditLogFilterMatchAny),
+			want:        []string{"any"},
+		},
+		{
+			name:        "all serializes as \"all\"",
+			filterMatch: filterMatchPtr(clerk.AuditLogFilterMatchAll),
+			want:        []string{"all"},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			params := &ListParams{FilterMatch: tc.filterMatch}
+			got := params.ToQuery()["filter_match"]
+			require.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func filterMatchPtr(v clerk.AuditLogFilterMatch) *clerk.AuditLogFilterMatch {
+	return &v
+}
+
 func TestList_RetentionLimitReached(t *testing.T) {
 	t.Parallel()
 

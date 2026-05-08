@@ -7,6 +7,7 @@
 - Add support for listing and creating waitlist entries with the `waitlistentry.List` and `waitlistentry.Create` methods.
 - Add support for fetching an organization with its members count, via a new `organizations.GetWithParams` method.
 - Add support for session reverification with `SessionClaims.NeedsReverification()`, `SessionReverificationPolicy`, predefined policies like `SessionReverificationStrict`, and middleware via `http.NeedsSessionReverification()`.
+- Add support for OR-ing audit log list filters via `audit_logs.ListParams.FilterMatch`. Pass `clerk.AuditLogFilterMatchAny` to match events that satisfy any one of `Subject`, `Type`, `Actor`, `TraceID`, `ClientID`, or `ImpersonatorUserID`. Defaults to `clerk.AuditLogFilterMatchAll` (AND) when omitted, preserving existing behavior.
 
 ## 2.2.0
 
