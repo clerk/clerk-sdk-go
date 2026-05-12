@@ -47,6 +47,18 @@ type ListParams struct {
 	ClientID *string `json:"client_id,omitempty"`
 	// Filter audit logs by impersonator user ID.
 	ImpersonatorUserID *string `json:"impersonator_user_id,omitempty"`
+	// FilterMatch controls how Subject, Type, Actor, TraceID, ClientID, and
+	// ImpersonatorUserID are combined when more than one is supplied.
+	//
+	//   - AuditLogFilterMatchAll (default, also when nil): every supplied
+	//     filter must match (AND).
+	//   - AuditLogFilterMatchAny: an event matches if at least one of the
+	//     supplied filters matches (OR).
+	//
+	// EventTimeAfter, EventTimeBefore, and EndUserFacingOnly are always
+	// ANDed with the (possibly OR-ed) string filter group regardless of
+	// FilterMatch.
+	FilterMatch *clerk.AuditLogFilterMatch `json:"filter_match,omitempty"`
 	// Filter audit logs to events on or after this date (Unix timestamp in milliseconds).
 	EventTimeAfter *int64 `json:"event_time_after,omitempty"`
 	// Filter audit logs to events on or before this date (Unix timestamp in milliseconds).
@@ -85,6 +97,9 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.ImpersonatorUserID != nil {
 		q.Add("impersonator_user_id", *params.ImpersonatorUserID)
+	}
+	if params.FilterMatch != nil {
+		q.Add("filter_match", string(*params.FilterMatch))
 	}
 	if params.EventTimeAfter != nil {
 		q.Add("event_time_after", strconv.FormatInt(*params.EventTimeAfter, 10))

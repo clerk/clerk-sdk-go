@@ -20,7 +20,7 @@ func TestVerify_InvalidParams(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	kid := "kid"
-	token, pubKey := clerktest.GenerateJWT(t, map[string]any{"iss": "https://clerk.com"}, kid)
+	token, pubKey := clerktest.GenerateJWT(t, map[string]any{"iss": "https://clerk.com"}, clerktest.WithKID(kid))
 
 	// Verifying with wrong public key for the key.
 	_, err := Verify(ctx, &VerifyParams{
@@ -67,7 +67,7 @@ func TestVerify_InvalidParams(t *testing.T) {
 	require.Error(t, err)
 
 	// Generate a token with an invalid issuer
-	token, pubKey = clerktest.GenerateJWT(t, map[string]any{"iss": "https://whatever.com"}, kid)
+	token, pubKey = clerktest.GenerateJWT(t, map[string]any{"iss": "https://whatever.com"}, clerktest.WithKID(kid))
 	// Cannot verify if token has invalid issuer
 	validKey = &clerk.JSONWebKey{
 		Key:       pubKey,
@@ -110,7 +110,7 @@ func TestVerify_InvalidParams(t *testing.T) {
 			"iss": "https://clerk.com",
 			"azp": "whatever.com",
 		},
-		kid,
+		clerktest.WithKID(kid),
 	)
 	// Cannot verify if 'azp' does not match
 	validKey = &clerk.JSONWebKey{
@@ -128,6 +128,92 @@ func TestVerify_InvalidParams(t *testing.T) {
 	})
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "authorized party")
+}
+
+func TestVerify_JWTHeaderType(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	kid := "kid"
+	tokenClaims := map[string]any{
+		"iss": "https://clerk.com",
+		"sub": "user_123",
+	}
+	validKey := func(pubKey any) *clerk.JSONWebKey {
+		return &clerk.JSONWebKey{
+			Key:       pubKey,
+			KeyID:     kid,
+			Algorithm: string(jose.RS256),
+			Use:       "sig",
+		}
+	}
+
+	t.Run("default rejects wrong typ", func(t *testing.T) {
+		t.Parallel()
+		token, pubKey := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid), clerktest.WithType("at+jwt"))
+		_, err := Verify(ctx, &VerifyParams{
+			Token: token,
+			JWK:   validKey(pubKey),
+		})
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "typ")
+	})
+
+	t.Run("default rejects missing typ", func(t *testing.T) {
+		t.Parallel()
+		token, pubKey := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid), clerktest.WithType(""))
+		_, err := Verify(ctx, &VerifyParams{
+			Token: token,
+			JWK:   validKey(pubKey),
+		})
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "typ")
+	})
+
+	t.Run("ignore succeeds for wrong typ", func(t *testing.T) {
+		t.Parallel()
+		token, pubKey := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid), clerktest.WithType("at+jwt"))
+		_, err := Verify(ctx, &VerifyParams{
+			Token:               token,
+			JWK:                 validKey(pubKey),
+			IgnoreJWTHeaderType: true,
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("custom expected typ matches", func(t *testing.T) {
+		t.Parallel()
+		token, pubKey := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid), clerktest.WithType("at+jwt"))
+		_, err := Verify(ctx, &VerifyParams{
+			Token:                 token,
+			JWK:                   validKey(pubKey),
+			ExpectedJWTHeaderType: "at+jwt",
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("custom expected typ mismatch", func(t *testing.T) {
+		t.Parallel()
+		token, pubKey := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid), clerktest.WithType("at+jwt"))
+		_, err := Verify(ctx, &VerifyParams{
+			Token:                 token,
+			JWK:                   validKey(pubKey),
+			ExpectedJWTHeaderType: "JWT",
+		})
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "typ")
+	})
+
+	t.Run("ignore wins over custom expected", func(t *testing.T) {
+		t.Parallel()
+		token, pubKey := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid), clerktest.WithType("at+jwt"))
+		_, err := Verify(ctx, &VerifyParams{
+			Token:                 token,
+			JWK:                   validKey(pubKey),
+			ExpectedJWTHeaderType: "JWT",
+			IgnoreJWTHeaderType:   true,
+		})
+		require.NoError(t, err)
+	})
 }
 
 func TestVerify_PublicClaims(t *testing.T) {
@@ -154,7 +240,7 @@ func TestVerify_PublicClaims(t *testing.T) {
 		"nbf":             nbf,
 		"exp":             exp,
 	}
-	token, pubKey := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, pubKey := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	claims, err := Verify(ctx, &VerifyParams{
 		Token: token,
 		JWK: &clerk.JSONWebKey{
@@ -203,7 +289,7 @@ func TestVerify_PublicClaimsVersion2(t *testing.T) {
 		"nbf": nbf,
 		"exp": exp,
 	}
-	token, pubKey := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, pubKey := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	claims, err := Verify(ctx, &VerifyParams{
 		Token: token,
 		JWK: &clerk.JSONWebKey{
@@ -238,7 +324,7 @@ func TestVerify_TimeValues(t *testing.T) {
 		"iss": "https://clerk.com",
 		"exp": exp,
 	}
-	token, pubKey := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, pubKey := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	_, err := Verify(ctx, &VerifyParams{
 		Token: token,
 		JWK: &clerk.JSONWebKey{
@@ -257,7 +343,7 @@ func TestVerify_TimeValues(t *testing.T) {
 		"iss": "https://clerk.com",
 		"nbf": nbf,
 	}
-	token, pubKey = clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, pubKey = clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	_, err = Verify(ctx, &VerifyParams{
 		Token: token,
 		JWK: &clerk.JSONWebKey{
@@ -287,7 +373,7 @@ func TestVerify_CustomClaims(t *testing.T) {
 		"sub":         "user_123",
 		"iss":         "https://clerk.com",
 	}
-	token, pubKey := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, pubKey := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 
 	customClaimsConstructor := func(_ context.Context) any {
 		return &testCustomClaims{}
@@ -322,12 +408,9 @@ func TestVerify_UsesTheJWKSClient(t *testing.T) {
 			require.Equal(t, "custom client was used", r.Header.Get("X-Clerk-Application"))
 			// Count the number of requests to the JWKS endpoint
 			totalJWKSRequests++
-			_, err := w.Write([]byte(
-				fmt.Sprintf(
-					`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
-					kid,
-				),
-			))
+			_, err := fmt.Fprintf(w,
+				`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
+				kid)
 			require.NoError(t, err)
 			return
 		}
@@ -347,7 +430,7 @@ func TestVerify_UsesTheJWKSClient(t *testing.T) {
 		"sub": "user_123",
 		"iss": "https://clerk.com",
 	}
-	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	_, _ = Verify(context.Background(), &VerifyParams{
 		Token:      token,
 		JWKSClient: jwksClient,
@@ -389,7 +472,7 @@ func TestVerify_DefaultJWKSClient(t *testing.T) {
 		"sub": "user_123",
 		"iss": "https://clerk.com",
 	}
-	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	_, _ = Verify(context.Background(), &VerifyParams{
 		Token: token,
 	})
@@ -493,7 +576,7 @@ func TestVerify_SessionTokenJWKv2(t *testing.T) {
 			claims := tc.Claims
 			claims["iss"] = "https://clerk.com"
 			claims["v"] = 2
-			token, pubKey := clerktest.GenerateJWT(t, claims, kid)
+			token, pubKey := clerktest.GenerateJWT(t, claims, clerktest.WithKID(kid))
 
 			verifiedClaims, err := Verify(ctx, &VerifyParams{
 				Token: token,
@@ -524,7 +607,7 @@ func TestDecode_KeyID(t *testing.T) {
 		"sub":      "user_123",
 		"iss":      "https://clerk.com",
 	}
-	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	claims, err := Decode(ctx, &DecodeParams{
 		Token: token,
 	})
@@ -552,7 +635,7 @@ func TestDecode_IsUnsafe(t *testing.T) {
 		"exp": exp,
 		"nbf": nbf,
 	}
-	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	claims, err := Decode(ctx, &DecodeParams{
 		Token: token,
 	})
