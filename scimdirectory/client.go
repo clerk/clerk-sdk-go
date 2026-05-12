@@ -56,9 +56,10 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.SCIMDirectory, erro
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name     *string `json:"name,omitempty"`
-	Provider *string `json:"provider,omitempty"`
-	Enabled  *bool   `json:"enabled,omitempty"`
+	Name                    *string `json:"name,omitempty"`
+	Provider                *string `json:"provider,omitempty"`
+	Enabled                 *bool   `json:"enabled,omitempty"`
+	GroupRoleMappingEnabled *bool   `json:"group_role_mapping_enabled,omitempty"`
 	// AttributeMapping is a map of SCIM attributes to Clerk attributes.
 	// The semantics of the PATCH request are as follows:
 	//   - If the attribute is not present in the request, it will be left unchanged.
