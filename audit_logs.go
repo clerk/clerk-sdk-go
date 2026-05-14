@@ -43,6 +43,25 @@ const (
 	NextPageUnknown NextPageStatus = "unknown"
 )
 
+// AuditLogFilterMatch controls how the string filters on the audit logs list
+// endpoint (subject, type, actor, trace_id, client_id, impersonator_user_id)
+// are combined when more than one is supplied.
+//
+//   - AuditLogFilterMatchAll (default): every supplied filter must match.
+//     Filters are joined with AND.
+//   - AuditLogFilterMatchAny: an event matches if at least one of the
+//     supplied filters matches. Filters are joined with OR.
+//
+// Time bounds (event_time_after, event_time_before) and end_user_facing_only
+// are always ANDed with the (possibly OR-ed) string filter group regardless
+// of the value.
+type AuditLogFilterMatch string
+
+const (
+	AuditLogFilterMatchAll AuditLogFilterMatch = "all"
+	AuditLogFilterMatchAny AuditLogFilterMatch = "any"
+)
+
 type ExtendedPaginationCursor struct {
 	StartingAfter *string `json:"starting_after"`
 	EndingBefore  *string `json:"ending_before"`

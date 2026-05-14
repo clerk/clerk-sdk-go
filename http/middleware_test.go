@@ -1,6 +1,8 @@
 package http
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -18,12 +20,9 @@ func TestWithHeaderAuthorization_InvalidAuthorization(t *testing.T) {
 	// Mock the Clerk API server. We expect requests to GET /jwks.
 	clerkAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
-			_, err := w.Write([]byte(
-				fmt.Sprintf(
-					`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
-					kid,
-				),
-			))
+			_, err := fmt.Fprintf(w,
+				`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
+				kid)
 			require.NoError(t, err)
 			return
 		}
@@ -62,7 +61,7 @@ func TestWithHeaderAuthorization_InvalidAuthorization(t *testing.T) {
 	tokenClaims := map[string]any{
 		"sid": "sess_123",
 	}
-	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	req, err = http.NewRequest(http.MethodGet, ts.URL, nil)
 	require.NoError(t, err)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -70,6 +69,118 @@ func TestWithHeaderAuthorization_InvalidAuthorization(t *testing.T) {
 	res, err = ts.Client().Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
+}
+
+func TestWithHeaderAuthorization_JWTHeaderType(t *testing.T) {
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	kid := "kid-" + t.Name()
+	jwksBody := clerktest.ConvertToJWKS(t, priv.Public(), kid)
+
+	// Mock the Clerk API server. We expect requests to GET /jwks.
+	clerkAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
+			_, err := w.Write(jwksBody)
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer clerkAPI.Close()
+
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: clerkAPI.Client(),
+		URL:        &clerkAPI.URL,
+	}))
+
+	tokenClaims := map[string]any{
+		"sid": "sess_123",
+		"sub": "user_123",
+		"iss": "https://clerk.com",
+	}
+
+	t.Run("default accepts typ JWT", func(t *testing.T) {
+		ts := httptest.NewServer(WithHeaderAuthorization()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			claims, ok := clerk.SessionClaimsFromContext(r.Context())
+			require.True(t, ok)
+			require.Equal(t, "user_123", claims.Subject)
+			_, err := w.Write([]byte("{}"))
+			require.NoError(t, err)
+		})))
+		defer ts.Close()
+
+		// Generate a valid JWT with the default typ "JWT"
+		tokenGood, _ := clerktest.GenerateJWT(t, tokenClaims,
+			clerktest.WithType("JWT"), clerktest.WithRSAPrivateKey(priv), clerktest.WithKID(kid))
+		req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+tokenGood)
+		res, err := ts.Client().Do(req)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, res.StatusCode)
+	})
+
+	t.Run("default rejects wrong typ", func(t *testing.T) {
+		ts := httptest.NewServer(WithHeaderAuthorization()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, err := w.Write([]byte("{}"))
+			require.NoError(t, err)
+		})))
+		defer ts.Close()
+
+		// Generate a valid JWT with the wrong typ "at+jwt"
+		tokenWrongTyp, _ := clerktest.GenerateJWT(t, tokenClaims,
+			clerktest.WithType("at+jwt"), clerktest.WithRSAPrivateKey(priv), clerktest.WithKID(kid))
+		req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+tokenWrongTyp)
+		res, err := ts.Client().Do(req)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusUnauthorized, res.StatusCode)
+	})
+
+	t.Run("ignore succeeds for wrong typ", func(t *testing.T) {
+		// Setup middleware to ignore the typ header
+		ts := httptest.NewServer(WithHeaderAuthorization(IgnoreJWTHeaderType())(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			claims, ok := clerk.SessionClaimsFromContext(r.Context())
+			require.True(t, ok)
+			require.Equal(t, "user_123", claims.Subject)
+			_, err := w.Write([]byte("{}"))
+			require.NoError(t, err)
+		})))
+		defer ts.Close()
+
+		// Generate a valid JWT with the wrong typ "at+jwt"
+		tokenWrongTyp, _ := clerktest.GenerateJWT(t, tokenClaims,
+			clerktest.WithType("at+jwt"), clerktest.WithRSAPrivateKey(priv), clerktest.WithKID(kid))
+		req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+tokenWrongTyp)
+		res, err := ts.Client().Do(req)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, res.StatusCode)
+	})
+
+	t.Run("custom expected typ matches", func(t *testing.T) {
+		// Setup middleware to expect custom type "custom+abc"
+		customType := "custom+abc"
+		ts := httptest.NewServer(WithHeaderAuthorization(ExpectedJWTHeaderType(customType))(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			claims, ok := clerk.SessionClaimsFromContext(r.Context())
+			require.True(t, ok)
+			require.Equal(t, "user_123", claims.Subject)
+			_, err := w.Write([]byte("{}"))
+			require.NoError(t, err)
+		})))
+		defer ts.Close()
+
+		// Generate a valid JWT with the typ "custom+abc"
+		tokenAtJWT, _ := clerktest.GenerateJWT(t, tokenClaims,
+			clerktest.WithType(customType), clerktest.WithRSAPrivateKey(priv), clerktest.WithKID(kid))
+		req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+tokenAtJWT)
+		res, err := ts.Client().Do(req)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, res.StatusCode)
+	})
 }
 
 func TestRequireHeaderAuthorization_InvalidAuthorization(t *testing.T) {
@@ -108,12 +219,9 @@ func TestWithHeaderAuthorization_Caching(t *testing.T) {
 		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
 			// Count the number of requests to the JWKS endpoint
 			totalJWKSRequests++
-			_, err := w.Write([]byte(
-				fmt.Sprintf(
-					`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
-					kid,
-				),
-			))
+			_, err := fmt.Fprintf(w,
+				`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
+				kid)
 			require.NoError(t, err)
 			return
 		}
@@ -139,7 +247,7 @@ func TestWithHeaderAuthorization_Caching(t *testing.T) {
 		"sub": "user_123",
 		"iss": "https://clerk.com",
 	}
-	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	// The first request needs to fetch the JSON web key set, because
 	// the cache is empty.
 	req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
@@ -206,7 +314,7 @@ func TestWithHeaderAuthorization_CacheFixedTTL(t *testing.T) {
 		"sub": "user_123",
 		"iss": "https://clerk.com",
 	}
-	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 	require.NoError(t, err)
@@ -238,12 +346,9 @@ func TestWithHeaderAuthorization_CustomFailureHandler(t *testing.T) {
 	// Mock the Clerk API server. We expect requests to GET /jwks.
 	clerkAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
-			_, err := w.Write([]byte(
-				fmt.Sprintf(
-					`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
-					kid,
-				),
-			))
+			_, err := fmt.Fprintf(w,
+				`{"keys":[{"use":"sig","kty":"RSA","kid":"%s","alg":"RS256","n":"ypsS9Iq26F71B3lPjT_IMtglDXo8Dko9h5UBmrvkWo6pdH_4zmMjeghozaHY1aQf1dHUBLsov_XvG_t-1yf7tFfO_ImC1JqSQwdSjrXZp3oMNFHwdwAknvtlBg3sBxJ8nM1WaCWaTlb2JhEmczIji15UG6V0M2cAp2VK_brcylQROaJLC2zVa4usGi4AHzAHaRUTv6XB9bGYMvkM-ZniuXgp9dPurisIIWg25DGrTaH-kg8LPaqGwa54eLEnvfAe0ZH_MvA4_bn_u_iDkQ9ZI_CD1vwf0EDnzLgd9ZG1khGsqmXY_4WiLRGsPqZe90HzaBJma9sAxXB4qj_aNnwD5w","e":"AQAB"}]}`,
+				kid)
 			require.NoError(t, err)
 			return
 		}
@@ -278,7 +383,7 @@ func TestWithHeaderAuthorization_CustomFailureHandler(t *testing.T) {
 	tokenClaims := map[string]any{
 		"sid": "sess_123",
 	}
-	token, _ := clerktest.GenerateJWT(t, tokenClaims, kid)
+	token, _ := clerktest.GenerateJWT(t, tokenClaims, clerktest.WithKID(kid))
 	// Request with invalid Authorization header
 	req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
 	require.NoError(t, err)

@@ -67,20 +67,92 @@ func (rt *RoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 	}, nil
 }
 
+// GenerateJWTOption configures [GenerateJWT].
+type GenerateJWTOption interface {
+	applyToGenerateJWT(*generateJWTState)
+}
+
+type generateJWTState struct {
+	priv       *rsa.PrivateKey
+	signerOpts *jose.SignerOptions
+}
+
+type jwtSignerOption struct {
+	f func(*jose.SignerOptions)
+}
+
+func (o jwtSignerOption) applyToGenerateJWT(s *generateJWTState) {
+	o.f(s.signerOpts)
+}
+
+type rsaPrivateKeyOption struct {
+	key *rsa.PrivateKey
+}
+
+func (o rsaPrivateKeyOption) applyToGenerateJWT(s *generateJWTState) {
+	s.priv = o.key
+}
+
+// WithKID sets the "kid" (Key ID) header on the JWT.
+func WithKID(kid string) GenerateJWTOption {
+	return jwtSignerOption{f: func(opts *jose.SignerOptions) {
+		if kid != "" {
+			opts.WithHeader("kid", kid)
+		}
+	}}
+}
+
+// WithType sets the "typ" (Type) header on the JWT.
+// Allows setting to empty string for testing.
+func WithType(typ string) GenerateJWTOption {
+	return jwtSignerOption{f: func(opts *jose.SignerOptions) {
+		opts.WithType(jose.ContentType(typ))
+	}}
+}
+
+// WithRSAPrivateKey signs the JWT with key instead of generating a random RSA key.
+// Use with [ConvertToJWKS] so mock JWKS responses match the token signature.
+func WithRSAPrivateKey(key *rsa.PrivateKey) GenerateJWTOption {
+	return rsaPrivateKeyOption{key: key}
+}
+
+// ConvertToJWKS returns JSON for a JWKS document containing one RSA key,
+// suitable for mocking a Clerk GET /jwks response.
+func ConvertToJWKS(tb testing.TB, pubKey crypto.PublicKey, kid string) []byte {
+	tb.Helper()
+	jwk := jose.JSONWebKey{
+		Key:       pubKey,
+		KeyID:     kid,
+		Algorithm: string(jose.RS256),
+		Use:       "sig",
+	}
+	keySet := jose.JSONWebKeySet{Keys: []jose.JSONWebKey{jwk}}
+	raw, err := json.Marshal(keySet)
+	require.NoError(tb, err)
+	return raw
+}
+
 // GenerateJWT creates a JSON web token with the provided claims
-// and key ID.
-func GenerateJWT(t *testing.T, claims any, kid string) (string, crypto.PublicKey) {
+// and customized by the given options.
+func GenerateJWT(t *testing.T, claims any, opts ...GenerateJWTOption) (string, crypto.PublicKey) {
 	t.Helper()
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err)
-
-	signerOpts := &jose.SignerOptions{}
-	signerOpts.WithType("JWT")
-	if kid != "" {
-		signerOpts.WithHeader("kid", kid)
+	s := &generateJWTState{signerOpts: &jose.SignerOptions{}}
+	s.signerOpts.WithType("JWT") // Default to "JWT" type
+	for _, opt := range opts {
+		opt.applyToGenerateJWT(s)
 	}
-	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.RS256, Key: privKey}, signerOpts)
+
+	var privKey *rsa.PrivateKey
+	var err error
+	if s.priv != nil {
+		privKey = s.priv
+	} else {
+		privKey, err = rsa.GenerateKey(rand.Reader, 2048)
+		require.NoError(t, err)
+	}
+
+	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.RS256, Key: privKey}, s.signerOpts)
 	require.NoError(t, err)
 
 	builder := jwt.Signed(signer)

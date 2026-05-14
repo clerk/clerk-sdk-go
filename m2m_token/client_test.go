@@ -38,7 +38,7 @@ func TestCreate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"claims":{"foo":"bar"},"seconds_until_expiration":3600,"token_format":"opaque"}`),
+			In:     json.RawMessage(`{"claims":{"foo":"bar"},"seconds_until_expiration":3600,"min_remaining_ttl_seconds":240,"token_format":"opaque"}`),
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPost,
 			Path:   "/v1/m2m_tokens",
@@ -50,6 +50,7 @@ func TestCreate(t *testing.T) {
 	params := &CreateParams{
 		Claims:                 &claims,
 		SecondsUntilExpiration: clerk.Int64(3600),
+		MinRemainingTTLSeconds: clerk.Int64(240),
 		TokenFormat:            clerk.String("opaque"),
 	}
 
