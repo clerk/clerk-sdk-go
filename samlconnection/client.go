@@ -54,6 +54,8 @@ type CreateParams struct {
 	IdpMetadata      *string                 `json:"idp_metadata,omitempty"`
 	AttributeMapping *AttributeMappingParams `json:"attribute_mapping,omitempty"`
 	ForceAuthn       *bool                   `json:"force_authn,omitempty"`
+	// CustomAttributes is an Experimental feature, not available for all customers.
+	CustomAttributes *[]clerk.CustomAttribute `json:"custom_attributes,omitempty"`
 }
 
 // Create creates a new SAML Connection.
