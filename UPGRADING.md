@@ -42,6 +42,25 @@ func (s *Service) fetchOrgExample(idOrSlug string, includeMembersCount bool) {
 }
 ```
 
+### Updating User Metadata
+
+User metadata can no longer be updated via `user.Update`. The `PublicMetadata`, `PrivateMetadata`, and `UnsafeMetadata` fields have been removed from `user.UpdateParams`. Use the dedicated `user.UpdateMetadata` function instead.
+
+```diff
+import (
+    "github.com/clerk/clerk-sdk-go/v3/user"
+)
+
+func updateUserMetadata(ctx context.Context, userID string, publicMetadata json.RawMessage) {
+-   user.Update(ctx, userID, &user.UpdateParams{
+-       PublicMetadata: &publicMetadata,
+-   })
++   user.UpdateMetadata(ctx, userID, &user.UpdateMetadataParams{
++       PublicMetadata: &publicMetadata,
++   })
+}
+```
+
 ## 1.x.x to 2.x.x
 
 The `v2` version of the Clerk Go SDK is a complete rewrite and introduces

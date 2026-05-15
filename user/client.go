@@ -100,9 +100,6 @@ type UpdateParams struct {
 	SkipPasswordChecks               *bool            `json:"skip_password_checks,omitempty"`
 	SignOutOfOtherSessions           *bool            `json:"sign_out_of_other_sessions,omitempty"`
 	ExternalID                       *string          `json:"external_id,omitempty"`
-	PublicMetadata                   *json.RawMessage `json:"public_metadata,omitempty"`
-	PrivateMetadata                  *json.RawMessage `json:"private_metadata,omitempty"`
-	UnsafeMetadata                   *json.RawMessage `json:"unsafe_metadata,omitempty"`
 	TOTPSecret                       *string          `json:"totp_secret,omitempty"`
 	BackupCodes                      *[]string        `json:"backup_codes,omitempty"`
 	DeleteSelfEnabled                *bool            `json:"delete_self_enabled,omitempty"`
