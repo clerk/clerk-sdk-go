@@ -85,27 +85,27 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.User, error) {
 
 type UpdateParams struct {
 	clerk.APIParams
-	FirstName                        *string          `json:"first_name,omitempty"`
-	LastName                         *string          `json:"last_name,omitempty"`
-	PrimaryEmailAddressID            *string          `json:"primary_email_address_id,omitempty"`
-	NotifyPrimaryEmailAddressChanged *bool            `json:"notify_primary_email_address_changed,omitempty"`
-	PrimaryPhoneNumberID             *string          `json:"primary_phone_number_id,omitempty"`
-	PrimaryWeb3WalletID              *string          `json:"primary_web3_wallet_id,omitempty"`
-	Username                         *string          `json:"username,omitempty"`
-	ProfileImageID                   *string          `json:"profile_image_id,omitempty"`
-	ProfileImage                     *string          `json:"profile_image,omitempty"`
-	Password                         *string          `json:"password,omitempty"`
-	PasswordDigest                   *string          `json:"password_digest,omitempty"`
-	PasswordHasher                   *string          `json:"password_hasher,omitempty"`
-	SkipPasswordChecks               *bool            `json:"skip_password_checks,omitempty"`
-	SignOutOfOtherSessions           *bool            `json:"sign_out_of_other_sessions,omitempty"`
-	ExternalID                       *string          `json:"external_id,omitempty"`
-	TOTPSecret                       *string          `json:"totp_secret,omitempty"`
-	BackupCodes                      *[]string        `json:"backup_codes,omitempty"`
-	DeleteSelfEnabled                *bool            `json:"delete_self_enabled,omitempty"`
-	BypassClientTrust                *bool            `json:"bypass_client_trust,omitempty"`
-	CreateOrganizationEnabled        *bool            `json:"create_organization_enabled,omitempty"`
-	CreateOrganizationsLimit         *int             `json:"create_organizations_limit,omitempty"`
+	FirstName                        *string   `json:"first_name,omitempty"`
+	LastName                         *string   `json:"last_name,omitempty"`
+	PrimaryEmailAddressID            *string   `json:"primary_email_address_id,omitempty"`
+	NotifyPrimaryEmailAddressChanged *bool     `json:"notify_primary_email_address_changed,omitempty"`
+	PrimaryPhoneNumberID             *string   `json:"primary_phone_number_id,omitempty"`
+	PrimaryWeb3WalletID              *string   `json:"primary_web3_wallet_id,omitempty"`
+	Username                         *string   `json:"username,omitempty"`
+	ProfileImageID                   *string   `json:"profile_image_id,omitempty"`
+	ProfileImage                     *string   `json:"profile_image,omitempty"`
+	Password                         *string   `json:"password,omitempty"`
+	PasswordDigest                   *string   `json:"password_digest,omitempty"`
+	PasswordHasher                   *string   `json:"password_hasher,omitempty"`
+	SkipPasswordChecks               *bool     `json:"skip_password_checks,omitempty"`
+	SignOutOfOtherSessions           *bool     `json:"sign_out_of_other_sessions,omitempty"`
+	ExternalID                       *string   `json:"external_id,omitempty"`
+	TOTPSecret                       *string   `json:"totp_secret,omitempty"`
+	BackupCodes                      *[]string `json:"backup_codes,omitempty"`
+	DeleteSelfEnabled                *bool     `json:"delete_self_enabled,omitempty"`
+	BypassClientTrust                *bool     `json:"bypass_client_trust,omitempty"`
+	CreateOrganizationEnabled        *bool     `json:"create_organization_enabled,omitempty"`
+	CreateOrganizationsLimit         *int      `json:"create_organizations_limit,omitempty"`
 	// Specified in RFC3339 format
 	LegalAcceptedAt *string `json:"legal_accepted_at,omitempty"`
 	SkipLegalChecks *bool   `json:"skip_legal_checks,omitempty"`
