@@ -61,6 +61,14 @@ func updateUserMetadata(ctx context.Context, userID string, publicMetadata json.
 }
 ```
 
+`user.UpdateMetadata` deep-merges the provided values into the existing metadata. If you need to fully overwrite a metadata column (rather than merge into it), use `user.ReplaceMetadata` instead. Both leave omitted fields untouched; passing `{}` for a field via `ReplaceMetadata` clears that column.
+
+```go
+user.ReplaceMetadata(ctx, userID, &user.ReplaceMetadataParams{
+    PublicMetadata: &publicMetadata, // overwrites public_metadata entirely
+})
+```
+
 ## 1.x.x to 2.x.x
 
 The `v2` version of the Clerk Go SDK is a complete rewrite and introduces
