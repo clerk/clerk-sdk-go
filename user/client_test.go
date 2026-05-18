@@ -352,6 +352,29 @@ func TestUserClientUpdateMetadata(t *testing.T) {
 	require.JSONEq(t, string(metadata), string(user.PrivateMetadata))
 }
 
+func TestUserClientReplaceMetadata(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"private_metadata":%s}`, string(metadata))),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","private_metadata":%s}`, id, string(metadata))),
+			Method: http.MethodPut,
+			Path:   "/v1/users/" + id + "/metadata",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.ReplaceMetadata(context.Background(), id, &ReplaceMetadataParams{
+		PrivateMetadata: &metadata,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.JSONEq(t, string(metadata), string(user.PrivateMetadata))
+}
+
 func TestUserClientListOAuthAccessTokens(t *testing.T) {
 	t.Parallel()
 	id := "user_123"

@@ -200,6 +200,30 @@ func (c *Client) UpdateMetadata(ctx context.Context, id string, params *UpdateMe
 	return resource, err
 }
 
+type ReplaceMetadataParams struct {
+	clerk.APIParams
+	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
+	UnsafeMetadata  *json.RawMessage `json:"unsafe_metadata,omitempty"`
+}
+
+// ReplaceMetadata replaces the user's metadata. Each metadata
+// field included in the request overwrites the stored value
+// (rather than merging with it). Fields omitted from the request
+// are left untouched. To clear a column, pass an empty object
+// ({}) for that field.
+func (c *Client) ReplaceMetadata(ctx context.Context, id string, params *ReplaceMetadataParams) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, id, "/metadata")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPut, path)
+	req.SetParams(params)
+	resource := &clerk.User{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
 // Delete deletes a user.
 func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	path, err := clerk.JoinPath(path, id)
