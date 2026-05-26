@@ -376,6 +376,6 @@ If you don't have access to the JSON web key, you can
 
 Please let us know about your experience upgrading to the `v2` version of the Clerk Go SDK.
 
-You can reach us via [various support channels](https://clerk.com/support).
+You can reach us via [our support page](https://clerk.com/contact/support).
 
 If you notice any bugs or omissions, feel free to open an [issue on Github](https://github.com/clerk/clerk-sdk-go/issues/new).
