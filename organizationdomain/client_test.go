@@ -25,7 +25,7 @@ func TestOrganizationDomainClientCreate(t *testing.T) {
 		Transport: &clerktest.RoundTripper{
 			T:  t,
 			In: json.RawMessage(fmt.Sprintf(`{"name": "%s", "enrollment_mode": "automatic_invitation", "verified": %s}`, domain, strconv.FormatBool(verified))),
-			Out: json.RawMessage(fmt.Sprintf(`{"enrollment_mode":"automatic_invitation","id":"%s","name":"%s","object":"organization_domain","organization_id":"%s","verification":{"status":"unverified"}}`,
+			Out: json.RawMessage(fmt.Sprintf(`{"enrollment_mode":"automatic_invitation","id":"%s","name":"%s","object":"organization_domain","organization_id":"%s","affiliation_verification":{"status":"unverified"}}`,
 				id, domain, organizationID)),
 			Method: http.MethodPost,
 			Path:   "/v1/organizations/" + organizationID + "/domains",
@@ -41,7 +41,7 @@ func TestOrganizationDomainClientCreate(t *testing.T) {
 	require.Equal(t, id, response.ID)
 	require.Equal(t, domain, response.Name)
 	require.Equal(t, "automatic_invitation", response.EnrollmentMode)
-	require.Equal(t, "unverified", response.Verification.Status)
+	require.Equal(t, "unverified", response.AffiliationVerification.Status)
 }
 
 func TestOrganizationDomainClientCreate_Error(t *testing.T) {
@@ -79,7 +79,7 @@ func TestOrganizationDomainClientUpdate(t *testing.T) {
 		Transport: &clerktest.RoundTripper{
 			T:      t,
 			In:     json.RawMessage(fmt.Sprintf(`{"verified": %s}`, strconv.FormatBool(verified))),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","verification":{"status": "verified"}}`, id)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","affiliation_verification":{"status": "verified"}}`, id)),
 			Method: http.MethodPatch,
 			Path:   "/v1/organizations/" + organizationID + "/domains/" + id,
 		},
@@ -92,7 +92,7 @@ func TestOrganizationDomainClientUpdate(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, domain.ID)
-	require.Equal(t, "verified", domain.Verification.Status)
+	require.Equal(t, "verified", domain.AffiliationVerification.Status)
 }
 
 func TestOrganizationDomainClientUpdate_Error(t *testing.T) {
@@ -118,6 +118,57 @@ func TestOrganizationDomainClientUpdate_Error(t *testing.T) {
 	require.Equal(t, "update-trace-id", apiErr.TraceID)
 	require.Equal(t, 1, len(apiErr.Errors))
 	require.Equal(t, "update-error-code", apiErr.Errors[0].Code)
+}
+
+func TestOrganizationDomainClientVerifyOwnership(t *testing.T) {
+	t.Parallel()
+	id := "orgdm_123"
+	organizationID := "org_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"organization_domain","organization_id":"%s","affiliation_verification":null,"ownership_verification":{"status":"verified","strategy":"manual_override","attempts":0,"expire_at":null,"verified_at":1700000000000,"txt_record_name":null,"txt_record_value":null}}`, id, organizationID)),
+			Method: http.MethodPost,
+			Path:   "/v1/organizations/" + organizationID + "/domains/" + id + "/verify_ownership",
+		},
+	}
+	client := NewClient(config)
+	response, err := client.VerifyOwnership(context.Background(), &VerifyOwnershipParams{
+		OrganizationID: organizationID,
+		DomainID:       id,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, response.ID)
+	require.NotNil(t, response.OwnershipVerification)
+	require.Equal(t, "verified", response.OwnershipVerification.Status)
+	require.Equal(t, "manual_override", response.OwnershipVerification.Strategy)
+	require.Nil(t, response.OwnershipVerification.TXTRecordName)
+}
+
+func TestOrganizationDomainClientVerifyOwnership_Error(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Status: http.StatusNotFound,
+			Out: json.RawMessage(`{
+  "errors":[{
+		"code":"verify-ownership-error-code"
+	}],
+	"clerk_trace_id":"verify-ownership-trace-id"
+}`),
+		},
+	}
+	client := NewClient(config)
+	_, err := client.VerifyOwnership(context.Background(), &VerifyOwnershipParams{})
+	require.Error(t, err)
+	apiErr, ok := err.(*clerk.APIErrorResponse)
+	require.True(t, ok)
+	require.Equal(t, "verify-ownership-trace-id", apiErr.TraceID)
+	require.Equal(t, 1, len(apiErr.Errors))
+	require.Equal(t, "verify-ownership-error-code", apiErr.Errors[0].Code)
 }
 
 func TestOrganizationDomainClientDelete(t *testing.T) {

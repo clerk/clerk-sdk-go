@@ -175,3 +175,22 @@ func (c *Client) ListAllFromInstance(ctx context.Context, params *ListAllFromIns
 	err = c.Backend.Call(ctx, req, domains)
 	return domains, err
 }
+
+type VerifyOwnershipParams struct {
+	clerk.APIParams
+	OrganizationID string `json:"-"`
+	DomainID       string `json:"-"`
+}
+
+// VerifyOwnership marks the organization domain's ownership as verified.
+func (c *Client) VerifyOwnership(ctx context.Context, params *VerifyOwnershipParams) (*clerk.OrganizationDomain, error) {
+	path, err := clerk.JoinPath(path, params.OrganizationID, "/domains", params.DomainID, "/verify_ownership")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	domain := &clerk.OrganizationDomain{}
+	err = c.Backend.Call(ctx, req, domain)
+	return domain, err
+}
