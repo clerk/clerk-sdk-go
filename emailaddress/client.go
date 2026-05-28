@@ -71,6 +71,29 @@ func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*
 	return emailAddress, err
 }
 
+type ReplaceForUserParams struct {
+	clerk.APIParams
+	UserID       string  `json:"-"`
+	EmailAddress *string `json:"email_address,omitempty"`
+}
+
+// ReplaceForUser replaces all of the user's email addresses with a single
+// verified, primary email address. The new email address is created with the
+// admin verification strategy and any existing email addresses are deleted. If
+// an existing email address is linked to a connected account, the request is
+// rejected; remove the connected account first.
+func (c *Client) ReplaceForUser(ctx context.Context, params *ReplaceForUserParams) (*clerk.EmailAddress, error) {
+	path, err := clerk.JoinPath("/users", params.UserID, "/email_address")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPut, path)
+	req.SetParams(params)
+	emailAddress := &clerk.EmailAddress{}
+	err = c.Backend.Call(ctx, req, emailAddress)
+	return emailAddress, err
+}
+
 // Delete deletes an email address.
 func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	path, err := clerk.JoinPath(path, id)

@@ -72,6 +72,29 @@ func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*
 	return resource, err
 }
 
+type ReplaceForUserParams struct {
+	clerk.APIParams
+	UserID      string  `json:"-"`
+	PhoneNumber *string `json:"phone_number,omitempty"`
+}
+
+// ReplaceForUser replaces all of the user's phone numbers with a single
+// verified, primary phone number. The new phone number is created with the
+// admin verification strategy and is not reserved for second factor. Any
+// existing phone numbers are deleted; replacing a phone number that is reserved
+// for second factor disables the user's MFA.
+func (c *Client) ReplaceForUser(ctx context.Context, params *ReplaceForUserParams) (*clerk.PhoneNumber, error) {
+	path, err := clerk.JoinPath("/users", params.UserID, "/phone_number")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPut, path)
+	req.SetParams(params)
+	resource := &clerk.PhoneNumber{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
 // Delete deletes a phone number.
 func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	path, err := clerk.JoinPath(path, id)
