@@ -32,27 +32,34 @@ func NewClient(config *clerk.ClientConfig) *Client {
 
 type CreateParams struct {
 	clerk.APIParams
-	EmailAddresses            *[]string        `json:"email_address,omitempty"`
-	PhoneNumbers              *[]string        `json:"phone_number,omitempty"`
-	Web3Wallets               *[]string        `json:"web3_wallet,omitempty"`
-	Username                  *string          `json:"username,omitempty"`
-	Password                  *string          `json:"password,omitempty"`
-	FirstName                 *string          `json:"first_name,omitempty"`
-	LastName                  *string          `json:"last_name,omitempty"`
-	ExternalID                *string          `json:"external_id,omitempty"`
-	UnsafeMetadata            *json.RawMessage `json:"unsafe_metadata,omitempty"`
-	PublicMetadata            *json.RawMessage `json:"public_metadata,omitempty"`
-	PrivateMetadata           *json.RawMessage `json:"private_metadata,omitempty"`
-	PasswordDigest            *string          `json:"password_digest,omitempty"`
-	PasswordHasher            *string          `json:"password_hasher,omitempty"`
-	SkipPasswordRequirement   *bool            `json:"skip_password_requirement,omitempty"`
-	SkipPasswordChecks        *bool            `json:"skip_password_checks,omitempty"`
-	TOTPSecret                *string          `json:"totp_secret,omitempty"`
-	BackupCodes               *[]string        `json:"backup_codes,omitempty"`
-	DeleteSelfEnabled         *bool            `json:"delete_self_enabled,omitempty"`
-	BypassClientTrust         *bool            `json:"bypass_client_trust,omitempty"`
-	CreateOrganizationEnabled *bool            `json:"create_organization_enabled,omitempty"`
-	CreateOrganizationsLimit  *int             `json:"create_organizations_limit,omitempty"`
+	EmailAddresses          *[]string        `json:"email_address,omitempty"`
+	PhoneNumbers            *[]string        `json:"phone_number,omitempty"`
+	Web3Wallets             *[]string        `json:"web3_wallet,omitempty"`
+	Username                *string          `json:"username,omitempty"`
+	Password                *string          `json:"password,omitempty"`
+	FirstName               *string          `json:"first_name,omitempty"`
+	LastName                *string          `json:"last_name,omitempty"`
+	ExternalID              *string          `json:"external_id,omitempty"`
+	UnsafeMetadata          *json.RawMessage `json:"unsafe_metadata,omitempty"`
+	PublicMetadata          *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata         *json.RawMessage `json:"private_metadata,omitempty"`
+	PasswordDigest          *string          `json:"password_digest,omitempty"`
+	PasswordHasher          *string          `json:"password_hasher,omitempty"`
+	SkipPasswordRequirement *bool            `json:"skip_password_requirement,omitempty"`
+	SkipPasswordChecks      *bool            `json:"skip_password_checks,omitempty"`
+	TOTPSecret              *string          `json:"totp_secret,omitempty"`
+	BackupCodes             *[]string        `json:"backup_codes,omitempty"`
+	// Banned, when set to true, creates the user already banned, saving a
+	// follow-up call to the /ban endpoint. Requires the same plan support as
+	// the ban user endpoint.
+	Banned *bool `json:"banned,omitempty"`
+	// Locked, when set to true, creates the user already locked. Requires the
+	// user lockout feature to be enabled on the instance.
+	Locked                    *bool `json:"locked,omitempty"`
+	DeleteSelfEnabled         *bool `json:"delete_self_enabled,omitempty"`
+	BypassClientTrust         *bool `json:"bypass_client_trust,omitempty"`
+	CreateOrganizationEnabled *bool `json:"create_organization_enabled,omitempty"`
+	CreateOrganizationsLimit  *int  `json:"create_organizations_limit,omitempty"`
 	// Specified in RFC3339 format
 	LegalAcceptedAt *string `json:"legal_accepted_at,omitempty"`
 	SkipLegalChecks *bool   `json:"skip_legal_checks,omitempty"`

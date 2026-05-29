@@ -110,6 +110,31 @@ func TestEmailAddressClientUpdate_Error(t *testing.T) {
 	require.Equal(t, "update-error-code", apiErr.Errors[0].Code)
 }
 
+func TestEmailAddressClientReplaceForUser(t *testing.T) {
+	t.Parallel()
+	email := "foo@bar.com"
+	userID := "user_123"
+	id := "idn_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"email_address":"%s"}`, email)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","email_address":"%s"}`, id, email)),
+			Method: http.MethodPut,
+			Path:   "/v1/users/" + userID + "/email_address",
+		},
+	}
+	client := NewClient(config)
+	emailAddress, err := client.ReplaceForUser(context.Background(), &ReplaceForUserParams{
+		UserID:       userID,
+		EmailAddress: clerk.String(email),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, emailAddress.ID)
+	require.Equal(t, email, emailAddress.EmailAddress)
+}
+
 func TestEmailAddressClientGet(t *testing.T) {
 	t.Parallel()
 	id := "idn_123"

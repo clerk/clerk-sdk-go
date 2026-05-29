@@ -33,6 +33,11 @@ func ListAllFromInstance(ctx context.Context, params *ListAllFromInstanceParams)
 	return getClient().ListAllFromInstance(ctx, params)
 }
 
+// VerifyOwnership marks the organization domain's ownership as verified.
+func VerifyOwnership(ctx context.Context, params *VerifyOwnershipParams) (*clerk.OrganizationDomain, error) {
+	return getClient().VerifyOwnership(ctx, params)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
