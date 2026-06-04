@@ -28,6 +28,7 @@ type CreateParams struct {
 	Name        *string `json:"name,omitempty"`
 	ProxyURL    *string `json:"proxy_url,omitempty"`
 	IsSatellite *bool   `json:"is_satellite,omitempty"`
+	IsSecondary *bool   `json:"is_secondary,omitempty"`
 }
 
 // Create creates a new domain.
