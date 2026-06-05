@@ -305,6 +305,99 @@ func TestSAMLConnectionClientUpdate_WithDomains(t *testing.T) {
 	require.Equal(t, provider, samlConnection.Provider)
 }
 
+// TestSAMLConnectionClientCreate_WithMultiValuedCustomAttributes verifies the client
+// can create a SAML connection with custom attributes that include the `multi_valued`
+// flag, covering both true and false values to ensure the boolean serializes correctly
+// in either state.
+func TestSAMLConnectionClientCreate_WithMultiValuedCustomAttributes(t *testing.T) {
+	t.Parallel()
+	id := "samlc__123"
+	name := "the-name"
+	domain := "example.com"
+	provider := "saml_custom"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","scim_path":"manager","multi_valued":false}]}`, name, domain, provider)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","scim_path":"manager","multi_valued":false}]}`, id, name, domain, provider)),
+			Method: http.MethodPost,
+			Path:   "/v1/saml_connections",
+		},
+	}
+	client := NewClient(config)
+	samlConnection, err := client.Create(context.Background(), &CreateParams{
+		Name:     clerk.String(name),
+		Domain:   clerk.String(domain),
+		Provider: clerk.String(provider),
+		CustomAttributes: &[]clerk.CustomAttribute{
+			{
+				Name:        clerk.String("groups"),
+				Key:         clerk.String("groups"),
+				SSOPath:     clerk.String("$.groups"),
+				SCIMPath:    clerk.String("groups"),
+				MultiValued: clerk.Bool(true),
+			},
+			{
+				Name:        clerk.String("manager"),
+				Key:         clerk.String("manager"),
+				SSOPath:     clerk.String("$.manager"),
+				SCIMPath:    clerk.String("manager"),
+				MultiValued: clerk.Bool(false),
+			},
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, samlConnection.ID)
+	require.NotNil(t, samlConnection.CustomAttributes)
+	require.Equal(t, 2, len(*samlConnection.CustomAttributes))
+	require.Equal(t, true, *(*samlConnection.CustomAttributes)[0].MultiValued)
+	require.Equal(t, false, *(*samlConnection.CustomAttributes)[1].MultiValued)
+}
+
+// TestSAMLConnectionClientUpdate_WithMultiValuedCustomAttributes verifies the client
+// can update a SAML connection with custom attributes that include the `multi_valued`
+// flag, covering both true and false values.
+func TestSAMLConnectionClientUpdate_WithMultiValuedCustomAttributes(t *testing.T) {
+	t.Parallel()
+	id := "samlc__123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","scim_path":"department","multi_valued":false}]}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","scim_path":"department","multi_valued":false}]}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/saml_connections/" + id,
+		},
+	}
+	client := NewClient(config)
+	samlConnection, err := client.Update(context.Background(), id, &UpdateParams{
+		CustomAttributes: &[]clerk.CustomAttribute{
+			{
+				Name:        clerk.String("groups"),
+				Key:         clerk.String("groups"),
+				SSOPath:     clerk.String("$.groups"),
+				SCIMPath:    clerk.String("groups"),
+				MultiValued: clerk.Bool(true),
+			},
+			{
+				Name:        clerk.String("department"),
+				Key:         clerk.String("department"),
+				SSOPath:     clerk.String("$.department"),
+				SCIMPath:    clerk.String("department"),
+				MultiValued: clerk.Bool(false),
+			},
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, samlConnection.ID)
+	require.NotNil(t, samlConnection.CustomAttributes)
+	require.Equal(t, 2, len(*samlConnection.CustomAttributes))
+	require.Equal(t, true, *(*samlConnection.CustomAttributes)[0].MultiValued)
+	require.Equal(t, false, *(*samlConnection.CustomAttributes)[1].MultiValued)
+}
+
 func TestSAMLConnectionClientDelete(t *testing.T) {
 	t.Parallel()
 	id := "samlc__123"

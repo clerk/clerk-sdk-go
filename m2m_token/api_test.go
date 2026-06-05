@@ -14,7 +14,7 @@ import (
 )
 
 func TestPackageCreate(t *testing.T) {
-	t.Parallel()
+	// Not parallel: these tests mutate the global backend via clerk.SetBackend.
 
 	response := map[string]interface{}{
 		"object":            "machine_to_machine_token",
@@ -65,7 +65,7 @@ func TestPackageCreate(t *testing.T) {
 }
 
 func TestPackageList(t *testing.T) {
-	t.Parallel()
+	// Not parallel: these tests mutate the global backend via clerk.SetBackend.
 
 	response := map[string]interface{}{
 		"m2m_tokens": []map[string]interface{}{
@@ -121,7 +121,7 @@ func TestPackageList(t *testing.T) {
 }
 
 func TestPackageRevoke(t *testing.T) {
-	t.Parallel()
+	// Not parallel: these tests mutate the global backend via clerk.SetBackend.
 
 	response := map[string]interface{}{
 		"object":            "machine_to_machine_token",
@@ -167,7 +167,7 @@ func TestPackageRevoke(t *testing.T) {
 }
 
 func TestPackageVerify(t *testing.T) {
-	t.Parallel()
+	// Not parallel: these tests mutate the global backend via clerk.SetBackend.
 
 	response := map[string]interface{}{
 		"object":            "machine_to_machine_token",
