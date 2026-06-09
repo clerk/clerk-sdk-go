@@ -91,14 +91,50 @@ type UpdateParams struct {
 	MaxAllowedMemberships *int64  `json:"max_allowed_memberships,omitempty"`
 	// RoleSetKey is a preview field and is not available yet for all customers.
 	// The use of this field will cause an error to be returned.
-	RoleSetKey         *string          `json:"role_set_key,omitempty"`
-	PublicMetadata     *json.RawMessage `json:"public_metadata,omitempty"`
+	RoleSetKey *string `json:"role_set_key,omitempty"`
+	// Deprecated: Use ReplaceMetadata (replace) or UpdateMetadata (merge) instead.
+	// When set on UpdateParams, the SDK routes this field through PUT /organizations/{id}/metadata.
+	PublicMetadata *json.RawMessage `json:"public_metadata,omitempty"`
+	// Deprecated: Use ReplaceMetadata (replace) or UpdateMetadata (merge) instead.
+	// When set on UpdateParams, the SDK routes this field through PUT /organizations/{id}/metadata.
 	PrivateMetadata    *json.RawMessage `json:"private_metadata,omitempty"`
 	AdminDeleteEnabled *bool            `json:"admin_delete_enabled,omitempty"`
 }
 
 // Update updates an organization.
+//
+// If any of the deprecated metadata fields on UpdateParams is set, the
+// SDK splits the call: non-metadata fields are sent via PATCH /organizations/{id}
+// and the metadata fields are then sent via PUT /organizations/{id}/metadata (the dedicated metadata endpoint).
+// When only metadata fields are set, the PATCH call is skipped. The returned organization
+// reflects the response of the final call made.
 func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Organization, error) {
+	hasMetadata := params != nil && (params.PublicMetadata != nil || params.PrivateMetadata != nil)
+
+	if !hasMetadata {
+		return c.updateOrganization(ctx, id, params)
+	}
+
+	metadataParams := &ReplaceMetadataParams{
+		APIParams:       params.APIParams,
+		PublicMetadata:  params.PublicMetadata,
+		PrivateMetadata: params.PrivateMetadata,
+	}
+
+	stripped := *params
+	stripped.PublicMetadata = nil
+	stripped.PrivateMetadata = nil
+
+	if hasNonMetadataUpdateFields(&stripped) {
+		if _, err := c.updateOrganization(ctx, id, &stripped); err != nil {
+			return nil, err
+		}
+	}
+
+	return c.ReplaceMetadata(ctx, id, metadataParams)
+}
+
+func (c *Client) updateOrganization(ctx context.Context, id string, params *UpdateParams) (*clerk.Organization, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
 		return nil, err
@@ -108,6 +144,14 @@ func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*
 	organization := &clerk.Organization{}
 	err = c.Backend.Call(ctx, req, organization)
 	return organization, err
+}
+
+func hasNonMetadataUpdateFields(p *UpdateParams) bool {
+	return p.Name != nil ||
+		p.Slug != nil ||
+		p.MaxAllowedMemberships != nil ||
+		p.RoleSetKey != nil ||
+		p.AdminDeleteEnabled != nil
 }
 
 type UpdateMetadataParams struct {
@@ -124,6 +168,27 @@ func (c *Client) UpdateMetadata(ctx context.Context, id string, params *UpdateMe
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPatch, path)
+	req.SetParams(params)
+	organization := &clerk.Organization{}
+	err = c.Backend.Call(ctx, req, organization)
+	return organization, err
+}
+
+type ReplaceMetadataParams struct {
+	clerk.APIParams
+	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
+}
+
+// ReplaceMetadata replaces the organization's metadata. Each metadata
+// field included in the request overwrites the stored value (rather than
+// merging with it).
+func (c *Client) ReplaceMetadata(ctx context.Context, id string, params *ReplaceMetadataParams) (*clerk.Organization, error) {
+	path, err := clerk.JoinPath(path, id, "/metadata")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPut, path)
 	req.SetParams(params)
 	organization := &clerk.Organization{}
 	err = c.Backend.Call(ctx, req, organization)
