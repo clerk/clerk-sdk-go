@@ -20,6 +20,7 @@ type EnterpriseConnection struct {
 	ForceAuthn                       bool     `json:"force_authn"`
 	AllowOrganizationAccountLinking  bool     `json:"allow_organization_account_linking"`
 	Authenticatable                  bool     `json:"authenticatable"`
+	DisableJIT                       bool     `json:"disable_jit"`
 	CreatedAt                        int64    `json:"created_at"`
 	UpdatedAt                        int64    `json:"updated_at"`
 
