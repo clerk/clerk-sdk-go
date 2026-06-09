@@ -80,12 +80,10 @@ func (c *Client) Get(ctx context.Context, idOrSlug string, params *GetParams) (*
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name                  *string          `json:"name,omitempty"`
-	Slug                  *string          `json:"slug,omitempty"`
-	MaxAllowedMemberships *int64           `json:"max_allowed_memberships,omitempty"`
-	PublicMetadata        *json.RawMessage `json:"public_metadata,omitempty"`
-	PrivateMetadata       *json.RawMessage `json:"private_metadata,omitempty"`
-	AdminDeleteEnabled    *bool            `json:"admin_delete_enabled,omitempty"`
+	Name                  *string `json:"name,omitempty"`
+	Slug                  *string `json:"slug,omitempty"`
+	MaxAllowedMemberships *int64  `json:"max_allowed_memberships,omitempty"`
+	AdminDeleteEnabled    *bool   `json:"admin_delete_enabled,omitempty"`
 	// RoleSetKey and ReassignmentMappings are preview fields and are not available yet for all customers.
 	// The use of this field will cause an error to be returned.
 	RoleSetKey           *string                     `json:"role_set_key,omitempty"`
@@ -119,6 +117,27 @@ func (c *Client) UpdateMetadata(ctx context.Context, id string, params *UpdateMe
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPatch, path)
+	req.SetParams(params)
+	organization := &clerk.Organization{}
+	err = c.Backend.Call(ctx, req, organization)
+	return organization, err
+}
+
+type ReplaceMetadataParams struct {
+	clerk.APIParams
+	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
+}
+
+// ReplaceMetadata replaces the organization's metadata. Each metadata
+// field included in the request overwrites the stored value (rather than
+// merging with it).
+func (c *Client) ReplaceMetadata(ctx context.Context, id string, params *ReplaceMetadataParams) (*clerk.Organization, error) {
+	path, err := clerk.JoinPath(path, id, "/metadata")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPut, path)
 	req.SetParams(params)
 	organization := &clerk.Organization{}
 	err = c.Backend.Call(ctx, req, organization)
