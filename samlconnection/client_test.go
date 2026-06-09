@@ -219,6 +219,31 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
 }
 
+// TestSAMLConnectionClientUpdate_WithDisableJIT verifies the SAML connection
+// update endpoint sends the top-level `disable_jit` flag and parses it back
+// from the response.
+func TestSAMLConnectionClientUpdate_WithDisableJIT(t *testing.T) {
+	t.Parallel()
+	id := "samlc__jit"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"disable_jit":true}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","disable_jit":true}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/saml_connections/" + id,
+		},
+	}
+	client := NewClient(config)
+	samlConnection, err := client.Update(context.Background(), id, &UpdateParams{
+		DisableJIT: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, samlConnection.ID)
+	require.True(t, samlConnection.DisableJIT)
+}
+
 func TestSAMLConnectionClientUpdate_Error(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
