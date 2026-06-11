@@ -21,7 +21,7 @@ import (
 
 const (
 	sdkVersion      string = "v2.0.0"
-	clerkAPIVersion string = "2025-11-10"
+	clerkAPIVersion string = "2026-05-12"
 )
 
 const (

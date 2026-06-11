@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -319,6 +320,136 @@ func TestUserClientUpdateMetadata(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, user.ID)
 	require.JSONEq(t, string(metadata), string(user.PrivateMetadata))
+}
+
+func TestUserClientReplaceMetadata(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"private_metadata":%s}`, string(metadata))),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","private_metadata":%s}`, id, string(metadata))),
+			Method: http.MethodPut,
+			Path:   "/v1/users/" + id + "/metadata",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.ReplaceMetadata(context.Background(), id, &ReplaceMetadataParams{
+		PrivateMetadata: &metadata,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.JSONEq(t, string(metadata), string(user.PrivateMetadata))
+}
+
+type recordedRequest struct {
+	method string
+	path   string
+	body   string
+}
+
+func newUpdateRoutingServer(t *testing.T, recorded *[]recordedRequest, patchStatus int, putStatus int, body string) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		buf, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		*recorded = append(*recorded, recordedRequest{
+			method: r.Method,
+			path:   r.URL.Path,
+			body:   string(buf),
+		})
+		switch r.Method {
+		case http.MethodPut:
+			w.WriteHeader(putStatus)
+		case http.MethodPatch:
+			w.WriteHeader(patchStatus)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+		_, err = w.Write([]byte(body))
+		require.NoError(t, err)
+	}))
+}
+
+func TestUserClientUpdate_OnlyMetadataRoutesToPut(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	var recorded []recordedRequest
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusOK, http.StatusOK,
+		fmt.Sprintf(`{"id":"%s","public_metadata":%s}`, id, string(metadata)))
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.URL = clerk.String(ts.URL)
+	config.HTTPClient = ts.Client()
+	client := NewClient(config)
+	user, err := client.Update(context.Background(), id, &UpdateParams{
+		PublicMetadata: &metadata,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Len(t, recorded, 1)
+	require.Equal(t, http.MethodPut, recorded[0].method)
+	require.Equal(t, "/users/"+id+"/metadata", recorded[0].path)
+	require.JSONEq(t, fmt.Sprintf(`{"public_metadata":%s}`, string(metadata)), recorded[0].body)
+}
+
+func TestUserClientUpdate_MetadataAndNonMetadataIssuesBothCalls(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	username := "username"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	var recorded []recordedRequest
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusOK, http.StatusOK,
+		fmt.Sprintf(`{"id":"%s","username":"%s","public_metadata":%s}`, id, username, string(metadata)))
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.URL = clerk.String(ts.URL)
+	config.HTTPClient = ts.Client()
+	client := NewClient(config)
+	user, err := client.Update(context.Background(), id, &UpdateParams{
+		Username:       clerk.String(username),
+		PublicMetadata: &metadata,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Len(t, recorded, 2)
+
+	require.Equal(t, http.MethodPatch, recorded[0].method)
+	require.Equal(t, "/users/"+id, recorded[0].path)
+	require.JSONEq(t, fmt.Sprintf(`{"username":"%s"}`, username), recorded[0].body)
+
+	require.Equal(t, http.MethodPut, recorded[1].method)
+	require.Equal(t, "/users/"+id+"/metadata", recorded[1].path)
+	require.JSONEq(t, fmt.Sprintf(`{"public_metadata":%s}`, string(metadata)), recorded[1].body)
+}
+
+func TestUserClientUpdate_MetadataPatchErrorAbortsPut(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	username := "username"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	var recorded []recordedRequest
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusBadRequest, http.StatusOK,
+		`{"errors":[{"code":"bad_request"}]}`)
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.URL = clerk.String(ts.URL)
+	config.HTTPClient = ts.Client()
+	client := NewClient(config)
+	_, err := client.Update(context.Background(), id, &UpdateParams{
+		Username:       clerk.String(username),
+		PublicMetadata: &metadata,
+	})
+	require.Error(t, err)
+	require.Len(t, recorded, 1)
+	require.Equal(t, http.MethodPatch, recorded[0].method)
 }
 
 func TestUserClientListOAuthAccessTokens(t *testing.T) {

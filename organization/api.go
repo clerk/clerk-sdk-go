@@ -26,6 +26,12 @@ func GetWithParams(ctx context.Context, idOrSlug string, params *GetParams) (*cl
 }
 
 // Update updates an organization.
+//
+// If any of the deprecated metadata fields on UpdateParams is set, the
+// SDK splits the call: non-metadata fields are sent via PATCH /organizations/{id}
+// and the metadata fields are then sent via PUT /organizations/{id}/metadata (the dedicated metadata endpoint).
+// When only metadata fields are set, the PATCH call is skipped. The returned organization
+// reflects the response of the final call made.
 func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Organization, error) {
 	return getClient().Update(ctx, id, params)
 }
@@ -34,6 +40,14 @@ func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Organi
 // provided values with the existing ones.
 func UpdateMetadata(ctx context.Context, id string, params *UpdateMetadataParams) (*clerk.Organization, error) {
 	return getClient().UpdateMetadata(ctx, id, params)
+}
+
+// ReplaceMetadata replaces the organization's metadata. Each metadata
+// field included in the request overwrites the stored value (rather than
+// merging with it). Fields omitted from the request are left untouched.
+// To clear a column, pass an empty object ({}) for that field.
+func ReplaceMetadata(ctx context.Context, id string, params *ReplaceMetadataParams) (*clerk.Organization, error) {
+	return getClient().ReplaceMetadata(ctx, id, params)
 }
 
 // Delete deletes an organization.

@@ -84,29 +84,35 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.User, error) {
 
 type UpdateParams struct {
 	clerk.APIParams
-	FirstName                        *string          `json:"first_name,omitempty"`
-	LastName                         *string          `json:"last_name,omitempty"`
-	PrimaryEmailAddressID            *string          `json:"primary_email_address_id,omitempty"`
-	NotifyPrimaryEmailAddressChanged *bool            `json:"notify_primary_email_address_changed,omitempty"`
-	PrimaryPhoneNumberID             *string          `json:"primary_phone_number_id,omitempty"`
-	PrimaryWeb3WalletID              *string          `json:"primary_web3_wallet_id,omitempty"`
-	Username                         *string          `json:"username,omitempty"`
-	ProfileImageID                   *string          `json:"profile_image_id,omitempty"`
-	ProfileImage                     *string          `json:"profile_image,omitempty"`
-	Password                         *string          `json:"password,omitempty"`
-	PasswordDigest                   *string          `json:"password_digest,omitempty"`
-	PasswordHasher                   *string          `json:"password_hasher,omitempty"`
-	SkipPasswordChecks               *bool            `json:"skip_password_checks,omitempty"`
-	SignOutOfOtherSessions           *bool            `json:"sign_out_of_other_sessions,omitempty"`
-	ExternalID                       *string          `json:"external_id,omitempty"`
-	PublicMetadata                   *json.RawMessage `json:"public_metadata,omitempty"`
-	PrivateMetadata                  *json.RawMessage `json:"private_metadata,omitempty"`
-	UnsafeMetadata                   *json.RawMessage `json:"unsafe_metadata,omitempty"`
-	TOTPSecret                       *string          `json:"totp_secret,omitempty"`
-	BackupCodes                      *[]string        `json:"backup_codes,omitempty"`
-	DeleteSelfEnabled                *bool            `json:"delete_self_enabled,omitempty"`
-	CreateOrganizationEnabled        *bool            `json:"create_organization_enabled,omitempty"`
-	CreateOrganizationsLimit         *int             `json:"create_organizations_limit,omitempty"`
+	FirstName                        *string `json:"first_name,omitempty"`
+	LastName                         *string `json:"last_name,omitempty"`
+	PrimaryEmailAddressID            *string `json:"primary_email_address_id,omitempty"`
+	NotifyPrimaryEmailAddressChanged *bool   `json:"notify_primary_email_address_changed,omitempty"`
+	PrimaryPhoneNumberID             *string `json:"primary_phone_number_id,omitempty"`
+	PrimaryWeb3WalletID              *string `json:"primary_web3_wallet_id,omitempty"`
+	Username                         *string `json:"username,omitempty"`
+	ProfileImageID                   *string `json:"profile_image_id,omitempty"`
+	ProfileImage                     *string `json:"profile_image,omitempty"`
+	Password                         *string `json:"password,omitempty"`
+	PasswordDigest                   *string `json:"password_digest,omitempty"`
+	PasswordHasher                   *string `json:"password_hasher,omitempty"`
+	SkipPasswordChecks               *bool   `json:"skip_password_checks,omitempty"`
+	SignOutOfOtherSessions           *bool   `json:"sign_out_of_other_sessions,omitempty"`
+	ExternalID                       *string `json:"external_id,omitempty"`
+	// Deprecated: Use ReplaceMetadata (replace) or UpdateMetadata (merge) instead.
+	// When set on UpdateParams, the SDK routes this field through PUT /users/{id}/metadata.
+	PublicMetadata *json.RawMessage `json:"public_metadata,omitempty"`
+	// Deprecated: Use ReplaceMetadata (replace) or UpdateMetadata (merge) instead.
+	// When set on UpdateParams, the SDK routes this field through PUT /users/{id}/metadata.
+	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
+	// Deprecated: Use ReplaceMetadata (replace) or UpdateMetadata (merge) instead.
+	// When set on UpdateParams, the SDK routes this field through PUT /users/{id}/metadata.
+	UnsafeMetadata            *json.RawMessage `json:"unsafe_metadata,omitempty"`
+	TOTPSecret                *string          `json:"totp_secret,omitempty"`
+	BackupCodes               *[]string        `json:"backup_codes,omitempty"`
+	DeleteSelfEnabled         *bool            `json:"delete_self_enabled,omitempty"`
+	CreateOrganizationEnabled *bool            `json:"create_organization_enabled,omitempty"`
+	CreateOrganizationsLimit  *int             `json:"create_organizations_limit,omitempty"`
 	// Specified in RFC3339 format
 	LegalAcceptedAt *string `json:"legal_accepted_at,omitempty"`
 	SkipLegalChecks *bool   `json:"skip_legal_checks,omitempty"`
@@ -117,7 +123,41 @@ type UpdateParams struct {
 }
 
 // Update updates a user.
+//
+// If any of the deprecated metadata fields on UpdateParams is set, the
+// SDK splits the call: non-metadata fields are sent via PATCH /users/{id}
+// and the metadata fields are then sent via PUT /users/{id}/metadata (the dedicated metadata endpoint).
+// When only metadata fields are set, the PATCH call is skipped. The returned user
+// reflects the response of the final call made.
 func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*clerk.User, error) {
+	hasMetadata := params != nil && (params.PublicMetadata != nil || params.PrivateMetadata != nil || params.UnsafeMetadata != nil)
+
+	if !hasMetadata {
+		return c.updateUser(ctx, id, params)
+	}
+
+	metadataParams := &ReplaceMetadataParams{
+		APIParams:       params.APIParams,
+		PublicMetadata:  params.PublicMetadata,
+		PrivateMetadata: params.PrivateMetadata,
+		UnsafeMetadata:  params.UnsafeMetadata,
+	}
+
+	stripped := *params
+	stripped.PublicMetadata = nil
+	stripped.PrivateMetadata = nil
+	stripped.UnsafeMetadata = nil
+
+	if hasNonMetadataUpdateFields(&stripped) {
+		if _, err := c.updateUser(ctx, id, &stripped); err != nil {
+			return nil, err
+		}
+	}
+
+	return c.ReplaceMetadata(ctx, id, metadataParams)
+}
+
+func (c *Client) updateUser(ctx context.Context, id string, params *UpdateParams) (*clerk.User, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
 		return nil, err
@@ -127,6 +167,33 @@ func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*
 	resource := &clerk.User{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
+}
+
+func hasNonMetadataUpdateFields(p *UpdateParams) bool {
+	return p.FirstName != nil ||
+		p.LastName != nil ||
+		p.PrimaryEmailAddressID != nil ||
+		p.NotifyPrimaryEmailAddressChanged != nil ||
+		p.PrimaryPhoneNumberID != nil ||
+		p.PrimaryWeb3WalletID != nil ||
+		p.Username != nil ||
+		p.ProfileImageID != nil ||
+		p.ProfileImage != nil ||
+		p.Password != nil ||
+		p.PasswordDigest != nil ||
+		p.PasswordHasher != nil ||
+		p.SkipPasswordChecks != nil ||
+		p.SignOutOfOtherSessions != nil ||
+		p.ExternalID != nil ||
+		p.TOTPSecret != nil ||
+		p.BackupCodes != nil ||
+		p.DeleteSelfEnabled != nil ||
+		p.CreateOrganizationEnabled != nil ||
+		p.CreateOrganizationsLimit != nil ||
+		p.LegalAcceptedAt != nil ||
+		p.SkipLegalChecks != nil ||
+		p.CreatedAt != nil ||
+		p.Locale != nil
 }
 
 type UpdateProfileImageParams struct {
@@ -195,6 +262,30 @@ func (c *Client) UpdateMetadata(ctx context.Context, id string, params *UpdateMe
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPatch, path)
+	req.SetParams(params)
+	resource := &clerk.User{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
+type ReplaceMetadataParams struct {
+	clerk.APIParams
+	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
+	UnsafeMetadata  *json.RawMessage `json:"unsafe_metadata,omitempty"`
+}
+
+// ReplaceMetadata replaces the user's metadata. Each metadata
+// field included in the request overwrites the stored value
+// (rather than merging with it). Fields omitted from the request
+// are left untouched. To clear metadata, pass an empty object
+// ({}) for that field.
+func (c *Client) ReplaceMetadata(ctx context.Context, id string, params *ReplaceMetadataParams) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, id, "/metadata")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPut, path)
 	req.SetParams(params)
 	resource := &clerk.User{}
 	err = c.Backend.Call(ctx, req, resource)

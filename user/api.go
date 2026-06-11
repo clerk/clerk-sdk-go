@@ -19,6 +19,13 @@ func Get(ctx context.Context, id string) (*clerk.User, error) {
 }
 
 // Update updates a user.
+//
+// If any of the deprecated metadata fields on UpdateParams is set, the
+// SDK splits the call: non-metadata fields are sent via PATCH /users/{id}
+// (the historical behavior), and the metadata fields are then sent via
+// PUT /users/{id}/metadata (the dedicated metadata endpoint). When only
+// metadata fields are set, the PATCH call is skipped. The returned user
+// reflects the response of the final call made.
 func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.User, error) {
 	return getClient().Update(ctx, id, params)
 }
@@ -37,6 +44,15 @@ func DeleteProfileImage(ctx context.Context, id string) (*clerk.User, error) {
 // provided values with the existing ones.
 func UpdateMetadata(ctx context.Context, id string, params *UpdateMetadataParams) (*clerk.User, error) {
 	return getClient().UpdateMetadata(ctx, id, params)
+}
+
+// ReplaceMetadata replaces the user's metadata. Each metadata
+// field included in the request overwrites the stored value
+// (rather than merging with it). Fields omitted from the request
+// are left untouched. To clear a column, pass an empty object
+// ({}) for that field.
+func ReplaceMetadata(ctx context.Context, id string, params *ReplaceMetadataParams) (*clerk.User, error) {
+	return getClient().ReplaceMetadata(ctx, id, params)
 }
 
 // Delete deletes a user.
