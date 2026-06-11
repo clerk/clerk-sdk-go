@@ -13,9 +13,9 @@
 The official [Clerk](https://clerk.com) Go client library for accessing the [Clerk Backend API](https://clerk.com/docs/reference/backend-api).
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/clerk/clerk-sdk-go/v2.svg)](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2)
-[![chat on Discord](https://img.shields.io/discord/856971667393609759.svg?logo=discord)](https://discord.com/invite/b5rXHjAg7A)
+[![chat on Discord](https://img.shields.io/discord/856971667393609759.svg?logo=discord)](https://clerk.com/discord)
 [![documentation](https://img.shields.io/badge/documentation-clerk-green.svg)](https://clerk.com/docs)
-[![twitter](https://img.shields.io/twitter/follow/ClerkDev?style=social)](https://twitter.com/intent/follow?screen_name=ClerkDev)
+[![Follow on X](https://img.shields.io/twitter/follow/clerk?style=social)](https://x.com/intent/follow?screen_name=clerk)
 
 ### Migrating from `v1`?
 
