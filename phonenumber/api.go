@@ -23,6 +23,15 @@ func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.PhoneN
 	return getClient().Update(ctx, id, params)
 }
 
+// ReplaceForUser replaces all of the user's phone numbers with a single
+// verified, primary phone number. The new phone number is created with the
+// admin verification strategy and is not reserved for second factor. Any
+// existing phone numbers are deleted; replacing a phone number that is reserved
+// for second factor disables the user's MFA.
+func ReplaceForUser(ctx context.Context, params *ReplaceForUserParams) (*clerk.PhoneNumber, error) {
+	return getClient().ReplaceForUser(ctx, params)
+}
+
 // Delete deletes a phone number.
 func Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	return getClient().Delete(ctx, id)

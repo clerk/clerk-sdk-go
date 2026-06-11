@@ -104,6 +104,102 @@ func TestEnterpriseConnectionClientUpdate(t *testing.T) {
 	require.Equal(t, name, conn.Name)
 }
 
+// TestEnterpriseConnectionClientCreate_WithMultiValuedCustomAttributes verifies the
+// SAML enterprise connection create endpoint accepts custom attributes that carry
+// the `multi_valued` flag, covering both true and false values.
+func TestEnterpriseConnectionClientCreate_WithMultiValuedCustomAttributes(t *testing.T) {
+	t.Parallel()
+	id := "entconn_456"
+	name := "Acme SAML"
+	provider := "saml_custom"
+	protocol := "saml"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","provider":"%s","protocol":"%s","saml":{"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","scim_path":"manager","multi_valued":false}]}}`, name, provider, protocol)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","provider":"%s","protocol":"%s","object":"enterprise_connection","active":true,"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","scim_path":"manager","multi_valued":false}]}`, id, name, provider, protocol)),
+			Method: http.MethodPost,
+			Path:   "/v1/enterprise_connections",
+		},
+	}
+	client := NewClient(config)
+	conn, err := client.Create(context.Background(), &CreateParams{
+		Name:     clerk.String(name),
+		Provider: clerk.String(provider),
+		Protocol: clerk.String(protocol),
+		Saml: &CreateParamsSaml{
+			CustomAttributes: &[]clerk.CustomAttribute{
+				{
+					Name:        clerk.String("groups"),
+					Key:         clerk.String("groups"),
+					SSOPath:     clerk.String("$.groups"),
+					SCIMPath:    clerk.String("groups"),
+					MultiValued: clerk.Bool(true),
+				},
+				{
+					Name:        clerk.String("manager"),
+					Key:         clerk.String("manager"),
+					SSOPath:     clerk.String("$.manager"),
+					SCIMPath:    clerk.String("manager"),
+					MultiValued: clerk.Bool(false),
+				},
+			},
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, conn.ID)
+	require.NotNil(t, conn.CustomAttributes)
+	require.Equal(t, 2, len(*conn.CustomAttributes))
+	require.Equal(t, true, *(*conn.CustomAttributes)[0].MultiValued)
+	require.Equal(t, false, *(*conn.CustomAttributes)[1].MultiValued)
+}
+
+// TestEnterpriseConnectionClientUpdate_WithMultiValuedCustomAttributes verifies the
+// SAML enterprise connection update endpoint accepts custom attributes that carry
+// the `multi_valued` flag, covering both true and false values.
+func TestEnterpriseConnectionClientUpdate_WithMultiValuedCustomAttributes(t *testing.T) {
+	t.Parallel()
+	id := "entconn_789"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"saml":{"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","scim_path":"department","multi_valued":false}]}}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"enterprise_connection","protocol":"saml","provider":"saml_custom","active":true,"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","scim_path":"department","multi_valued":false}]}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/enterprise_connections/" + id,
+		},
+	}
+	client := NewClient(config)
+	conn, err := client.Update(context.Background(), id, &UpdateParams{
+		Saml: &UpdateParamsSaml{
+			CustomAttributes: &[]clerk.CustomAttribute{
+				{
+					Name:        clerk.String("groups"),
+					Key:         clerk.String("groups"),
+					SSOPath:     clerk.String("$.groups"),
+					SCIMPath:    clerk.String("groups"),
+					MultiValued: clerk.Bool(true),
+				},
+				{
+					Name:        clerk.String("department"),
+					Key:         clerk.String("department"),
+					SSOPath:     clerk.String("$.department"),
+					SCIMPath:    clerk.String("department"),
+					MultiValued: clerk.Bool(false),
+				},
+			},
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, conn.ID)
+	require.NotNil(t, conn.CustomAttributes)
+	require.Equal(t, 2, len(*conn.CustomAttributes))
+	require.Equal(t, true, *(*conn.CustomAttributes)[0].MultiValued)
+	require.Equal(t, false, *(*conn.CustomAttributes)[1].MultiValued)
+}
+
 func TestEnterpriseConnectionClientDelete(t *testing.T) {
 	t.Parallel()
 	id := "entconn_del"

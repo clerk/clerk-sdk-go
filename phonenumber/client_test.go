@@ -62,6 +62,31 @@ func TestPhoneNumberClientUpdate(t *testing.T) {
 	require.Equal(t, true, phoneNumber.ReservedForSecondFactor)
 }
 
+func TestPhoneNumberClientReplaceForUser(t *testing.T) {
+	t.Parallel()
+	phone := "+10123456789"
+	userID := "user_123"
+	id := "idn_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"phone_number":"%s"}`, phone)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","phone_number":"%s"}`, id, phone)),
+			Method: http.MethodPut,
+			Path:   "/v1/users/" + userID + "/phone_number",
+		},
+	}
+	client := NewClient(config)
+	phoneNumber, err := client.ReplaceForUser(context.Background(), &ReplaceForUserParams{
+		UserID:      userID,
+		PhoneNumber: clerk.String(phone),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, phoneNumber.ID)
+	require.Equal(t, phone, phoneNumber.PhoneNumber)
+}
+
 func TestPhoneNumberClientGet(t *testing.T) {
 	t.Parallel()
 	id := "idn_123"

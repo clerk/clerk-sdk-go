@@ -23,6 +23,15 @@ func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.EmailA
 	return getClient().Update(ctx, id, params)
 }
 
+// ReplaceForUser replaces all of the user's email addresses with a single
+// verified, primary email address. The new email address is created with the
+// admin verification strategy and any existing email addresses are deleted. If
+// an existing email address is linked to a connected account, the request is
+// rejected; remove the connected account first.
+func ReplaceForUser(ctx context.Context, params *ReplaceForUserParams) (*clerk.EmailAddress, error) {
+	return getClient().ReplaceForUser(ctx, params)
+}
+
 // Delete deletes an email address.
 func Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	return getClient().Delete(ctx, id)

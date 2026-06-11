@@ -88,6 +88,11 @@ type UpdateParams struct {
 	// The use of this field will cause an error to be returned.
 	RoleSetKey           *string                     `json:"role_set_key,omitempty"`
 	ReassignmentMappings *clerk.ReassignmentMappings `json:"reassignment_mappings,omitempty"`
+	// SelfServeSSOEnabled toggles per-organization self-serve SSO. This is a preview
+	// field and is not available yet for all customers. The instance must have
+	// self-serve SSO enabled for the value to be honored; otherwise the request
+	// will fail.
+	SelfServeSSOEnabled *bool `json:"self_serve_sso_enabled,omitempty"`
 }
 
 // Update updates an organization.

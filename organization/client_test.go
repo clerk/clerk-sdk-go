@@ -160,6 +160,29 @@ func TestOrganizationClientUpdate(t *testing.T) {
 	require.Equal(t, name, organization.Name)
 }
 
+func TestOrganizationClientUpdateSelfServeSSO(t *testing.T) {
+	t.Parallel()
+	id := "org_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"self_serve_sso_enabled":true}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","self_serve_sso_enabled":true}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/organizations/" + id,
+		},
+	}
+	client := NewClient(config)
+	organization, err := client.Update(context.Background(), id, &UpdateParams{
+		SelfServeSSOEnabled: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, organization.ID)
+	require.NotNil(t, organization.SelfServeSSOEnabled)
+	require.True(t, *organization.SelfServeSSOEnabled)
+}
+
 func TestOrganizationClientUpdate_Error(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
