@@ -42,6 +42,60 @@ func (s *Service) fetchOrgExample(idOrSlug string, includeMembersCount bool) {
 }
 ```
 
+### Updating User Metadata
+
+User metadata can no longer be updated via `user.Update`. The `PublicMetadata`, `PrivateMetadata`, and `UnsafeMetadata` fields have been removed from `user.UpdateParams`. Use the dedicated `user.UpdateMetadata` function instead.
+
+```diff
+import (
+    "github.com/clerk/clerk-sdk-go/v3/user"
+)
+
+func updateUserMetadata(ctx context.Context, userID string, publicMetadata json.RawMessage) {
+-   user.Update(ctx, userID, &user.UpdateParams{
+-       PublicMetadata: &publicMetadata,
+-   })
++   user.UpdateMetadata(ctx, userID, &user.UpdateMetadataParams{
++       PublicMetadata: &publicMetadata,
++   })
+}
+```
+
+`user.UpdateMetadata` deep-merges the provided values into the existing metadata. If you need to fully overwrite a metadata column (rather than merge into it), use `user.ReplaceMetadata` instead. Both leave omitted fields untouched; passing `{}` for a field via `ReplaceMetadata` clears that column.
+
+```go
+user.ReplaceMetadata(ctx, userID, &user.ReplaceMetadataParams{
+    PublicMetadata: &publicMetadata, // overwrites public_metadata entirely
+})
+```
+
+### Updating Organization Metadata
+
+Organization metadata can no longer be updated via `organization.Update`. The `PublicMetadata` and `PrivateMetadata` fields have been removed from `organization.UpdateParams`. Use the dedicated `organization.UpdateMetadata` function instead.
+
+```diff
+import (
+    "github.com/clerk/clerk-sdk-go/v3/organization"
+)
+
+func updateOrgMetadata(ctx context.Context, orgID string, publicMetadata json.RawMessage) {
+-   organization.Update(ctx, orgID, &organization.UpdateParams{
+-       PublicMetadata: &publicMetadata,
+-   })
++   organization.UpdateMetadata(ctx, orgID, &organization.UpdateMetadataParams{
++       PublicMetadata: &publicMetadata,
++   })
+}
+```
+
+`organization.UpdateMetadata` deep-merges the provided values into the existing metadata. If you need to fully overwrite a metadata column (rather than merge into it), use `organization.ReplaceMetadata` instead. Both leave omitted fields untouched; passing `{}` for a field via `ReplaceMetadata` clears that column.
+
+```go
+organization.ReplaceMetadata(ctx, orgID, &organization.ReplaceMetadataParams{
+    PublicMetadata: &publicMetadata, // overwrites public_metadata entirely
+})
+```
+
 ## 1.x.x to 2.x.x
 
 The `v2` version of the Clerk Go SDK is a complete rewrite and introduces

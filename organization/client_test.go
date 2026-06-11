@@ -353,3 +353,27 @@ func TestOrganizationClientUpdateMetadata(t *testing.T) {
 	require.Equal(t, id, organization.ID)
 	require.JSONEq(t, metadata, string(organization.PrivateMetadata))
 }
+
+func TestOrganizationClientReplaceMetadata(t *testing.T) {
+	t.Parallel()
+	id := "org_123"
+	metadata := `{"foo":"bar"}`
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"private_metadata":%s}`, metadata)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","private_metadata":%s}`, id, metadata)),
+			Method: http.MethodPut,
+			Path:   "/v1/organizations/" + id + "/metadata",
+		},
+	}
+	client := NewClient(config)
+	metadataParam := json.RawMessage(metadata)
+	organization, err := client.ReplaceMetadata(context.Background(), id, &ReplaceMetadataParams{
+		PrivateMetadata: &metadataParam,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, organization.ID)
+	require.JSONEq(t, metadata, string(organization.PrivateMetadata))
+}

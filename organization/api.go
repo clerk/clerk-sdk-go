@@ -30,6 +30,14 @@ func UpdateMetadata(ctx context.Context, id string, params *UpdateMetadataParams
 	return getClient().UpdateMetadata(ctx, id, params)
 }
 
+// ReplaceMetadata replaces the organization's metadata. Each metadata
+// field included in the request overwrites the stored value (rather than
+// merging with it). Fields omitted from the request are left untouched.
+// To clear a column, pass an empty object ({}) for that field.
+func ReplaceMetadata(ctx context.Context, id string, params *ReplaceMetadataParams) (*clerk.Organization, error) {
+	return getClient().ReplaceMetadata(ctx, id, params)
+}
+
 // Delete deletes an organization.
 func Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	return getClient().Delete(ctx, id)

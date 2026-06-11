@@ -8,14 +8,15 @@ import (
 	"github.com/clerk/clerk-sdk-go/v3"
 )
 
+// Get retrieves a single audit log by its composite key (event_time_ms:event_id).
+// Unlike List, the returned object includes the full event payload.
+func Get(ctx context.Context, params *GetParams) (*clerk.AuditLogWithPayload, error) {
+	return getClient().Get(ctx, params)
+}
+
 // List returns a list of audit logs.
 func List(ctx context.Context, params *ListParams) (*clerk.AuditLogList, error) {
 	return getClient().List(ctx, params)
-}
-
-// Get retrieves a single audit log by its composite key.
-func Get(ctx context.Context, params *GetParams) (*clerk.AuditLogWithPayload, error) {
-	return getClient().Get(ctx, params)
 }
 
 func getClient() *Client {
