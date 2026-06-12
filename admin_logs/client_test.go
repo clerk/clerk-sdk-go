@@ -382,6 +382,55 @@ func TestListParams_ToQuery_Instance(t *testing.T) {
 	require.Nil(t, emptyParams.ToQuery()["instance"])
 }
 
+// TestListParams_ToQuery_Application locks the wire name of the
+// application filter. The schema column is application_id, but the
+// public query parameter is "application" to match the existing
+// "instance" naming for environment-scoping filters on this endpoint.
+func TestListParams_ToQuery_Application(t *testing.T) {
+	t.Parallel()
+
+	params := &ListParams{Application: clerk.String("app_alpha")}
+	require.Equal(t, []string{"app_alpha"}, params.ToQuery()["application"])
+
+	emptyParams := &ListParams{}
+	require.Nil(t, emptyParams.ToQuery()["application"])
+}
+
+// TestList_FiltersByApplication verifies that the application filter
+// round-trips as a query parameter on the wire.
+func TestList_FiltersByApplication(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"data": []map[string]interface{}{},
+		"cursor": map[string]interface{}{
+			"starting_after":   nil,
+			"ending_before":    nil,
+			"has_next_page":    false,
+			"next_page_status": "false",
+		},
+	}
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    responseJSON,
+			Method: http.MethodGet,
+			Path:   "/v1/admin_logs",
+			Query: &url.Values{
+				"application": []string{"app_alpha"},
+			},
+		},
+	}
+	client := NewClient(config)
+	_, err := client.List(context.Background(), &ListParams{
+		Application: clerk.String("app_alpha"),
+	})
+	require.NoError(t, err)
+}
+
 // TestList_TimeBoundsAndEndUserFacing verifies that the time-window and
 // end_user_facing_only params serialize correctly and that they are
 // independent of the filter_match group (always ANDed).

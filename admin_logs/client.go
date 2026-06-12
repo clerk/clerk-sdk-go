@@ -40,6 +40,12 @@ type ListParams struct {
 	// single instance), so the list endpoint exposes this as a first-class
 	// filter and the SDK mirrors it here.
 	Instance *string `json:"instance,omitempty"`
+	// Filter admin logs by application. A workspace can own multiple
+	// applications; this narrows to events on a single one without
+	// enumerating every instance. Backed by a ClickHouse bloom filter
+	// (bf_application_id) for granule skipping inside the workspace
+	// partition.
+	Application *string `json:"application,omitempty"`
 	// Filter admin logs by subject.
 	Subject *string `json:"subject,omitempty"`
 	// Filter admin logs by actor.
@@ -89,6 +95,9 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.Instance != nil {
 		q.Add("instance", *params.Instance)
+	}
+	if params.Application != nil {
+		q.Add("application", *params.Application)
 	}
 	if params.Subject != nil {
 		q.Add("subject", *params.Subject)
