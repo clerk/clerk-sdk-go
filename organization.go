@@ -20,7 +20,10 @@ type Organization struct {
 	RoleSetKey                           *string  `json:"role_set_key,omitempty"`
 	// SelfServeSSOEnabled is a preview field and is not available yet for all customers.
 	// It is only returned when the instance has self-serve SSO enabled.
-	SelfServeSSOEnabled *bool           `json:"self_serve_sso_enabled,omitempty"`
+	SelfServeSSOEnabled *bool `json:"self_serve_sso_enabled,omitempty"`
+	// ExclusiveMembership, when true, prevents members of this organization from
+	// belonging to any other organization in the instance.
+	ExclusiveMembership bool            `json:"exclusive_membership"`
 	PublicMetadata      json.RawMessage `json:"public_metadata"`
 	PrivateMetadata     json.RawMessage `json:"private_metadata"`
 	CreatedBy           string          `json:"created_by"`
