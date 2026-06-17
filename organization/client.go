@@ -93,6 +93,11 @@ type UpdateParams struct {
 	// self-serve SSO enabled for the value to be honored; otherwise the request
 	// will fail.
 	SelfServeSSOEnabled *bool `json:"self_serve_sso_enabled,omitempty"`
+	// ExclusiveMembership, when true, prevents members of this organization from
+	// belonging to any other organization in the instance. This is a preview field
+	// and is not available yet for all customers. The instance must have exclusive
+	// membership enabled for the value to be honored; otherwise the request will fail.
+	ExclusiveMembership *bool `json:"exclusive_membership,omitempty"`
 }
 
 // Update updates an organization.

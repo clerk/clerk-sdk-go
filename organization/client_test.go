@@ -183,6 +183,28 @@ func TestOrganizationClientUpdateSelfServeSSO(t *testing.T) {
 	require.True(t, *organization.SelfServeSSOEnabled)
 }
 
+func TestOrganizationClientUpdateExclusiveMembership(t *testing.T) {
+	t.Parallel()
+	id := "org_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"exclusive_membership":true}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","exclusive_membership":true}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/organizations/" + id,
+		},
+	}
+	client := NewClient(config)
+	organization, err := client.Update(context.Background(), id, &UpdateParams{
+		ExclusiveMembership: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, organization.ID)
+	require.True(t, organization.ExclusiveMembership)
+}
+
 func TestOrganizationClientUpdate_Error(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
