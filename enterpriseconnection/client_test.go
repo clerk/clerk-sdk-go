@@ -104,6 +104,31 @@ func TestEnterpriseConnectionClientUpdate(t *testing.T) {
 	require.Equal(t, name, conn.Name)
 }
 
+// TestEnterpriseConnectionClientUpdate_WithDisableJIT verifies the enterprise
+// connection update endpoint sends the top-level `disable_jit` flag and parses
+// it back from the response.
+func TestEnterpriseConnectionClientUpdate_WithDisableJIT(t *testing.T) {
+	t.Parallel()
+	id := "entconn_jit"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"disable_jit":true}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"enterprise_connection","protocol":"saml","provider":"okta","active":true,"disable_jit":true}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/enterprise_connections/" + id,
+		},
+	}
+	client := NewClient(config)
+	conn, err := client.Update(context.Background(), id, &UpdateParams{
+		DisableJIT: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, conn.ID)
+	require.True(t, conn.DisableJIT)
+}
+
 // TestEnterpriseConnectionClientCreate_WithMultiValuedCustomAttributes verifies the
 // SAML enterprise connection create endpoint accepts custom attributes that carry
 // the `multi_valued` flag, covering both true and false values.
