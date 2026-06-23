@@ -121,6 +121,7 @@ type UpdateParams struct {
 	ForceAuthn                       *bool                   `json:"force_authn,omitempty"`
 	ConsentVerifiedDomainsDeletion   *bool                   `json:"consent_verified_domains_deletion,omitempty"`
 	Authenticatable                  *bool                   `json:"authenticatable,omitempty"`
+	DisableJIT                       *bool                   `json:"disable_jit,omitempty"`
 	// CustomAttributes is an Experimental feature, not available for all customers.
 	CustomAttributes *[]clerk.CustomAttribute `json:"custom_attributes,omitempty"`
 }
