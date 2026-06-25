@@ -31,14 +31,28 @@ type Mailbox struct {
 	Address string `json:"address"`
 }
 
+// Recipient is the addressee of an email. Provide exactly one of Address or
+// UserID; they are mutually exclusive. When UserID is set, Clerk resolves that
+// user's primary email address on the server, from the instance the secret key
+// belongs to.
+type Recipient struct {
+	// Name is an optional display name. Only meaningful alongside Address. It is
+	// currently accepted but not yet rendered by the server.
+	Name string `json:"name,omitempty"`
+	// Address is a literal recipient email address.
+	Address string `json:"address,omitempty"`
+	// UserID sends to the primary email address of the Clerk user with this ID.
+	UserID string `json:"user_id,omitempty"`
+}
+
 type SendParams struct {
 	clerk.APIParams
-	To      Mailbox  `json:"to"`
-	From    Mailbox  `json:"from"`
-	ReplyTo *Mailbox `json:"reply_to,omitempty"`
-	Subject string   `json:"subject"`
-	HTML    string   `json:"html,omitempty"`
-	Text    string   `json:"text,omitempty"`
+	To      Recipient `json:"to"`
+	From    Mailbox   `json:"from"`
+	ReplyTo *Mailbox  `json:"reply_to,omitempty"`
+	Subject string    `json:"subject"`
+	HTML    string    `json:"html,omitempty"`
+	Text    string    `json:"text,omitempty"`
 }
 
 // Send sends a transactional email.
