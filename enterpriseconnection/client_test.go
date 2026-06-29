@@ -104,6 +104,30 @@ func TestEnterpriseConnectionClientUpdate(t *testing.T) {
 	require.Equal(t, name, conn.Name)
 }
 
+func TestEnterpriseConnectionClientUpdate_DisableJitProvisioning(t *testing.T) {
+	t.Parallel()
+	id := "entconn_abc"
+	disableJitProvisioning := true
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"disable_jit_provisioning":%t}`, disableJitProvisioning)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"enterprise_connection","protocol":"saml","provider":"okta","disable_jit_provisioning":%t}`, id, disableJitProvisioning)),
+			Method: http.MethodPatch,
+			Path:   "/v1/enterprise_connections/" + id,
+		},
+	}
+	client := NewClient(config)
+	conn, err := client.Update(context.Background(), id, &UpdateParams{
+		DisableJitProvisioning: clerk.Bool(disableJitProvisioning),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, conn.ID)
+	require.NotNil(t, conn.DisableJitProvisioning)
+	require.Equal(t, disableJitProvisioning, *conn.DisableJitProvisioning)
+}
+
 // TestEnterpriseConnectionClientCreate_WithMultiValuedCustomAttributes verifies the
 // SAML enterprise connection create endpoint accepts custom attributes that carry
 // the `multi_valued` flag, covering both true and false values.
