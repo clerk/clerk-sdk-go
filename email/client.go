@@ -1,4 +1,8 @@
 // Package email provides the Email API.
+//
+// Experimental: The Email API is internal and not yet public. It is subject to
+// change. It is advised to pin the SDK version to avoid breaking changes. See
+// https://clerk.com/docs/pinning.
 package email
 
 import (

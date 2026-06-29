@@ -2,6 +2,11 @@ package clerk
 
 import "encoding/json"
 
+// Email is a transactional email resource.
+//
+// Experimental: This resource backs an internal, not-yet-public API and is
+// subject to change. It is advised to pin the SDK version to avoid breaking
+// changes. See https://clerk.com/docs/pinning.
 type Email struct {
 	APIResource
 	ID               string          `json:"id"`
