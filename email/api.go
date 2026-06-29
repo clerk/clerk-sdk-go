@@ -9,6 +9,10 @@ import (
 )
 
 // Send sends a transactional email.
+//
+// Experimental: This method calls an internal, not-yet-public endpoint and is
+// subject to change. It is advised to pin the SDK version to avoid breaking
+// changes. See https://clerk.com/docs/pinning.
 func Send(ctx context.Context, params *SendParams) (*clerk.Email, error) {
 	return getClient().Send(ctx, params)
 }
