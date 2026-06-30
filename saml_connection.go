@@ -35,7 +35,7 @@ type SAMLConnection struct {
 	AllowIdpInitiated                bool                           `json:"allow_idp_initiated"`
 	DisableAdditionalIdentifications bool                           `json:"disable_additional_identifications"`
 	ForceAuthn                       bool                           `json:"force_authn"`
-	DisableJitProvisioning           *bool                          `json:"disable_jit_provisioning,omitempty"`
+	DisableJITProvisioning           *bool                          `json:"disable_jit_provisioning,omitempty"`
 	AllowOrganizationAccountLinking  bool                           `json:"allow_organization_account_linking"`
 	CustomAttributes                 *[]CustomAttribute             `json:"custom_attributes,omitempty"`
 	Authenticatable                  bool                           `json:"authenticatable"`

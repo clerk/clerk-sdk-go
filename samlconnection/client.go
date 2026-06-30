@@ -54,7 +54,7 @@ type CreateParams struct {
 	IdpMetadata            *string                 `json:"idp_metadata,omitempty"`
 	AttributeMapping       *AttributeMappingParams `json:"attribute_mapping,omitempty"`
 	ForceAuthn             *bool                   `json:"force_authn,omitempty"`
-	DisableJitProvisioning *bool                   `json:"disable_jit_provisioning,omitempty"`
+	DisableJITProvisioning *bool                   `json:"disable_jit_provisioning,omitempty"`
 	// CustomAttributes is an Experimental feature, not available for all customers.
 	CustomAttributes *[]clerk.CustomAttribute `json:"custom_attributes,omitempty"`
 }
@@ -120,7 +120,7 @@ type UpdateParams struct {
 	DisableAdditionalIdentifications *bool                   `json:"disable_additional_identifications,omitempty"`
 	AllowOrganizationAccountLinking  *bool                   `json:"allow_organization_account_linking,omitempty"`
 	ForceAuthn                       *bool                   `json:"force_authn,omitempty"`
-	DisableJitProvisioning           *bool                   `json:"disable_jit_provisioning,omitempty"`
+	DisableJITProvisioning           *bool                   `json:"disable_jit_provisioning,omitempty"`
 	ConsentVerifiedDomainsDeletion   *bool                   `json:"consent_verified_domains_deletion,omitempty"`
 	Authenticatable                  *bool                   `json:"authenticatable,omitempty"`
 	// CustomAttributes is an Experimental feature, not available for all customers.
