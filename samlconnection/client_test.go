@@ -219,19 +219,19 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
 }
 
-func TestSAMLConnectionClientUpdate_DisableJitProvisioning(t *testing.T) {
+func TestSAMLConnectionClientUpdate_DisableJITProvisioning(t *testing.T) {
 	t.Parallel()
 	id := "samlc__123"
 	name := "the-name"
 	domain := "example.com"
 	provider := "saml_custom"
-	disableJitProvisioning := true
+	disableJITProvisioning := true
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","disable_jit_provisioning":%t}`, name, disableJitProvisioning)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_jit_provisioning":%t}`, id, name, domain, provider, disableJitProvisioning)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","disable_jit_provisioning":%t}`, name, disableJITProvisioning)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_jit_provisioning":%t}`, id, name, domain, provider, disableJITProvisioning)),
 			Method: http.MethodPatch,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -239,12 +239,12 @@ func TestSAMLConnectionClientUpdate_DisableJitProvisioning(t *testing.T) {
 	client := NewClient(config)
 	samlConnection, err := client.Update(context.Background(), id, &UpdateParams{
 		Name:                   clerk.String(name),
-		DisableJitProvisioning: clerk.Bool(disableJitProvisioning),
+		DisableJITProvisioning: clerk.Bool(disableJITProvisioning),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
-	require.NotNil(t, samlConnection.DisableJitProvisioning)
-	require.Equal(t, disableJitProvisioning, *samlConnection.DisableJitProvisioning)
+	require.NotNil(t, samlConnection.DisableJITProvisioning)
+	require.Equal(t, disableJITProvisioning, *samlConnection.DisableJITProvisioning)
 }
 
 func TestSAMLConnectionClientUpdate_Error(t *testing.T) {
