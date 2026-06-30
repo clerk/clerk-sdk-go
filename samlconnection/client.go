@@ -39,6 +39,13 @@ type AttributeMappingParams struct {
 	LastName     string `json:"last_name"`
 }
 
+// LoginHintParams configures the login hint a SAML connection sends to the
+// identity provider when initiating a sign-in.
+type LoginHintParams struct {
+	Mode   *string `json:"mode,omitempty"`
+	Source *string `json:"source,omitempty"`
+}
+
 type CreateParams struct {
 	clerk.APIParams
 	Name           *string `json:"name,omitempty"`
@@ -55,6 +62,7 @@ type CreateParams struct {
 	AttributeMapping       *AttributeMappingParams `json:"attribute_mapping,omitempty"`
 	ForceAuthn             *bool                   `json:"force_authn,omitempty"`
 	DisableJITProvisioning *bool                   `json:"disable_jit_provisioning,omitempty"`
+	LoginHint              *LoginHintParams        `json:"login_hint,omitempty"`
 	// CustomAttributes is an Experimental feature, not available for all customers.
 	CustomAttributes *[]clerk.CustomAttribute `json:"custom_attributes,omitempty"`
 }
@@ -123,6 +131,7 @@ type UpdateParams struct {
 	DisableJITProvisioning           *bool                   `json:"disable_jit_provisioning,omitempty"`
 	ConsentVerifiedDomainsDeletion   *bool                   `json:"consent_verified_domains_deletion,omitempty"`
 	Authenticatable                  *bool                   `json:"authenticatable,omitempty"`
+	LoginHint                        *LoginHintParams        `json:"login_hint,omitempty"`
 	// CustomAttributes is an Experimental feature, not available for all customers.
 	CustomAttributes *[]clerk.CustomAttribute `json:"custom_attributes,omitempty"`
 }
