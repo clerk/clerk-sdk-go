@@ -38,6 +38,11 @@ func RotateClientSecret(ctx context.Context, id string) (*clerk.OAuthApplication
 	return getClient().RotateClientSecret(ctx, id)
 }
 
+// RevokeToken revokes an OAuth application's access token or refresh token.
+func RevokeToken(ctx context.Context, id string, params *RevokeTokenParams) error {
+	return getClient().RevokeToken(ctx, id, params)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),

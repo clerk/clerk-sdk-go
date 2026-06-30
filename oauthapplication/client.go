@@ -133,3 +133,19 @@ func (c *Client) RotateClientSecret(ctx context.Context, id string) (*clerk.OAut
 	err = c.Backend.Call(ctx, req, authApplication)
 	return authApplication, err
 }
+
+type RevokeTokenParams struct {
+	clerk.APIParams
+	Token string `json:"token"`
+}
+
+// RevokeToken revokes an OAuth application's access token or refresh token.
+func (c *Client) RevokeToken(ctx context.Context, id string, params *RevokeTokenParams) error {
+	path, err := clerk.JoinPath(path, id, "revoke_token")
+	if err != nil {
+		return err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	return c.Backend.Call(ctx, req, &clerk.APIResource{})
+}
