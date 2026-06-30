@@ -9,6 +9,7 @@
 - Add support for session reverification with `SessionClaims.NeedsReverification()`, `SessionReverificationPolicy`, predefined policies like `SessionReverificationStrict`, and middleware via `http.NeedsSessionReverification()`.
 - Add support for OR-ing audit log list filters via `audit_logs.ListParams.FilterMatch`. Pass `clerk.AuditLogFilterMatchAny` to match events that satisfy any one of `Subject`, `Type`, `Actor`, `TraceID`, `ClientID`, or `ImpersonatorUserID`. Defaults to `clerk.AuditLogFilterMatchAll` (AND) when omitted, preserving existing behavior.
 - Add support for marking an organization domain's ownership as verified via the `organizationdomain.VerifyOwnership` method. The `OrganizationDomain` type now exposes `OwnershipVerification` and `AffiliationVerification`; the existing `Verification` field is deprecated in favor of `AffiliationVerification`.
+- Add support for sending transactional emails with the new `email` package (`email.Send`). The recipient (`SendParams.To`, a `Recipient`) accepts either an `Address` or a `UserID`; the two are mutually exclusive, and when `UserID` is set Clerk resolves that user's primary email address server-side.
 
 ## 2.2.0
 
