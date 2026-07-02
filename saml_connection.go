@@ -21,6 +21,8 @@ type SAMLConnection struct {
 	EnterpriseConnectionID           *string                        `json:"enterprise_connection_id"`
 	IdpSsoURL                        *string                        `json:"idp_sso_url"`
 	IdpCertificate                   *string                        `json:"idp_certificate"`
+	IdpCertificateIssuedAt           *int64                         `json:"idp_certificate_issued_at"`
+	IdpCertificateExpiresAt          *int64                         `json:"idp_certificate_expires_at"`
 	IdpMetadataURL                   *string                        `json:"idp_metadata_url"`
 	IdpMetadata                      *string                        `json:"idp_metadata"`
 	AcsURL                           string                         `json:"acs_url"`
