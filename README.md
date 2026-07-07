@@ -199,7 +199,7 @@ func main() {
 Each resource that is returned by an API operation has a `Response` field which
 contains information about the response that was sent from the Clerk Backend API.
 
-The `Response` contains fields like the the raw HTTP response's headers,
+The `Response` contains fields like the raw HTTP response's headers,
 the status and the raw response body. See the [APIResponse](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2#APIResponse)
 documentation for available fields and methods.
 
