@@ -20,12 +20,14 @@ func TestSAMLConnectionClientCreate(t *testing.T) {
 	domain := "example.com"
 	provider := "saml_custom"
 	forceAuthn := true
+	loginHintMode := "custom_attribute"
+	loginHintSource := "employee_id"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s","force_authn":%t}`, name, domain, provider, forceAuthn)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","force_authn":%t}`, id, name, domain, provider, forceAuthn)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s","force_authn":%t,"login_hint":{"mode":"%s","source":"%s"}}`, name, domain, provider, forceAuthn, loginHintMode, loginHintSource)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","force_authn":%t,"login_hint":{"mode":"%s","source":"%s"}}`, id, name, domain, provider, forceAuthn, loginHintMode, loginHintSource)),
 			Method: http.MethodPost,
 			Path:   "/v1/saml_connections",
 		},
@@ -36,6 +38,10 @@ func TestSAMLConnectionClientCreate(t *testing.T) {
 		Domain:     clerk.String(domain),
 		Provider:   clerk.String(provider),
 		ForceAuthn: clerk.Bool(forceAuthn),
+		LoginHint: &LoginHintParams{
+			Mode:   clerk.String(loginHintMode),
+			Source: clerk.String(loginHintSource),
+		},
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, samlConnection.ID)
@@ -44,6 +50,10 @@ func TestSAMLConnectionClientCreate(t *testing.T) {
 	require.Equal(t, domain, samlConnection.Domain)
 	require.Equal(t, provider, samlConnection.Provider)
 	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
+	require.NotNil(t, samlConnection.LoginHint)
+	require.Equal(t, loginHintMode, samlConnection.LoginHint.Mode)
+	require.NotNil(t, samlConnection.LoginHint.Source)
+	require.Equal(t, loginHintSource, *samlConnection.LoginHint.Source)
 }
 
 // TestSAMLConnectionClientCreate_WithBothDomainAndDomains tests that the client can not create a SAML connection
@@ -142,11 +152,12 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	provider := "saml_custom"
 	disableAdditionalIdentifications := true
 	forceAuthn := false
+	loginHintMode := "off"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t, "force_authn": %t, "enterprise_connection_id": "entconn_2abc123def456", "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t, "force_authn": %t, "login_hint": {"mode": "%s"}, "enterprise_connection_id": "entconn_2abc123def456", "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn, loginHintMode)),
 			Method: http.MethodGet,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -161,6 +172,9 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	require.Equal(t, provider, samlConnection.Provider)
 	require.Equal(t, disableAdditionalIdentifications, samlConnection.DisableAdditionalIdentifications)
 	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
+	require.NotNil(t, samlConnection.LoginHint)
+	require.Equal(t, loginHintMode, samlConnection.LoginHint.Mode)
+	require.Nil(t, samlConnection.LoginHint.Source)
 	require.Equal(t, &[]clerk.CustomAttribute{
 		{
 			Name:     clerk.String("custom_attribute_name"),
@@ -179,12 +193,13 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	provider := "saml_custom"
 	disableAdditionalIdentifications := true
 	forceAuthn := true
+	loginHintMode := "email_address"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, name, disableAdditionalIdentifications, forceAuthn)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t, "enterprise_connection_id": null, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t, "login_hint": {"mode": "%s"}, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, name, disableAdditionalIdentifications, forceAuthn, loginHintMode)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t, "login_hint": {"mode": "%s"}, "enterprise_connection_id": null, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn, loginHintMode)),
 			Method: http.MethodPatch,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -195,6 +210,9 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 		DisableAdditionalIdentifications: clerk.Bool(disableAdditionalIdentifications),
 		OrganizationID:                   clerk.String(""),
 		ForceAuthn:                       clerk.Bool(forceAuthn),
+		LoginHint: &LoginHintParams{
+			Mode: clerk.String(loginHintMode),
+		},
 		CustomAttributes: &[]clerk.CustomAttribute{
 			{
 				Name:     clerk.String("custom_attribute_name"),
@@ -217,6 +235,9 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	require.Equal(t, name, samlConnection.Name)
 	require.Equal(t, disableAdditionalIdentifications, samlConnection.DisableAdditionalIdentifications)
 	require.Equal(t, forceAuthn, samlConnection.ForceAuthn)
+	require.NotNil(t, samlConnection.LoginHint)
+	require.Equal(t, loginHintMode, samlConnection.LoginHint.Mode)
+	require.Nil(t, samlConnection.LoginHint.Source)
 }
 
 func TestSAMLConnectionClientUpdate_DisableJITProvisioning(t *testing.T) {

@@ -41,6 +41,7 @@ type SAMLConnection struct {
 	AllowOrganizationAccountLinking  bool                           `json:"allow_organization_account_linking"`
 	CustomAttributes                 *[]CustomAttribute             `json:"custom_attributes,omitempty"`
 	Authenticatable                  bool                           `json:"authenticatable"`
+	LoginHint                        *LoginHint                     `json:"login_hint,omitempty"`
 	CreatedAt                        int64                          `json:"created_at"`
 	UpdatedAt                        int64                          `json:"updated_at"`
 }
@@ -50,6 +51,13 @@ type SAMLConnectionAttributeMapping struct {
 	EmailAddress string `json:"email_address"`
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`
+}
+
+// LoginHint describes the login hint a SAML connection sends to the identity
+// provider when initiating a sign-in.
+type LoginHint struct {
+	Mode   string  `json:"mode"`
+	Source *string `json:"source,omitempty"`
 }
 
 type SAMLConnectionList struct {
