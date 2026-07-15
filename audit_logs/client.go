@@ -47,8 +47,12 @@ type ListParams struct {
 	ClientID *string `json:"client_id,omitempty"`
 	// Filter audit logs by impersonator user ID.
 	ImpersonatorUserID *string `json:"impersonator_user_id,omitempty"`
-	// FilterMatch controls how Subject, Type, Actor, TraceID, ClientID, and
-	// ImpersonatorUserID are combined when more than one is supplied.
+	// Filter audit logs by device IP address (exact match against
+	// device_info_ip_address).
+	IPAddress *string `json:"ip_address,omitempty"`
+	// FilterMatch controls how Subject, Type, Actor, TraceID, ClientID,
+	// ImpersonatorUserID, and IPAddress are combined when more than one
+	// is supplied.
 	//
 	//   - AuditLogFilterMatchAll (default, also when nil): every supplied
 	//     filter must match (AND).
@@ -97,6 +101,9 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.ImpersonatorUserID != nil {
 		q.Add("impersonator_user_id", *params.ImpersonatorUserID)
+	}
+	if params.IPAddress != nil {
+		q.Add("ip_address", *params.IPAddress)
 	}
 	if params.FilterMatch != nil {
 		q.Add("filter_match", string(*params.FilterMatch))
