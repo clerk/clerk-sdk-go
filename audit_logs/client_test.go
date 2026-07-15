@@ -333,6 +333,18 @@ func filterMatchPtr(v clerk.AuditLogFilterMatch) *clerk.AuditLogFilterMatch {
 	return &v
 }
 
+// TestListParams_ToQuery_IPAddress locks the wire name for the IP filter
+// so the SDK stays in sync with the ip_address query parameter accepted by
+// the audit_logs list endpoint.
+func TestListParams_ToQuery_IPAddress(t *testing.T) {
+	t.Parallel()
+
+	params := &ListParams{IPAddress: clerk.String("203.0.113.10")}
+	require.Equal(t, []string{"203.0.113.10"}, params.ToQuery()["ip_address"])
+
+	require.Empty(t, (&ListParams{}).ToQuery()["ip_address"], "nil IPAddress should be omitted")
+}
+
 func TestList_RetentionLimitReached(t *testing.T) {
 	t.Parallel()
 
