@@ -130,3 +130,24 @@ func (c *Client) RotateAPIKey(ctx context.Context, id string) (*clerk.SCIMDirect
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
+
+type CredentialsParams struct {
+	clerk.APIParams
+	ServiceAccountJSON *string `json:"service_account_json,omitempty"`
+	SubjectEmail       *string `json:"subject_email,omitempty"`
+}
+
+// Credentials uploads pull-provider credentials (e.g. a Google service-account
+// key and subject email) for a SCIM directory. They are validated and sealed
+// server-side; on success the directory is enabled.
+func (c *Client) Credentials(ctx context.Context, id string, params *CredentialsParams) (*clerk.SCIMDirectory, error) {
+	path, err := clerk.JoinPath(path, id, "credentials")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	resource := &clerk.SCIMDirectory{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
