@@ -26,6 +26,7 @@ func NewClient(config *clerk.ClientConfig) *Client {
 type CreateParams struct {
 	clerk.APIParams
 	UserID           *string `json:"user_id,omitempty"`
+	OrganizationID   *string `json:"org_id,omitempty"`
 	ExpiresInSeconds *int64  `json:"expires_in_seconds,omitempty"`
 }
 
