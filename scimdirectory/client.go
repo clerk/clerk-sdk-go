@@ -137,10 +137,10 @@ type CredentialsParams struct {
 	SubjectEmail       *string `json:"subject_email,omitempty"`
 }
 
-// Credentials uploads pull-provider credentials (e.g. a Google service-account
+// AddCredentials adds pull-provider credentials (e.g. a Google service-account
 // key and subject email) for a SCIM directory. They are validated and sealed
 // server-side; on success the directory is enabled.
-func (c *Client) Credentials(ctx context.Context, id string, params *CredentialsParams) (*clerk.SCIMDirectory, error) {
+func (c *Client) AddCredentials(ctx context.Context, id string, params *CredentialsParams) (*clerk.SCIMDirectory, error) {
 	path, err := clerk.JoinPath(path, id, "credentials")
 	if err != nil {
 		return nil, err
