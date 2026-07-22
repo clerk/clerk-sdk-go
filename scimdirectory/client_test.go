@@ -365,7 +365,7 @@ func TestRotateAPIKey(t *testing.T) {
 	assert.Equal(t, "sk_new_rotated_key", *scimDirectory.APIKey)
 }
 
-func TestCredentials(t *testing.T) {
+func TestAddCredentials(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
@@ -392,7 +392,7 @@ func TestCredentials(t *testing.T) {
 	}
 
 	client := NewClient(config)
-	scimDirectory, err := client.Credentials(context.Background(), "scim_test123", &CredentialsParams{
+	scimDirectory, err := client.AddCredentials(context.Background(), "scim_test123", &CredentialsParams{
 		ServiceAccountJSON: clerk.String(`{"type":"service_account"}`),
 		SubjectEmail:       clerk.String("admin@example.com"),
 	})
