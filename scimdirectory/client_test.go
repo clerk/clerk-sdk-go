@@ -364,3 +364,39 @@ func TestRotateAPIKey(t *testing.T) {
 	assert.Equal(t, "Test SCIM Directory", scimDirectory.Name)
 	assert.Equal(t, "sk_new_rotated_key", *scimDirectory.APIKey)
 }
+
+func TestAddCredentials(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":                   "scim_directory",
+		"id":                       "scim_test123",
+		"name":                     "Test SCIM Directory",
+		"enterprise_connection_id": "entc_123",
+		"provider":                 "google",
+		"enabled":                  true,
+		"created_at":               1640995200,
+		"updated_at":               1640995200,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(responseJSON),
+			Method: http.MethodPost,
+			Path:   "/v1/scim_directories/scim_test123/credentials",
+		},
+	}
+
+	client := NewClient(config)
+	scimDirectory, err := client.AddCredentials(context.Background(), "scim_test123", &CredentialsParams{
+		ServiceAccountJSON: clerk.String(`{"type":"service_account"}`),
+		SubjectEmail:       clerk.String("admin@example.com"),
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "scim_test123", scimDirectory.ID)
+	assert.True(t, scimDirectory.Enabled)
+}

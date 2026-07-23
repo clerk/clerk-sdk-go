@@ -39,6 +39,13 @@ func RotateAPIKey(ctx context.Context, id string) (*clerk.SCIMDirectory, error) 
 	return getClient().RotateAPIKey(ctx, id)
 }
 
+// AddCredentials adds pull-provider credentials (e.g. a Google service-account
+// key and subject email) for a SCIM directory. They are validated and sealed
+// server-side; on success the directory is enabled.
+func AddCredentials(ctx context.Context, id string, params *CredentialsParams) (*clerk.SCIMDirectory, error) {
+	return getClient().AddCredentials(ctx, id, params)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
