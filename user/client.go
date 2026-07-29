@@ -571,6 +571,39 @@ func (c *Client) DeletePasskey(ctx context.Context, userID, identificationID str
 	return resource, err
 }
 
+// ListTrustedDevices lists a user's active trusted devices.
+func (c *Client) ListTrustedDevices(ctx context.Context, userID string) ([]*clerk.TrustedDevice, error) {
+	path, err := clerk.JoinPath(path, userID, "/trusted_devices")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	resource := &trustedDeviceList{}
+	err = c.Backend.Call(ctx, req, resource)
+	return []*clerk.TrustedDevice(*resource), err
+}
+
+// Custom type needed in order to store the GET /v1/users/{userID}/trusted_devices
+// response array.
+type trustedDeviceList []*clerk.TrustedDevice
+
+// Read implements the clerk.ResponseReader interface.
+func (_ *trustedDeviceList) Read(_ *clerk.APIResponse) {
+	// no-op
+}
+
+// RevokeTrustedDevice revokes a user's trusted device.
+func (c *Client) RevokeTrustedDevice(ctx context.Context, userID, trustedDeviceID string) (*clerk.TrustedDevice, error) {
+	path, err := clerk.JoinPath(path, userID, "/trusted_devices", trustedDeviceID)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodDelete, path)
+	resource := &clerk.TrustedDevice{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
 // DeleteWeb3Wallet deletes a web3 wallet by its identification ID.
 func (c *Client) DeleteWeb3Wallet(ctx context.Context, userID, identificationID string) (*clerk.DeletedResource, error) {
 	path, err := clerk.JoinPath(path, userID, "/web3_wallets", identificationID)

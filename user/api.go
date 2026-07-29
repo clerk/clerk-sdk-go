@@ -115,6 +115,16 @@ func DeletePasskey(ctx context.Context, userID, identificationID string) (*clerk
 	return getClient().DeletePasskey(ctx, userID, identificationID)
 }
 
+// ListTrustedDevices lists a user's active trusted devices.
+func ListTrustedDevices(ctx context.Context, userID string) ([]*clerk.TrustedDevice, error) {
+	return getClient().ListTrustedDevices(ctx, userID)
+}
+
+// RevokeTrustedDevice revokes a user's trusted device.
+func RevokeTrustedDevice(ctx context.Context, userID, trustedDeviceID string) (*clerk.TrustedDevice, error) {
+	return getClient().RevokeTrustedDevice(ctx, userID, trustedDeviceID)
+}
+
 // DeleteWeb3Wallet deletes a web3 wallet by its identification ID.
 func DeleteWeb3Wallet(ctx context.Context, userID, identificationID string) (*clerk.DeletedResource, error) {
 	return getClient().DeleteWeb3Wallet(ctx, userID, identificationID)
