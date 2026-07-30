@@ -116,7 +116,7 @@ func DeletePasskey(ctx context.Context, userID, identificationID string) (*clerk
 }
 
 // ListTrustedDevices lists a user's active trusted devices.
-func ListTrustedDevices(ctx context.Context, userID string) ([]*clerk.TrustedDevice, error) {
+func ListTrustedDevices(ctx context.Context, userID string) (*clerk.TrustedDeviceList, error) {
 	return getClient().ListTrustedDevices(ctx, userID)
 }
 

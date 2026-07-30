@@ -572,15 +572,22 @@ func (c *Client) DeletePasskey(ctx context.Context, userID, identificationID str
 }
 
 // ListTrustedDevices lists a user's active trusted devices.
-func (c *Client) ListTrustedDevices(ctx context.Context, userID string) ([]*clerk.TrustedDevice, error) {
+func (c *Client) ListTrustedDevices(ctx context.Context, userID string) (*clerk.TrustedDeviceList, error) {
 	path, err := clerk.JoinPath(path, userID, "/trusted_devices")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
 	resource := &trustedDeviceList{}
-	err = c.Backend.Call(ctx, req, resource)
-	return []*clerk.TrustedDevice(*resource), err
+	if err = c.Backend.Call(ctx, req, resource); err != nil {
+		return nil, err
+	}
+
+	trustedDevices := []*clerk.TrustedDevice(*resource)
+	return &clerk.TrustedDeviceList{
+		TrustedDevices: trustedDevices,
+		TotalCount:     int64(len(trustedDevices)),
+	}, nil
 }
 
 // Custom type needed in order to store the GET /v1/users/{userID}/trusted_devices
