@@ -578,25 +578,9 @@ func (c *Client) ListTrustedDevices(ctx context.Context, userID string) (*clerk.
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
-	resource := &trustedDeviceList{}
-	if err = c.Backend.Call(ctx, req, resource); err != nil {
-		return nil, err
-	}
-
-	trustedDevices := []*clerk.TrustedDevice(*resource)
-	return &clerk.TrustedDeviceList{
-		TrustedDevices: trustedDevices,
-		TotalCount:     int64(len(trustedDevices)),
-	}, nil
-}
-
-// Custom type needed in order to store the GET /v1/users/{userID}/trusted_devices
-// response array.
-type trustedDeviceList []*clerk.TrustedDevice
-
-// Read implements the clerk.ResponseReader interface.
-func (_ *trustedDeviceList) Read(_ *clerk.APIResponse) {
-	// no-op
+	resource := &clerk.TrustedDeviceList{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
 }
 
 // RevokeTrustedDevice revokes a user's trusted device.

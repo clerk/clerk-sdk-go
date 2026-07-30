@@ -610,7 +610,7 @@ func TestUserClientListTrustedDevices(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`[{"id":"%s","object":"trusted_device","platform":"ios","app_identifier":"com.example.app","algorithm":"ES256","status":"active","created_at":1,"updated_at":2}]`, trustedDeviceID)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"data":[{"id":"%s","object":"trusted_device","platform":"ios","app_identifier":"com.example.app","algorithm":"ES256","status":"active","created_at":1,"updated_at":2}],"total_count":1}`, trustedDeviceID)),
 			Method: http.MethodGet,
 			Path:   "/v1/users/" + userID + "/trusted_devices",
 		},
