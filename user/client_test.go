@@ -601,6 +601,57 @@ func TestUserClientDeletePasskey(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, passkeyIdentificationID, passkey.ID)
 }
+
+func TestUserClientListTrustedDevices(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	trustedDeviceID := "tdc_345"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"data":[{"id":"%s","object":"trusted_device","platform":"ios","app_identifier":"com.example.app","algorithm":"ES256","status":"active","created_at":1,"updated_at":2}],"total_count":1}`, trustedDeviceID)),
+			Method: http.MethodGet,
+			Path:   "/v1/users/" + userID + "/trusted_devices",
+		},
+	}
+	client := NewClient(config)
+	trustedDevices, err := client.ListTrustedDevices(context.Background(), userID)
+	require.NoError(t, err)
+	require.Equal(t, int64(1), trustedDevices.TotalCount)
+	require.Len(t, trustedDevices.TrustedDevices, 1)
+	require.Equal(t, trustedDeviceID, trustedDevices.TrustedDevices[0].ID)
+	require.Equal(t, "trusted_device", trustedDevices.TrustedDevices[0].Object)
+	require.Equal(t, "ios", trustedDevices.TrustedDevices[0].Platform)
+	require.Equal(t, "com.example.app", trustedDevices.TrustedDevices[0].AppIdentifier)
+	require.Equal(t, "ES256", trustedDevices.TrustedDevices[0].Algorithm)
+	require.Equal(t, "active", trustedDevices.TrustedDevices[0].Status)
+	require.Equal(t, int64(1), trustedDevices.TrustedDevices[0].CreatedAt)
+	require.Equal(t, int64(2), trustedDevices.TrustedDevices[0].UpdatedAt)
+}
+
+func TestUserClientRevokeTrustedDevice(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	trustedDeviceID := "tdc_345"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"trusted_device","platform":"ios","app_identifier":"com.example.app","algorithm":"ES256","status":"revoked","created_at":1,"updated_at":2,"revoked_at":2}`, trustedDeviceID)),
+			Method: http.MethodDelete,
+			Path:   "/v1/users/" + userID + "/trusted_devices/" + trustedDeviceID,
+		},
+	}
+	client := NewClient(config)
+	trustedDevice, err := client.RevokeTrustedDevice(context.Background(), userID, trustedDeviceID)
+	require.NoError(t, err)
+	require.Equal(t, trustedDeviceID, trustedDevice.ID)
+	require.Equal(t, "revoked", trustedDevice.Status)
+	require.NotNil(t, trustedDevice.RevokedAt)
+	require.Equal(t, int64(2), *trustedDevice.RevokedAt)
+}
+
 func TestUserClientDeleteWeb3Wallet(t *testing.T) {
 	t.Parallel()
 	userID := "user_123"
