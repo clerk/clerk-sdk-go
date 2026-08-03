@@ -568,3 +568,64 @@ func TestNeedsSessionReverification(t *testing.T) {
 		})
 	}
 }
+
+// TestNeedsSessionReverification_NoFactorVerificationAge tests that a route
+// gated on reverification rejects a genuine Clerk-signed token that carries no
+// 'fva' claim, rather than treating the absent claim as a fresh verification.
+// A JWT template token is the example here: it authenticates as its subject and
+// uses the default typ, but describes no session step-up.
+func TestNeedsSessionReverification_NoFactorVerificationAge(t *testing.T) {
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	kid := "kid-" + t.Name()
+	jwksBody := clerktest.ConvertToJWKS(t, priv.Public(), kid)
+
+	// Mock the Clerk API server. We expect requests to GET /jwks.
+	clerkAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
+			_, err := w.Write(jwksBody)
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer clerkAPI.Close()
+
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: clerkAPI.Client(),
+		URL:        &clerkAPI.URL,
+	}))
+
+	token, _ := clerktest.GenerateJWT(t, map[string]any{
+		"sid": "sess_123",
+		"sub": "user_123",
+		"iss": "https://clerk.com",
+	}, clerktest.WithType("JWT"), clerktest.WithRSAPrivateKey(priv), clerktest.WithKID(kid))
+
+	for _, policy := range []clerk.SessionReverificationPolicy{
+		clerk.SessionReverificationStrictMFA,
+		clerk.SessionReverificationStrict,
+	} {
+		// This is the user's server, gating a sensitive route on reverification.
+		ts := httptest.NewServer(RequireHeaderAuthorization()(
+			NeedsSessionReverification(policy)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				_, err := w.Write([]byte("{}"))
+				require.NoError(t, err)
+			}))))
+		defer ts.Close()
+
+		req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		resp, err := ts.Client().Do(req)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		// The token authenticates, but must not satisfy the reverification gate.
+		require.Equal(t, http.StatusForbidden, resp.StatusCode)
+
+		var errResp ClerkErrorResponse
+		require.NoError(t, json.NewDecoder(resp.Body).Decode(&errResp))
+		require.Equal(t, "reverification-error", errResp.ClerkError.Reason)
+	}
+}
