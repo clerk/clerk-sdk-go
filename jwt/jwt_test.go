@@ -225,6 +225,40 @@ func TestVerify_PublicClaimsVersion2(t *testing.T) {
 	require.Equal(t, int64(-1), claims.FactorVerificationAge[1])
 }
 
+// TestVerify_NoFactorVerificationAge tests that a genuine Clerk-signed token
+// which carries no 'fva' claim verifies successfully, but is reported as
+// needing reverification instead of as freshly verified. JWT template tokens,
+// OIDC ID tokens and machine tokens all omit the claim.
+func TestVerify_NoFactorVerificationAge(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	kid := "kid"
+
+	tokenClaims := map[string]any{
+		"sid": "sess_123",
+		"sub": "user_123",
+		"iss": "https://clerk.com",
+		"nbf": time.Now().Add(-10 * time.Hour).Unix(),
+		"exp": time.Now().Add(10 * time.Hour).Unix(),
+	}
+	token, pubKey := clerktest.GenerateJWT(t, tokenClaims, kid)
+	claims, err := Verify(ctx, &VerifyParams{
+		Token: token,
+		JWK: &clerk.JSONWebKey{
+			Key:       pubKey,
+			KeyID:     kid,
+			Algorithm: string(jose.RS256),
+			Use:       "sig",
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "sess_123", claims.SessionID)
+	require.Equal(t, int64(-1), claims.FactorVerificationAge[0])
+	require.Equal(t, int64(-1), claims.FactorVerificationAge[1])
+	require.True(t, claims.NeedsReverification(clerk.SessionReverificationStrictMFA))
+	require.True(t, claims.NeedsReverification(clerk.SessionReverificationStrict))
+}
+
 // TestVerify_TimeValues tests that Verify validates that the token's
 // not before (nbf) and expiry (exp) claims are respected.
 func TestVerify_TimeValues(t *testing.T) {

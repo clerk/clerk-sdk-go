@@ -74,9 +74,9 @@ func (s *SessionClaims) HasRole(role string) bool {
 func (s *SessionClaims) NeedsReverification(policy SessionReverificationPolicy) bool {
 	firstFactorAgeMinutes, secondFactorAgeMinutes := s.FactorVerificationAge[0], s.FactorVerificationAge[1]
 
-	firstFactorNeedsReverification := firstFactorAgeMinutes == -1 ||
+	firstFactorNeedsReverification := firstFactorAgeMinutes == factorVerificationAgeNotEnabled ||
 		policy.AfterMinutes < firstFactorAgeMinutes
-	isSecondFactorEnabled := secondFactorAgeMinutes != -1
+	isSecondFactorEnabled := secondFactorAgeMinutes != factorVerificationAgeNotEnabled
 	secondFactorNeedsReverification := isSecondFactorEnabled &&
 		policy.AfterMinutes < secondFactorAgeMinutes
 
@@ -154,6 +154,49 @@ type Claims struct {
 	ActiveOrganizationPermissions []string        `json:"org_permissions"`
 	Actor                         json.RawMessage `json:"act,omitempty"`
 	FactorVerificationAge         [2]int64        `json:"fva"`
+}
+
+// factorVerificationAgeNotEnabled is the value Clerk uses in either 'fva' slot
+// for a factor group that isn't enabled.
+const factorVerificationAgeNotEnabled int64 = -1
+
+// UnmarshalJSON decodes Clerk's private claims, handling omitted 'fva'.
+//
+// This is necessary because an omitted 'fva' otherwise marshals to [0, 0]. The
+// zero value here would satisfy every reverification check, which is not intended.
+// Plenty of Clerk-signed JWTs carry no 'fva' claim at all (JWT template
+// tokens, OIDC ID tokens and machine tokens, none of which describe a session
+// step-up), but this should not entail that we just completed reverification.
+func (c *Claims) UnmarshalJSON(data []byte) error {
+	// The alias has the same fields but no methods, so this doesn't recurse.
+	type alias Claims
+	if err := json.Unmarshal(data, (*alias)(c)); err != nil {
+		return err
+	}
+
+	// Decode 'fva' again, into a slice this time. By now c.FactorVerificationAge
+	// has been zero-filled, and a [2]int64 can't tell us whether that came from
+	// the token or from Go. A slice can: nil means the claim wasn't there.
+	var raw struct {
+		FactorVerificationAge []int64 `json:"fva"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	c.FactorVerificationAge = [2]int64{factorVerificationAgeNotEnabled, factorVerificationAgeNotEnabled}
+	if len(raw.FactorVerificationAge) == 2 &&
+		isValidFactorVerificationAge(raw.FactorVerificationAge[0]) &&
+		isValidFactorVerificationAge(raw.FactorVerificationAge[1]) {
+		c.FactorVerificationAge = [2]int64(raw.FactorVerificationAge)
+	}
+	return nil
+}
+
+// isValidFactorVerificationAge reports whether age is a usable 'fva' entry:
+// either an age in minutes, or the sentinel for a factor that is not set.
+func isValidFactorVerificationAge(age int64) bool {
+	return age == factorVerificationAgeNotEnabled || age >= 0
 }
 
 // UnverifiedToken holds the result of a JWT decoding without any
