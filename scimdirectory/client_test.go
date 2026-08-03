@@ -375,6 +375,7 @@ func TestAddCredentials(t *testing.T) {
 		"enterprise_connection_id": "entc_123",
 		"provider":                 "google",
 		"enabled":                  true,
+		"credentials_configured":   true,
 		"created_at":               1640995200,
 		"updated_at":               1640995200,
 	}
@@ -399,4 +400,24 @@ func TestAddCredentials(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "scim_test123", scimDirectory.ID)
 	assert.True(t, scimDirectory.Enabled)
+	require.NotNil(t, scimDirectory.CredentialsConfigured)
+	assert.True(t, *scimDirectory.CredentialsConfigured)
+}
+
+func TestSync(t *testing.T) {
+	t.Parallel()
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(`{}`),
+			Method: http.MethodPost,
+			Path:   "/v1/scim_directories/scim_test123/sync",
+		},
+	}
+
+	client := NewClient(config)
+	err := client.Sync(context.Background(), "scim_test123")
+	require.NoError(t, err)
 }
