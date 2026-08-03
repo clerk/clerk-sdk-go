@@ -131,6 +131,17 @@ func (c *Client) RotateAPIKey(ctx context.Context, id string) (*clerk.SCIMDirect
 	return resource, err
 }
 
+// Sync enqueues a sync run for a pull-based SCIM directory. The server
+// responds 202 Accepted; the run itself is asynchronous.
+func (c *Client) Sync(ctx context.Context, id string) error {
+	path, err := clerk.JoinPath(path, id, "sync")
+	if err != nil {
+		return err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	return c.Backend.Call(ctx, req, &clerk.APIResource{})
+}
+
 type CredentialsParams struct {
 	clerk.APIParams
 	ServiceAccountJSON *string `json:"service_account_json,omitempty"`

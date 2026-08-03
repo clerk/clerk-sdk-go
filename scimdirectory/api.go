@@ -46,6 +46,11 @@ func AddCredentials(ctx context.Context, id string, params *CredentialsParams) (
 	return getClient().AddCredentials(ctx, id, params)
 }
 
+// Sync enqueues a sync run for a pull-based SCIM directory.
+func Sync(ctx context.Context, id string) error {
+	return getClient().Sync(ctx, id)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
