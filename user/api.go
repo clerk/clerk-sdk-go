@@ -143,6 +143,23 @@ func DeleteExternalAccount(ctx context.Context, params *DeleteExternalAccountPar
 	return getClient().DeleteExternalAccount(ctx, params)
 }
 
+// RemovePassword removes a user's password without requiring their current password.
+// Password removal is allowed even when the user has no other sign-in method configured.
+// Existing sessions remain active by default. Set SignOutOfOtherSessions to true to revoke them.
+//
+// To keep existing sessions active:
+//
+//	updatedUser, err := user.RemovePassword(ctx, "user_123", &user.RemovePasswordParams{})
+//
+// To revoke existing sessions:
+//
+//	updatedUser, err := user.RemovePassword(ctx, "user_123", &user.RemovePasswordParams{
+//		SignOutOfOtherSessions: clerk.Bool(true),
+//	})
+func RemovePassword(ctx context.Context, userID string, params *RemovePasswordParams) (*clerk.User, error) {
+	return getClient().RemovePassword(ctx, userID, params)
+}
+
 // VerifyPassword verifies a user's password, returns an error if the password is incorrect.
 func VerifyPassword(ctx context.Context, params *VerifyPasswordParams) (*VerifyPasswordResponse, error) {
 	return getClient().VerifyPassword(ctx, params)

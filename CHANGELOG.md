@@ -2,6 +2,8 @@
 
 ## Next release
 
+- Add support for removing a user's password with `user.RemovePassword`.
+
 ## 2.3.1
 
 - Fix parsing the org claims in the new JWT session token version.
