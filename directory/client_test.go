@@ -1,4 +1,4 @@
-package scimdirectory
+package directory
 
 import (
 	"context"
@@ -18,9 +18,9 @@ func TestCreate(t *testing.T) {
 
 	enterpriseConnectionID := "entc_123"
 	response := map[string]interface{}{
-		"object":                     "scim_directory",
+		"object":                     "directory",
 		"id":                         "scim_test123",
-		"name":                       "Test SCIM Directory",
+		"name":                       "Test Directory",
 		"enterprise_connection_id":   enterpriseConnectionID,
 		"endpoint_url":               "https://scim.example.com",
 		"provider":                   "okta",
@@ -38,39 +38,39 @@ func TestCreate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"enterprise_connection_id":"entc_123","name":"Test SCIM Directory","provider":"okta"}`),
+			In:     json.RawMessage(`{"enterprise_connection_id":"entc_123","name":"Test Directory","provider":"okta"}`),
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPost,
-			Path:   "/v1/scim_directories",
+			Path:   "/v1/directories",
 		},
 	}
 
 	client := NewClient(config)
 	params := &CreateParams{
 		EnterpriseConnectionID: clerk.String(enterpriseConnectionID),
-		Name:                   clerk.String("Test SCIM Directory"),
+		Name:                   clerk.String("Test Directory"),
 		Provider:               clerk.String("okta"),
 	}
 
-	scimDirectory, err := client.Create(context.Background(), params)
+	directory, err := client.Create(context.Background(), params)
 	require.NoError(t, err)
-	assert.Equal(t, "scim_test123", scimDirectory.ID)
-	assert.Equal(t, "Test SCIM Directory", scimDirectory.Name)
-	assert.Equal(t, "okta", scimDirectory.Provider)
-	assert.True(t, scimDirectory.Enabled)
-	assert.True(t, scimDirectory.GroupRoleMappingEnabled)
-	assert.Equal(t, "sk_test_xxxxx", *scimDirectory.APIKey)
-	assert.Equal(t, enterpriseConnectionID, *scimDirectory.EnterpriseConnectionID)
-	assert.Equal(t, map[string]string{"first_name": "first_name", "last_name": "last_name"}, scimDirectory.AttributeMapping)
+	assert.Equal(t, "scim_test123", directory.ID)
+	assert.Equal(t, "Test Directory", directory.Name)
+	assert.Equal(t, "okta", directory.Provider)
+	assert.True(t, directory.Enabled)
+	assert.True(t, directory.GroupRoleMappingEnabled)
+	assert.Equal(t, "sk_test_xxxxx", *directory.APIKey)
+	assert.Equal(t, enterpriseConnectionID, *directory.EnterpriseConnectionID)
+	assert.Equal(t, map[string]string{"first_name": "first_name", "last_name": "last_name"}, directory.AttributeMapping)
 }
 
 func TestGet(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
-		"object":                     "scim_directory",
+		"object":                     "directory",
 		"id":                         "scim_test123",
-		"name":                       "Test SCIM Directory",
+		"name":                       "Test Directory",
 		"enterprise_connection_id":   "entc_123",
 		"endpoint_url":               "https://scim.example.com",
 		"provider":                   "okta",
@@ -89,28 +89,28 @@ func TestGet(t *testing.T) {
 			T:      t,
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodGet,
-			Path:   "/v1/scim_directories/scim_test123",
+			Path:   "/v1/directories/scim_test123",
 		},
 	}
 
 	client := NewClient(config)
-	scimDirectory, err := client.Get(context.Background(), "scim_test123")
+	directory, err := client.Get(context.Background(), "scim_test123")
 	require.NoError(t, err)
-	assert.Equal(t, "scim_test123", scimDirectory.ID)
-	assert.Equal(t, "Test SCIM Directory", scimDirectory.Name)
-	assert.Equal(t, "okta", scimDirectory.Provider)
-	assert.True(t, scimDirectory.Enabled)
-	assert.True(t, scimDirectory.GroupRoleMappingEnabled)
-	assert.Equal(t, map[string]string{"first_name": "given_name", "last_name": "family_name"}, scimDirectory.AttributeMapping)
+	assert.Equal(t, "scim_test123", directory.ID)
+	assert.Equal(t, "Test Directory", directory.Name)
+	assert.Equal(t, "okta", directory.Provider)
+	assert.True(t, directory.Enabled)
+	assert.True(t, directory.GroupRoleMappingEnabled)
+	assert.Equal(t, map[string]string{"first_name": "given_name", "last_name": "family_name"}, directory.AttributeMapping)
 }
 
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
-		"object":                   "scim_directory",
+		"object":                   "directory",
 		"id":                       "scim_test123",
-		"name":                     "Updated SCIM Directory",
+		"name":                     "Updated Directory",
 		"enterprise_connection_id": "entc_123",
 		"endpoint_url":             "https://scim.example.com",
 		"provider":                 "okta",
@@ -125,23 +125,23 @@ func TestUpdate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"enabled":false,"name":"Updated SCIM Directory"}`),
+			In:     json.RawMessage(`{"enabled":false,"name":"Updated Directory"}`),
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPatch,
-			Path:   "/v1/scim_directories/scim_test123",
+			Path:   "/v1/directories/scim_test123",
 		},
 	}
 
 	client := NewClient(config)
 	params := &UpdateParams{
-		Name:    clerk.String("Updated SCIM Directory"),
+		Name:    clerk.String("Updated Directory"),
 		Enabled: clerk.Bool(false),
 	}
 
-	scimDirectory, err := client.Update(context.Background(), "scim_test123", params)
+	directory, err := client.Update(context.Background(), "scim_test123", params)
 	require.NoError(t, err)
-	assert.Equal(t, "Updated SCIM Directory", scimDirectory.Name)
-	assert.False(t, scimDirectory.Enabled)
+	assert.Equal(t, "Updated Directory", directory.Name)
+	assert.False(t, directory.Enabled)
 }
 
 func TestUpdateAttributeMapping(t *testing.T) {
@@ -154,9 +154,9 @@ func TestUpdateAttributeMapping(t *testing.T) {
 	}
 
 	response := map[string]interface{}{
-		"object":                   "scim_directory",
+		"object":                   "directory",
 		"id":                       "scim_test123",
-		"name":                     "Test SCIM Directory",
+		"name":                     "Test Directory",
 		"enterprise_connection_id": "entc_123",
 		"endpoint_url":             "https://scim.example.com",
 		"provider":                 "okta",
@@ -175,7 +175,7 @@ func TestUpdateAttributeMapping(t *testing.T) {
 			In:     json.RawMessage(`{"attribute_mapping":{"email":"primary_email","first_name":"given_name","last_name":"family_name"}}`),
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPatch,
-			Path:   "/v1/scim_directories/scim_test123",
+			Path:   "/v1/directories/scim_test123",
 		},
 	}
 
@@ -188,21 +188,21 @@ func TestUpdateAttributeMapping(t *testing.T) {
 		},
 	}
 
-	scimDirectory, err := client.Update(context.Background(), "scim_test123", params)
+	directory, err := client.Update(context.Background(), "scim_test123", params)
 	require.NoError(t, err)
-	assert.Equal(t, "scim_test123", scimDirectory.ID)
-	assert.Equal(t, "Test SCIM Directory", scimDirectory.Name)
-	assert.True(t, scimDirectory.Enabled)
-	assert.Equal(t, attributeMapping, scimDirectory.AttributeMapping)
+	assert.Equal(t, "scim_test123", directory.ID)
+	assert.Equal(t, "Test Directory", directory.Name)
+	assert.True(t, directory.Enabled)
+	assert.Equal(t, attributeMapping, directory.AttributeMapping)
 }
 
 func TestUpdateGroupRoleMappingEnabled(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
-		"object":                     "scim_directory",
+		"object":                     "directory",
 		"id":                         "scim_test123",
-		"name":                       "Test SCIM Directory",
+		"name":                       "Test Directory",
 		"enterprise_connection_id":   "entc_123",
 		"endpoint_url":               "https://scim.example.com",
 		"provider":                   "okta",
@@ -221,7 +221,7 @@ func TestUpdateGroupRoleMappingEnabled(t *testing.T) {
 			In:     json.RawMessage(`{"group_role_mapping_enabled":false}`),
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPatch,
-			Path:   "/v1/scim_directories/scim_test123",
+			Path:   "/v1/directories/scim_test123",
 		},
 	}
 
@@ -230,11 +230,11 @@ func TestUpdateGroupRoleMappingEnabled(t *testing.T) {
 		GroupRoleMappingEnabled: clerk.Bool(false),
 	}
 
-	scimDirectory, err := client.Update(context.Background(), "scim_test123", params)
+	directory, err := client.Update(context.Background(), "scim_test123", params)
 	require.NoError(t, err)
-	assert.Equal(t, "scim_test123", scimDirectory.ID)
-	assert.True(t, scimDirectory.Enabled)
-	assert.False(t, scimDirectory.GroupRoleMappingEnabled)
+	assert.Equal(t, "scim_test123", directory.ID)
+	assert.True(t, directory.Enabled)
+	assert.False(t, directory.GroupRoleMappingEnabled)
 }
 
 func TestList(t *testing.T) {
@@ -243,9 +243,9 @@ func TestList(t *testing.T) {
 	response := map[string]interface{}{
 		"data": []map[string]interface{}{
 			{
-				"object":                   "scim_directory",
+				"object":                   "directory",
 				"id":                       "scim_test123",
-				"name":                     "Test SCIM Directory",
+				"name":                     "Test Directory",
 				"enterprise_connection_id": "entc_123",
 				"endpoint_url":             "https://scim.example.com",
 				"provider":                 "okta",
@@ -255,9 +255,9 @@ func TestList(t *testing.T) {
 				"attribute_mapping":        map[string]string{"first_name": "first_name"},
 			},
 			{
-				"object":                   "scim_directory",
+				"object":                   "directory",
 				"id":                       "scim_test456",
-				"name":                     "Another SCIM Directory",
+				"name":                     "Another Directory",
 				"enterprise_connection_id": "entc_456",
 				"endpoint_url":             "https://scim.example.com",
 				"provider":                 "okta",
@@ -278,7 +278,7 @@ func TestList(t *testing.T) {
 			T:      t,
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodGet,
-			Path:   "/v1/scim_directories",
+			Path:   "/v1/directories",
 			Query: &url.Values{
 				"limit":  []string{"10"},
 				"offset": []string{"0"},
@@ -294,18 +294,18 @@ func TestList(t *testing.T) {
 	list, err := client.List(context.Background(), params)
 	require.NoError(t, err)
 	assert.Equal(t, int64(2), list.TotalCount)
-	assert.Len(t, list.SCIMDirectories, 2)
-	assert.Equal(t, "scim_test123", list.SCIMDirectories[0].ID)
-	assert.Equal(t, map[string]string{"first_name": "first_name"}, list.SCIMDirectories[0].AttributeMapping)
-	assert.Equal(t, "scim_test456", list.SCIMDirectories[1].ID)
-	assert.Equal(t, map[string]string{"first_name": "given_name"}, list.SCIMDirectories[1].AttributeMapping)
+	assert.Len(t, list.Directories, 2)
+	assert.Equal(t, "scim_test123", list.Directories[0].ID)
+	assert.Equal(t, map[string]string{"first_name": "first_name"}, list.Directories[0].AttributeMapping)
+	assert.Equal(t, "scim_test456", list.Directories[1].ID)
+	assert.Equal(t, map[string]string{"first_name": "given_name"}, list.Directories[1].AttributeMapping)
 }
 
 func TestDelete(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]any{
-		"object":  "scim_directory",
+		"object":  "directory",
 		"id":      "scim_test123",
 		"deleted": true,
 	}
@@ -318,7 +318,7 @@ func TestDelete(t *testing.T) {
 			T:      t,
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodDelete,
-			Path:   "/v1/scim_directories/scim_test123",
+			Path:   "/v1/directories/scim_test123",
 		},
 	}
 
@@ -333,9 +333,9 @@ func TestRotateAPIKey(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
-		"object":                   "scim_directory",
+		"object":                   "directory",
 		"id":                       "scim_test123",
-		"name":                     "Test SCIM Directory",
+		"name":                     "Test Directory",
 		"enterprise_connection_id": "entc_123",
 		"endpoint_url":             "https://scim.example.com",
 		"provider":                 "okta",
@@ -353,25 +353,25 @@ func TestRotateAPIKey(t *testing.T) {
 			T:      t,
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPost,
-			Path:   "/v1/scim_directories/scim_test123/rotate_api_key",
+			Path:   "/v1/directories/scim_test123/rotate_api_key",
 		},
 	}
 
 	client := NewClient(config)
-	scimDirectory, err := client.RotateAPIKey(context.Background(), "scim_test123")
+	directory, err := client.RotateAPIKey(context.Background(), "scim_test123")
 	require.NoError(t, err)
-	assert.Equal(t, "scim_test123", scimDirectory.ID)
-	assert.Equal(t, "Test SCIM Directory", scimDirectory.Name)
-	assert.Equal(t, "sk_new_rotated_key", *scimDirectory.APIKey)
+	assert.Equal(t, "scim_test123", directory.ID)
+	assert.Equal(t, "Test Directory", directory.Name)
+	assert.Equal(t, "sk_new_rotated_key", *directory.APIKey)
 }
 
 func TestAddCredentials(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
-		"object":                   "scim_directory",
+		"object":                   "directory",
 		"id":                       "scim_test123",
-		"name":                     "Test SCIM Directory",
+		"name":                     "Test Directory",
 		"enterprise_connection_id": "entc_123",
 		"provider":                 "google",
 		"enabled":                  true,
@@ -388,20 +388,20 @@ func TestAddCredentials(t *testing.T) {
 			T:      t,
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPost,
-			Path:   "/v1/scim_directories/scim_test123/credentials",
+			Path:   "/v1/directories/scim_test123/credentials",
 		},
 	}
 
 	client := NewClient(config)
-	scimDirectory, err := client.AddCredentials(context.Background(), "scim_test123", &CredentialsParams{
+	directory, err := client.AddCredentials(context.Background(), "scim_test123", &CredentialsParams{
 		ServiceAccountJSON: clerk.String(`{"type":"service_account"}`),
 		SubjectEmail:       clerk.String("admin@example.com"),
 	})
 	require.NoError(t, err)
-	assert.Equal(t, "scim_test123", scimDirectory.ID)
-	assert.True(t, scimDirectory.Enabled)
-	require.NotNil(t, scimDirectory.CredentialsConfigured)
-	assert.True(t, *scimDirectory.CredentialsConfigured)
+	assert.Equal(t, "scim_test123", directory.ID)
+	assert.True(t, directory.Enabled)
+	require.NotNil(t, directory.CredentialsConfigured)
+	assert.True(t, *directory.CredentialsConfigured)
 }
 
 func TestSync(t *testing.T) {
@@ -413,7 +413,7 @@ func TestSync(t *testing.T) {
 			T:      t,
 			Out:    json.RawMessage(`{}`),
 			Method: http.MethodPost,
-			Path:   "/v1/scim_directories/scim_test123/sync",
+			Path:   "/v1/directories/scim_test123/sync",
 		},
 	}
 

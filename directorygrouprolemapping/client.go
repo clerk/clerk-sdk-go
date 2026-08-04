@@ -1,5 +1,5 @@
-// Package scimgrouprolemapping provides the SCIM Group Role Mappings API.
-package scimgrouprolemapping
+// Package directorygrouprolemapping provides the Directory Group Role Mappings API.
+package directorygrouprolemapping
 
 import (
 	"context"
@@ -12,9 +12,9 @@ import (
 
 //go:generate go run ../cmd/gen/main.go
 
-const path = "/scim_directories"
+const path = "/directories"
 
-// Client is used to invoke the SCIM Group Role Mappings API.
+// Client is used to invoke the Directory Group Role Mappings API.
 type Client struct {
 	Backend clerk.Backend
 }
@@ -52,47 +52,47 @@ func (p *ListGroupsParams) ToQuery() url.Values {
 	return q
 }
 
-// List returns all group role mappings for a SCIM directory.
-func (c *Client) List(ctx context.Context, scimDirectoryID string) (*clerk.SCIMGroupRoleMappingList, error) {
-	path, err := clerk.JoinPath(path, scimDirectoryID, "group_role_mappings")
+// List returns all group role mappings for a directory.
+func (c *Client) List(ctx context.Context, directoryID string) (*clerk.DirectoryGroupRoleMappingList, error) {
+	path, err := clerk.JoinPath(path, directoryID, "group_role_mappings")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
-	list := &clerk.SCIMGroupRoleMappingList{}
+	list := &clerk.DirectoryGroupRoleMappingList{}
 	err = c.Backend.Call(ctx, req, list)
 	return list, err
 }
 
-// ListGroups returns SCIM groups for a directory with cursor pagination.
-func (c *Client) ListGroups(ctx context.Context, scimDirectoryID string, params *ListGroupsParams) (*clerk.SCIMGroupList, error) {
-	path, err := clerk.JoinPath(path, scimDirectoryID, "groups")
+// ListGroups returns directory groups for a directory with cursor pagination.
+func (c *Client) ListGroups(ctx context.Context, directoryID string, params *ListGroupsParams) (*clerk.DirectoryGroupList, error) {
+	path, err := clerk.JoinPath(path, directoryID, "groups")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
 	req.SetParams(params)
-	list := &clerk.SCIMGroupList{}
+	list := &clerk.DirectoryGroupList{}
 	err = c.Backend.Call(ctx, req, list)
 	return list, err
 }
 
 type CreateParams struct {
 	clerk.APIParams
-	SCIMGroupID string `json:"scim_group_id"`
-	RoleID      string `json:"role_id"`
-	Precedence  *int   `json:"precedence,omitempty"`
+	DirectoryGroupID string `json:"directory_group_id"`
+	RoleID           string `json:"role_id"`
+	Precedence       *int   `json:"precedence,omitempty"`
 }
 
 // Create creates a new group role mapping.
-func (c *Client) Create(ctx context.Context, scimDirectoryID string, params *CreateParams) (*clerk.SCIMGroupRoleMapping, error) {
-	path, err := clerk.JoinPath(path, scimDirectoryID, "group_role_mappings")
+func (c *Client) Create(ctx context.Context, directoryID string, params *CreateParams) (*clerk.DirectoryGroupRoleMapping, error) {
+	path, err := clerk.JoinPath(path, directoryID, "group_role_mappings")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
-	resource := &clerk.SCIMGroupRoleMapping{}
+	resource := &clerk.DirectoryGroupRoleMapping{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
@@ -110,21 +110,21 @@ type BulkUpdateParams struct {
 // BulkUpdate updates multiple group role mappings at once.
 // The array position determines precedence (1-indexed).
 // All mappings in the directory must be included.
-func (c *Client) BulkUpdate(ctx context.Context, scimDirectoryID string, params *BulkUpdateParams) (*clerk.SCIMGroupRoleMappingList, error) {
-	path, err := clerk.JoinPath(path, scimDirectoryID, "group_role_mappings")
+func (c *Client) BulkUpdate(ctx context.Context, directoryID string, params *BulkUpdateParams) (*clerk.DirectoryGroupRoleMappingList, error) {
+	path, err := clerk.JoinPath(path, directoryID, "group_role_mappings")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPatch, path)
 	req.SetParams(params)
-	list := &clerk.SCIMGroupRoleMappingList{}
+	list := &clerk.DirectoryGroupRoleMappingList{}
 	err = c.Backend.Call(ctx, req, list)
 	return list, err
 }
 
 // Delete deletes a group role mapping.
-func (c *Client) Delete(ctx context.Context, scimDirectoryID, mappingID string) (*clerk.DeletedResource, error) {
-	path, err := clerk.JoinPath(path, scimDirectoryID, "group_role_mappings", mappingID)
+func (c *Client) Delete(ctx context.Context, directoryID, mappingID string) (*clerk.DeletedResource, error) {
+	path, err := clerk.JoinPath(path, directoryID, "group_role_mappings", mappingID)
 	if err != nil {
 		return nil, err
 	}

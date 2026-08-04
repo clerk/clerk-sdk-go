@@ -1,4 +1,4 @@
-package scimgrouprolemapping
+package directorygrouprolemapping
 
 import (
 	"context"
@@ -19,36 +19,44 @@ func TestList(t *testing.T) {
 	response := map[string]interface{}{
 		"data": []map[string]interface{}{
 			{
-				"object":                  "scim_group_role_mapping",
-				"id":                      "scim_grp_role_123",
-				"scim_directory_id":       "scim_dir_123",
-				"scim_group_id":           "group_123",
-				"scim_group_display_name": "Admins",
+				"object":                       "directory_group_role_mapping",
+				"id":                           "scim_grp_role_123",
+				"directory_id":                 "scim_dir_123",
+				"directory_group_id":           "group_123",
+				"directory_group_display_name": "Admins",
 				"role": map[string]interface{}{
 					"object":      "role",
 					"id":          "role_admin",
 					"name":        "Admin",
 					"key":         "org:admin",
 					"description": "Administrator role",
-					"permissions": []string{},
+					"permissions": []map[string]interface{}{
+						{
+							"object": "permission",
+							"id":     "perm_manage",
+							"name":   "Manage organization",
+							"key":    "org:sys_profile:manage",
+							"type":   "system",
+						},
+					},
 				},
 				"precedence": 1,
 				"created_at": 1640995200000,
 				"updated_at": 1640995200000,
 			},
 			{
-				"object":                  "scim_group_role_mapping",
-				"id":                      "scim_grp_role_456",
-				"scim_directory_id":       "scim_dir_123",
-				"scim_group_id":           "group_456",
-				"scim_group_display_name": "Members",
+				"object":                       "directory_group_role_mapping",
+				"id":                           "scim_grp_role_456",
+				"directory_id":                 "scim_dir_123",
+				"directory_group_id":           "group_456",
+				"directory_group_display_name": "Members",
 				"role": map[string]interface{}{
 					"object":      "role",
 					"id":          "role_member",
 					"name":        "Member",
 					"key":         "org:member",
 					"description": "Member role",
-					"permissions": []string{},
+					"permissions": []map[string]interface{}{},
 				},
 				"precedence": 2,
 				"created_at": 1640995200000,
@@ -66,7 +74,7 @@ func TestList(t *testing.T) {
 			T:      t,
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodGet,
-			Path:   "/v1/scim_directories/scim_dir_123/group_role_mappings",
+			Path:   "/v1/directories/scim_dir_123/group_role_mappings",
 		},
 	}
 
@@ -76,12 +84,15 @@ func TestList(t *testing.T) {
 	assert.Len(t, listResp.Data, 2)
 	assert.Equal(t, int64(2), listResp.TotalCount)
 	assert.Equal(t, "scim_grp_role_123", listResp.Data[0].ID)
-	assert.Equal(t, "Admins", listResp.Data[0].SCIMGroupDisplayName)
+	assert.Equal(t, "Admins", listResp.Data[0].DirectoryGroupDisplayName)
 	assert.Equal(t, "role_admin", listResp.Data[0].Role.ID)
 	assert.Equal(t, "org:admin", listResp.Data[0].Role.Key)
+	require.Len(t, listResp.Data[0].Role.Permissions, 1)
+	assert.Equal(t, "perm_manage", listResp.Data[0].Role.Permissions[0].ID)
+	assert.Equal(t, "org:sys_profile:manage", listResp.Data[0].Role.Permissions[0].Key)
 	assert.Equal(t, 1, listResp.Data[0].Precedence)
 	assert.Equal(t, "scim_grp_role_456", listResp.Data[1].ID)
-	assert.Equal(t, "Members", listResp.Data[1].SCIMGroupDisplayName)
+	assert.Equal(t, "Members", listResp.Data[1].DirectoryGroupDisplayName)
 	assert.Equal(t, 2, listResp.Data[1].Precedence)
 }
 
@@ -91,13 +102,13 @@ func TestListGroups(t *testing.T) {
 	response := map[string]interface{}{
 		"data": []map[string]interface{}{
 			{
-				"object":       "scim_group",
+				"object":       "directory_group",
 				"id":           "group_123",
 				"display_name": "Admins",
 				"updated_at":   1640995200000,
 			},
 			{
-				"object":       "scim_group",
+				"object":       "directory_group",
 				"id":           "group_456",
 				"display_name": "Members",
 				"updated_at":   1640995200000,
@@ -118,7 +129,7 @@ func TestListGroups(t *testing.T) {
 			T:      t,
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodGet,
-			Path:   "/v1/scim_directories/scim_dir_123/groups",
+			Path:   "/v1/directories/scim_dir_123/groups",
 		},
 	}
 
@@ -193,7 +204,7 @@ func TestListGroupsWithPaginationParams(t *testing.T) {
 	response := map[string]interface{}{
 		"data": []map[string]interface{}{
 			{
-				"object":       "scim_group",
+				"object":       "directory_group",
 				"id":           "group_456",
 				"display_name": "Members",
 				"updated_at":   1640995200000,
@@ -219,7 +230,7 @@ func TestListGroupsWithPaginationParams(t *testing.T) {
 			T:      t,
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodGet,
-			Path:   "/v1/scim_directories/scim_dir_123/groups",
+			Path:   "/v1/directories/scim_dir_123/groups",
 			Query:  &expectedQuery,
 		},
 	}
@@ -245,17 +256,17 @@ func TestCreate(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
-		"object":                  "scim_group_role_mapping",
-		"id":                      "scim_grp_role_123",
-		"scim_directory_id":       "scim_dir_123",
-		"scim_group_id":           "group_123",
-		"scim_group_display_name": "Admins",
+		"object":                       "directory_group_role_mapping",
+		"id":                           "scim_grp_role_123",
+		"directory_id":                 "scim_dir_123",
+		"directory_group_id":           "group_123",
+		"directory_group_display_name": "Admins",
 		"role": map[string]interface{}{
 			"object":      "role",
 			"id":          "role_admin",
 			"name":        "Admin",
 			"key":         "org:admin",
-			"permissions": []string{},
+			"permissions": []map[string]interface{}{},
 		},
 		"precedence": 1,
 		"created_at": 1640995200000,
@@ -268,24 +279,24 @@ func TestCreate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"role_id":"role_admin","scim_group_id":"group_123"}`),
+			In:     json.RawMessage(`{"role_id":"role_admin","directory_group_id":"group_123"}`),
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPost,
-			Path:   "/v1/scim_directories/scim_dir_123/group_role_mappings",
+			Path:   "/v1/directories/scim_dir_123/group_role_mappings",
 		},
 	}
 
 	client := NewClient(config)
 	params := &CreateParams{
-		SCIMGroupID: "group_123",
-		RoleID:      "role_admin",
+		DirectoryGroupID: "group_123",
+		RoleID:           "role_admin",
 	}
 
 	mapping, err := client.Create(context.Background(), "scim_dir_123", params)
 	require.NoError(t, err)
 	assert.Equal(t, "scim_grp_role_123", mapping.ID)
-	assert.Equal(t, "group_123", mapping.SCIMGroupID)
-	assert.Equal(t, "Admins", mapping.SCIMGroupDisplayName)
+	assert.Equal(t, "group_123", mapping.DirectoryGroupID)
+	assert.Equal(t, "Admins", mapping.DirectoryGroupDisplayName)
 	assert.Equal(t, "role_admin", mapping.Role.ID)
 	assert.Equal(t, 1, mapping.Precedence)
 }
@@ -296,34 +307,34 @@ func TestBulkUpdate(t *testing.T) {
 	response := map[string]interface{}{
 		"data": []map[string]interface{}{
 			{
-				"object":                  "scim_group_role_mapping",
-				"id":                      "scim_grp_role_456",
-				"scim_directory_id":       "scim_dir_123",
-				"scim_group_id":           "group_456",
-				"scim_group_display_name": "Members",
+				"object":                       "directory_group_role_mapping",
+				"id":                           "scim_grp_role_456",
+				"directory_id":                 "scim_dir_123",
+				"directory_group_id":           "group_456",
+				"directory_group_display_name": "Members",
 				"role": map[string]interface{}{
 					"object":      "role",
 					"id":          "role_member",
 					"name":        "Member",
 					"key":         "org:member",
-					"permissions": []string{},
+					"permissions": []map[string]interface{}{},
 				},
 				"precedence": 1,
 				"created_at": 1640995200000,
 				"updated_at": 1640995200000,
 			},
 			{
-				"object":                  "scim_group_role_mapping",
-				"id":                      "scim_grp_role_123",
-				"scim_directory_id":       "scim_dir_123",
-				"scim_group_id":           "group_123",
-				"scim_group_display_name": "Admins",
+				"object":                       "directory_group_role_mapping",
+				"id":                           "scim_grp_role_123",
+				"directory_id":                 "scim_dir_123",
+				"directory_group_id":           "group_123",
+				"directory_group_display_name": "Admins",
 				"role": map[string]interface{}{
 					"object":      "role",
 					"id":          "role_admin",
 					"name":        "Admin",
 					"key":         "org:admin",
-					"permissions": []string{},
+					"permissions": []map[string]interface{}{},
 				},
 				"precedence": 2,
 				"created_at": 1640995200000,
@@ -342,7 +353,7 @@ func TestBulkUpdate(t *testing.T) {
 			In:     json.RawMessage(`{"mappings":[{"id":"scim_grp_role_456"},{"id":"scim_grp_role_123"}]}`),
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPatch,
-			Path:   "/v1/scim_directories/scim_dir_123/group_role_mappings",
+			Path:   "/v1/directories/scim_dir_123/group_role_mappings",
 		},
 	}
 
@@ -372,17 +383,17 @@ func TestBulkUpdateWithRoleChange(t *testing.T) {
 	response := map[string]interface{}{
 		"data": []map[string]interface{}{
 			{
-				"object":                  "scim_group_role_mapping",
-				"id":                      "scim_grp_role_123",
-				"scim_directory_id":       "scim_dir_123",
-				"scim_group_id":           "group_123",
-				"scim_group_display_name": "Admins",
+				"object":                       "directory_group_role_mapping",
+				"id":                           "scim_grp_role_123",
+				"directory_id":                 "scim_dir_123",
+				"directory_group_id":           "group_123",
+				"directory_group_display_name": "Admins",
 				"role": map[string]interface{}{
 					"object":      "role",
 					"id":          newRoleID,
 					"name":        "New Role",
 					"key":         "org:new",
-					"permissions": []string{},
+					"permissions": []map[string]interface{}{},
 				},
 				"precedence": 1,
 				"created_at": 1640995200000,
@@ -401,7 +412,7 @@ func TestBulkUpdateWithRoleChange(t *testing.T) {
 			In:     json.RawMessage(`{"mappings":[{"id":"scim_grp_role_123","role_id":"role_new"}]}`),
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPatch,
-			Path:   "/v1/scim_directories/scim_dir_123/group_role_mappings",
+			Path:   "/v1/directories/scim_dir_123/group_role_mappings",
 		},
 	}
 
@@ -422,7 +433,7 @@ func TestDelete(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]interface{}{
-		"object":  "scim_group_role_mapping",
+		"object":  "directory_group_role_mapping",
 		"id":      "scim_grp_role_123",
 		"deleted": true,
 	}
@@ -435,7 +446,7 @@ func TestDelete(t *testing.T) {
 			T:      t,
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodDelete,
-			Path:   "/v1/scim_directories/scim_dir_123/group_role_mappings/scim_grp_role_123",
+			Path:   "/v1/directories/scim_dir_123/group_role_mappings/scim_grp_role_123",
 		},
 	}
 

@@ -157,7 +157,7 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t, "force_authn": %t, "login_hint": {"mode": "%s"}, "enterprise_connection_id": "entconn_2abc123def456", "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn, loginHintMode)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s", "disable_additional_identifications": %t, "force_authn": %t, "login_hint": {"mode": "%s"}, "enterprise_connection_id": "entconn_2abc123def456", "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "directory_path": "custom_attribute_directory_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn, loginHintMode)),
 			Method: http.MethodGet,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -177,10 +177,10 @@ func TestSAMLConnectionClientGet(t *testing.T) {
 	require.Nil(t, samlConnection.LoginHint.Source)
 	require.Equal(t, &[]clerk.CustomAttribute{
 		{
-			Name:     clerk.String("custom_attribute_name"),
-			Key:      clerk.String("custom_attribute_key"),
-			SSOPath:  clerk.String("custom_attribute_sso_path"),
-			SCIMPath: clerk.String("custom_attribute_scim_path"),
+			Name:          clerk.String("custom_attribute_name"),
+			Key:           clerk.String("custom_attribute_key"),
+			SSOPath:       clerk.String("custom_attribute_sso_path"),
+			DirectoryPath: clerk.String("custom_attribute_directory_path"),
 		},
 	}, samlConnection.CustomAttributes)
 }
@@ -198,8 +198,8 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t, "login_hint": {"mode": "%s"}, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, name, disableAdditionalIdentifications, forceAuthn, loginHintMode)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t, "login_hint": {"mode": "%s"}, "enterprise_connection_id": null, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "scim_path": "custom_attribute_scim_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn, loginHintMode)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s", "disable_additional_identifications": %t, "organization_id": "", "force_authn": %t, "login_hint": {"mode": "%s"}, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "directory_path": "custom_attribute_directory_path"}]}`, name, disableAdditionalIdentifications, forceAuthn, loginHintMode)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","disable_additional_identifications": %t,"force_authn": %t, "login_hint": {"mode": "%s"}, "enterprise_connection_id": null, "custom_attributes": [{"name": "custom_attribute_name", "key": "custom_attribute_key", "sso_path": "custom_attribute_sso_path", "directory_path": "custom_attribute_directory_path"}]}`, id, name, domain, provider, disableAdditionalIdentifications, forceAuthn, loginHintMode)),
 			Method: http.MethodPatch,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -215,10 +215,10 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 		},
 		CustomAttributes: &[]clerk.CustomAttribute{
 			{
-				Name:     clerk.String("custom_attribute_name"),
-				Key:      clerk.String("custom_attribute_key"),
-				SSOPath:  clerk.String("custom_attribute_sso_path"),
-				SCIMPath: clerk.String("custom_attribute_scim_path"),
+				Name:          clerk.String("custom_attribute_name"),
+				Key:           clerk.String("custom_attribute_key"),
+				SSOPath:       clerk.String("custom_attribute_sso_path"),
+				DirectoryPath: clerk.String("custom_attribute_directory_path"),
 			},
 		},
 	})
@@ -226,10 +226,10 @@ func TestSAMLConnectionClientUpdate(t *testing.T) {
 	require.Equal(t, id, samlConnection.ID)
 	require.Equal(t, &[]clerk.CustomAttribute{
 		{
-			Name:     clerk.String("custom_attribute_name"),
-			Key:      clerk.String("custom_attribute_key"),
-			SSOPath:  clerk.String("custom_attribute_sso_path"),
-			SCIMPath: clerk.String("custom_attribute_scim_path"),
+			Name:          clerk.String("custom_attribute_name"),
+			Key:           clerk.String("custom_attribute_key"),
+			SSOPath:       clerk.String("custom_attribute_sso_path"),
+			DirectoryPath: clerk.String("custom_attribute_directory_path"),
 		},
 	}, samlConnection.CustomAttributes)
 	require.Equal(t, name, samlConnection.Name)
@@ -368,8 +368,8 @@ func TestSAMLConnectionClientCreate_WithMultiValuedCustomAttributes(t *testing.T
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","scim_path":"manager","multi_valued":false}]}`, name, domain, provider)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","scim_path":"manager","multi_valued":false}]}`, id, name, domain, provider)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","directory_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","directory_path":"manager","multi_valued":false}]}`, name, domain, provider)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","directory_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","directory_path":"manager","multi_valued":false}]}`, id, name, domain, provider)),
 			Method: http.MethodPost,
 			Path:   "/v1/saml_connections",
 		},
@@ -381,18 +381,18 @@ func TestSAMLConnectionClientCreate_WithMultiValuedCustomAttributes(t *testing.T
 		Provider: clerk.String(provider),
 		CustomAttributes: &[]clerk.CustomAttribute{
 			{
-				Name:        clerk.String("groups"),
-				Key:         clerk.String("groups"),
-				SSOPath:     clerk.String("$.groups"),
-				SCIMPath:    clerk.String("groups"),
-				MultiValued: clerk.Bool(true),
+				Name:          clerk.String("groups"),
+				Key:           clerk.String("groups"),
+				SSOPath:       clerk.String("$.groups"),
+				DirectoryPath: clerk.String("groups"),
+				MultiValued:   clerk.Bool(true),
 			},
 			{
-				Name:        clerk.String("manager"),
-				Key:         clerk.String("manager"),
-				SSOPath:     clerk.String("$.manager"),
-				SCIMPath:    clerk.String("manager"),
-				MultiValued: clerk.Bool(false),
+				Name:          clerk.String("manager"),
+				Key:           clerk.String("manager"),
+				SSOPath:       clerk.String("$.manager"),
+				DirectoryPath: clerk.String("manager"),
+				MultiValued:   clerk.Bool(false),
 			},
 		},
 	})
@@ -414,8 +414,8 @@ func TestSAMLConnectionClientUpdate_WithMultiValuedCustomAttributes(t *testing.T
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","scim_path":"department","multi_valued":false}]}`),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","scim_path":"department","multi_valued":false}]}`, id)),
+			In:     json.RawMessage(`{"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","directory_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","directory_path":"department","multi_valued":false}]}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","directory_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","directory_path":"department","multi_valued":false}]}`, id)),
 			Method: http.MethodPatch,
 			Path:   "/v1/saml_connections/" + id,
 		},
@@ -424,18 +424,18 @@ func TestSAMLConnectionClientUpdate_WithMultiValuedCustomAttributes(t *testing.T
 	samlConnection, err := client.Update(context.Background(), id, &UpdateParams{
 		CustomAttributes: &[]clerk.CustomAttribute{
 			{
-				Name:        clerk.String("groups"),
-				Key:         clerk.String("groups"),
-				SSOPath:     clerk.String("$.groups"),
-				SCIMPath:    clerk.String("groups"),
-				MultiValued: clerk.Bool(true),
+				Name:          clerk.String("groups"),
+				Key:           clerk.String("groups"),
+				SSOPath:       clerk.String("$.groups"),
+				DirectoryPath: clerk.String("groups"),
+				MultiValued:   clerk.Bool(true),
 			},
 			{
-				Name:        clerk.String("department"),
-				Key:         clerk.String("department"),
-				SSOPath:     clerk.String("$.department"),
-				SCIMPath:    clerk.String("department"),
-				MultiValued: clerk.Bool(false),
+				Name:          clerk.String("department"),
+				Key:           clerk.String("department"),
+				SSOPath:       clerk.String("$.department"),
+				DirectoryPath: clerk.String("department"),
+				MultiValued:   clerk.Bool(false),
 			},
 		},
 	})

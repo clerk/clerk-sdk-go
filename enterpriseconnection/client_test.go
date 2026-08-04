@@ -141,8 +141,8 @@ func TestEnterpriseConnectionClientCreate_WithMultiValuedCustomAttributes(t *tes
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","provider":"%s","protocol":"%s","saml":{"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","scim_path":"manager","multi_valued":false}]}}`, name, provider, protocol)),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","provider":"%s","protocol":"%s","object":"enterprise_connection","active":true,"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","scim_path":"manager","multi_valued":false}]}`, id, name, provider, protocol)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","provider":"%s","protocol":"%s","saml":{"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","directory_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","directory_path":"manager","multi_valued":false}]}}`, name, provider, protocol)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","provider":"%s","protocol":"%s","object":"enterprise_connection","active":true,"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","directory_path":"groups","multi_valued":true},{"name":"manager","key":"manager","sso_path":"$.manager","directory_path":"manager","multi_valued":false}]}`, id, name, provider, protocol)),
 			Method: http.MethodPost,
 			Path:   "/v1/enterprise_connections",
 		},
@@ -155,18 +155,18 @@ func TestEnterpriseConnectionClientCreate_WithMultiValuedCustomAttributes(t *tes
 		Saml: &CreateParamsSaml{
 			CustomAttributes: &[]clerk.CustomAttribute{
 				{
-					Name:        clerk.String("groups"),
-					Key:         clerk.String("groups"),
-					SSOPath:     clerk.String("$.groups"),
-					SCIMPath:    clerk.String("groups"),
-					MultiValued: clerk.Bool(true),
+					Name:          clerk.String("groups"),
+					Key:           clerk.String("groups"),
+					SSOPath:       clerk.String("$.groups"),
+					DirectoryPath: clerk.String("groups"),
+					MultiValued:   clerk.Bool(true),
 				},
 				{
-					Name:        clerk.String("manager"),
-					Key:         clerk.String("manager"),
-					SSOPath:     clerk.String("$.manager"),
-					SCIMPath:    clerk.String("manager"),
-					MultiValued: clerk.Bool(false),
+					Name:          clerk.String("manager"),
+					Key:           clerk.String("manager"),
+					SSOPath:       clerk.String("$.manager"),
+					DirectoryPath: clerk.String("manager"),
+					MultiValued:   clerk.Bool(false),
 				},
 			},
 		},
@@ -189,8 +189,8 @@ func TestEnterpriseConnectionClientUpdate_WithMultiValuedCustomAttributes(t *tes
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"saml":{"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","scim_path":"department","multi_valued":false}]}}`),
-			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"enterprise_connection","protocol":"saml","provider":"saml_custom","active":true,"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","scim_path":"department","multi_valued":false}]}`, id)),
+			In:     json.RawMessage(`{"saml":{"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","directory_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","directory_path":"department","multi_valued":false}]}}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"enterprise_connection","protocol":"saml","provider":"saml_custom","active":true,"custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","directory_path":"groups","multi_valued":true},{"name":"department","key":"department","sso_path":"$.department","directory_path":"department","multi_valued":false}]}`, id)),
 			Method: http.MethodPatch,
 			Path:   "/v1/enterprise_connections/" + id,
 		},
@@ -200,18 +200,18 @@ func TestEnterpriseConnectionClientUpdate_WithMultiValuedCustomAttributes(t *tes
 		Saml: &UpdateParamsSaml{
 			CustomAttributes: &[]clerk.CustomAttribute{
 				{
-					Name:        clerk.String("groups"),
-					Key:         clerk.String("groups"),
-					SSOPath:     clerk.String("$.groups"),
-					SCIMPath:    clerk.String("groups"),
-					MultiValued: clerk.Bool(true),
+					Name:          clerk.String("groups"),
+					Key:           clerk.String("groups"),
+					SSOPath:       clerk.String("$.groups"),
+					DirectoryPath: clerk.String("groups"),
+					MultiValued:   clerk.Bool(true),
 				},
 				{
-					Name:        clerk.String("department"),
-					Key:         clerk.String("department"),
-					SSOPath:     clerk.String("$.department"),
-					SCIMPath:    clerk.String("department"),
-					MultiValued: clerk.Bool(false),
+					Name:          clerk.String("department"),
+					Key:           clerk.String("department"),
+					SSOPath:       clerk.String("$.department"),
+					DirectoryPath: clerk.String("department"),
+					MultiValued:   clerk.Bool(false),
 				},
 			},
 		},

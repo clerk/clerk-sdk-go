@@ -1,7 +1,7 @@
 package clerk
 
-// SCIMDirectory represents a SCIM directory resource.
-type SCIMDirectory struct {
+// Directory represents a directory resource.
+type Directory struct {
 	APIResource
 	Object                  string  `json:"object"`
 	ID                      string  `json:"id"`
@@ -21,9 +21,9 @@ type SCIMDirectory struct {
 	AttributeMapping      map[string]string `json:"attribute_mapping,omitempty"`
 }
 
-// SCIMDirectoryList represents a paginated list of SCIM directories.
-type SCIMDirectoryList struct {
+// DirectoryList represents a paginated list of directories.
+type DirectoryList struct {
 	APIResource
-	SCIMDirectories []*SCIMDirectory `json:"data"`
-	TotalCount      int64            `json:"total_count"`
+	Directories []*Directory `json:"data"`
+	TotalCount  int64        `json:"total_count"`
 }

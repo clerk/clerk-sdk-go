@@ -1,11 +1,11 @@
 package clerk
 
 type CustomAttribute struct {
-	Name        *string `json:"name"`
-	Key         *string `json:"key"`
-	SSOPath     *string `json:"sso_path"`
-	SCIMPath    *string `json:"scim_path"`
-	MultiValued *bool   `json:"multi_valued,omitempty"`
+	Name          *string `json:"name"`
+	Key           *string `json:"key"`
+	SSOPath       *string `json:"sso_path"`
+	DirectoryPath *string `json:"directory_path"`
+	MultiValued   *bool   `json:"multi_valued,omitempty"`
 }
 
 type SAMLConnection struct {
