@@ -693,6 +693,29 @@ type VerifyPasswordParams struct {
 	Password string `json:"password"`
 }
 
+// RemovePasswordParams contains options for removing a user's password.
+type RemovePasswordParams struct {
+	clerk.APIParams
+	// SignOutOfOtherSessions revokes all of the user's active sessions when true.
+	// Existing sessions remain active when omitted or false.
+	SignOutOfOtherSessions *bool `json:"sign_out_of_other_sessions,omitempty"`
+}
+
+// RemovePassword removes a user's password without requiring their current password.
+// Password removal is allowed even when the user has no other sign-in method configured.
+// Existing sessions remain active by default. Set SignOutOfOtherSessions to true to revoke them.
+func (c *Client) RemovePassword(ctx context.Context, userID string, params *RemovePasswordParams) (*clerk.User, error) {
+	path, err := clerk.JoinPath(path, userID, "/remove_password")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	resource := &clerk.User{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
 type VerifyPasswordResponse struct {
 	clerk.APIResource
 	Verified bool `json:"verified"`

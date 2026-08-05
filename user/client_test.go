@@ -798,3 +798,47 @@ func TestUserClientVerifyPassword(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, verified.Verified)
 }
+
+func TestUserClientRemovePassword(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	tests := []struct {
+		name   string
+		params *RemovePasswordParams
+		body   json.RawMessage
+	}{
+		{
+			name:   "keeps existing sessions active by default",
+			params: &RemovePasswordParams{},
+			body:   json.RawMessage(`{}`),
+		},
+		{
+			name: "revokes existing sessions when requested",
+			params: &RemovePasswordParams{
+				SignOutOfOtherSessions: clerk.Bool(true),
+			},
+			body: json.RawMessage(`{"sign_out_of_other_sessions":true}`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			config := &clerk.ClientConfig{}
+			config.HTTPClient = &http.Client{
+				Transport: &clerktest.RoundTripper{
+					T:      t,
+					Method: http.MethodPost,
+					In:     tt.body,
+					Out:    json.RawMessage(fmt.Sprintf(`{"object":"user","id":"%s"}`, userID)),
+					Path:   fmt.Sprintf("/v1/users/%s/remove_password", userID),
+				},
+			}
+			client := NewClient(config)
+			updatedUser, err := client.RemovePassword(context.Background(), userID, tt.params)
+			require.NoError(t, err)
+			require.Equal(t, userID, updatedUser.ID)
+			require.Equal(t, "user", updatedUser.Object)
+		})
+	}
+}
