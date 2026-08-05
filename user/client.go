@@ -704,16 +704,6 @@ type RemovePasswordParams struct {
 // RemovePassword removes a user's password without requiring their current password.
 // Password removal is allowed even when the user has no other sign-in method configured.
 // Existing sessions remain active by default. Set SignOutOfOtherSessions to true to revoke them.
-//
-// To keep existing sessions active:
-//
-//	updatedUser, err := user.RemovePassword(ctx, "user_123", &user.RemovePasswordParams{})
-//
-// To revoke existing sessions:
-//
-//	updatedUser, err := user.RemovePassword(ctx, "user_123", &user.RemovePasswordParams{
-//		SignOutOfOtherSessions: clerk.Bool(true),
-//	})
 func (c *Client) RemovePassword(ctx context.Context, userID string, params *RemovePasswordParams) (*clerk.User, error) {
 	path, err := clerk.JoinPath(path, userID, "/remove_password")
 	if err != nil {
