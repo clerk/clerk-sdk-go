@@ -1,9 +1,15 @@
 package clerk
 
 type CustomAttribute struct {
-	Name          *string `json:"name"`
-	Key           *string `json:"key"`
-	SSOPath       *string `json:"sso_path"`
+	Name    *string `json:"name"`
+	Key     *string `json:"key"`
+	SSOPath *string `json:"sso_path"`
+	// SCIMPath is the legacy name for DirectoryPath.
+	//
+	// Deprecated: use DirectoryPath. Both are populated on read, because the
+	// API emits the path under both names. On write, set either one; the API
+	// rejects a request only when both are set and disagree.
+	SCIMPath      *string `json:"scim_path,omitempty"`
 	DirectoryPath *string `json:"directory_path"`
 	MultiValued   *bool   `json:"multi_valued,omitempty"`
 }

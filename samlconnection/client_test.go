@@ -508,3 +508,48 @@ func TestSAMLConnectionClientList(t *testing.T) {
 	require.Equal(t, domain, list.SAMLConnections[0].Domains[0])
 	require.Equal(t, provider, list.SAMLConnections[0].Provider)
 }
+
+// TestSAMLConnectionClientCreate_WithLegacySCIMPath verifies that the legacy
+// CustomAttribute.SCIMPath field still works. A client that sets only SCIMPath
+// sends `scim_path` and no `directory_path`, which the API folds onto the same
+// stored path. Reading back populates both fields, because the API emits the
+// path under both names.
+func TestSAMLConnectionClientCreate_WithLegacySCIMPath(t *testing.T) {
+	t.Parallel()
+	id := "samlc__123"
+	name := "the-name"
+	domain := "example.com"
+	provider := "saml_custom"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","directory_path":null}]}`, name, domain, provider)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","directory_path":"groups"}]}`, id, name, domain, provider)),
+			Method: http.MethodPost,
+			Path:   "/v1/saml_connections",
+		},
+	}
+	client := NewClient(config)
+	samlConnection, err := client.Create(context.Background(), &CreateParams{
+		Name:     clerk.String(name),
+		Domain:   clerk.String(domain),
+		Provider: clerk.String(provider),
+		CustomAttributes: &[]clerk.CustomAttribute{
+			{
+				Name:    clerk.String("groups"),
+				Key:     clerk.String("groups"),
+				SSOPath: clerk.String("$.groups"),
+				// nolint:staticcheck // exercising the deprecated field on purpose
+				SCIMPath: clerk.String("groups"),
+			},
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, samlConnection.ID)
+	attrs := *samlConnection.CustomAttributes
+	require.Len(t, attrs, 1)
+	// nolint:staticcheck // exercising the deprecated field on purpose
+	require.Equal(t, "groups", *attrs[0].SCIMPath)
+	require.Equal(t, "groups", *attrs[0].DirectoryPath)
+}
