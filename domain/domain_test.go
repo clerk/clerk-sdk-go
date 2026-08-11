@@ -43,9 +43,8 @@ func TestDomainCreate(t *testing.T) {
 	require.Equal(t, id, dmn.ID)
 	require.Equal(t, name, dmn.Name)
 	require.Equal(t, []clerk.CNAMETarget{{
-		Host:     "clerk." + name,
-		Value:    "frontend-api.clerk.services",
-		Required: false,
+		Host:  "clerk." + name,
+		Value: "frontend-api.clerk.services",
 	}}, dmn.CNAMETargets)
 	require.Equal(t, []clerk.DNSTarget{
 		{

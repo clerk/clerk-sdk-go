@@ -15,9 +15,8 @@ type Domain struct {
 }
 
 type CNAMETarget struct {
-	Host     string `json:"host"`
-	Value    string `json:"value"`
-	Required bool   `json:"required"`
+	Host  string `json:"host"`
+	Value string `json:"value"`
 }
 
 type DNSTarget struct {
