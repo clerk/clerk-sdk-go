@@ -105,19 +105,48 @@ func getJWK(ctx context.Context, jwksClient *jwks.Client, kid string, clock cler
 		return nil, fmt.Errorf("missing jwt kid header claim")
 	}
 
-	jwk := getCache().Get(kid)
-	if jwk == nil || !getCache().IsValid(kid, clock.Now().UTC()) {
-		var err error
-		jwk, err = jwt.GetJSONWebKey(ctx, &jwt.GetJSONWebKeyParams{
-			KeyID:      kid,
-			JWKSClient: jwksClient,
-		})
-		if err != nil {
-			return nil, err
+	cacheKey, cacheable := jwkCacheKey(jwksClient, kid)
+	if cacheable {
+		if jwk := getCache().Get(cacheKey); jwk != nil && getCache().IsValid(cacheKey, clock.Now().UTC()) {
+			return jwk, nil
 		}
-		getCache().Set(kid, jwk, clock.Now().UTC().Add(time.Hour))
+	}
+
+	jwk, err := jwt.GetJSONWebKey(ctx, &jwt.GetJSONWebKeyParams{
+		KeyID:      kid,
+		JWKSClient: jwksClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if cacheable {
+		getCache().Set(cacheKey, jwk, clock.Now().UTC().Add(time.Hour))
 	}
 	return jwk, nil
+}
+
+// jwkCacheKey scopes a kid to the Clerk instance whose credentials will be
+// used to fetch it. Without this, a kid cached for one instance would be
+// served to another, letting a token minted by instance B authenticate
+// against instance A in any process that serves both (SDK-149).
+//
+// Returns false for a custom Backend that does not implement
+// [clerk.CacheScoper], in which case the caller must skip the cache rather
+// than risk sharing keys across instances.
+func jwkCacheKey(jwksClient *jwks.Client, kid string) (string, bool) {
+	var backend clerk.Backend
+	if jwksClient != nil {
+		backend = jwksClient.Backend
+	}
+	if backend == nil {
+		backend = clerk.GetBackend()
+	}
+
+	scoper, ok := backend.(clerk.CacheScoper)
+	if !ok {
+		return "", false
+	}
+	return scoper.CacheScope() + ":" + kid, true
 }
 
 type AuthorizationParams struct {
@@ -370,9 +399,9 @@ var cacheInit sync.Once
 var cache *jwkCache
 
 // getCache returns the library's default cache singleton.
-// Please note that the returned Cache is a package-level variable.
-// Using the package with more than one Clerk API secret keys might
-// require to use different Clients with their own Cache.
+// The cache is a package-level variable, but entries are scoped to the
+// Clerk instance they were fetched for (see jwkCacheKey), so it is safe
+// to use with more than one Clerk API secret key in the same process.
 func getCache() *jwkCache {
 	cacheInit.Do(func() {
 		cache = &jwkCache{
