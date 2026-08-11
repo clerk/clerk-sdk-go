@@ -6,6 +6,8 @@ package clerk
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -149,6 +151,18 @@ type ResponseReader interface {
 	Read(*APIResponse)
 }
 
+// CacheScoper is implemented by Backends that can identify the Clerk instance
+// they authenticate as. Caches keyed by data fetched from the API (such as the
+// JWK cache) use it to keep one instance's data from being served to another.
+// The default Backend implements it. A custom Backend that does not is simply
+// never cached.
+type CacheScoper interface {
+	// CacheScope returns an opaque, stable identifier for the Clerk instance.
+	// Implementations must not return the same value for two different
+	// instances, and must not leak credentials.
+	CacheScope() string
+}
+
 // Params can transform themselves to types that can be used as
 // request parameters, like query string values or multipart
 // data.
@@ -244,6 +258,13 @@ type defaultBackend struct {
 	URL                  string
 	Key                  string
 	CustomRequestHeaders *CustomRequestHeaders
+}
+
+// CacheScope implements [CacheScoper]. The secret key is hashed so it is
+// never retained as a cache key.
+func (b *defaultBackend) CacheScope() string {
+	sum := sha256.Sum256([]byte(b.URL + "\x00" + b.Key))
+	return hex.EncodeToString(sum[:])
 }
 
 // Call sends requests to the Clerk API and handles the responses.
