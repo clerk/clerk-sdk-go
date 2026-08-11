@@ -39,22 +39,22 @@ type CreateParams struct {
 }
 
 // Create creates a new SCIM directory.
-func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.SCIMDirectory, error) {
+func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Directory, error) {
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
-	resource := &clerk.SCIMDirectory{}
+	resource := &clerk.Directory{}
 	err := c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
 
 // Get returns details about a SCIM directory.
-func (c *Client) Get(ctx context.Context, id string) (*clerk.SCIMDirectory, error) {
+func (c *Client) Get(ctx context.Context, id string) (*clerk.Directory, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
-	resource := &clerk.SCIMDirectory{}
+	resource := &clerk.Directory{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
@@ -74,14 +74,14 @@ type UpdateParams struct {
 }
 
 // Update updates a SCIM directory.
-func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*clerk.SCIMDirectory, error) {
+func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Directory, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPatch, path)
 	req.SetParams(params)
-	resource := &clerk.SCIMDirectory{}
+	resource := &clerk.Directory{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
@@ -103,10 +103,10 @@ func (params *ListParams) ToQuery() url.Values {
 }
 
 // List returns a paginated list of SCIM directories.
-func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.SCIMDirectoryList, error) {
+func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.SCIMDirectoryList, error) { //nolint:staticcheck // SA1019: this deprecated package returns the SCIM-named list on purpose. DirectoryList renames the data field from SCIMDirectories to Directories, so swapping the type here would break existing callers.
 	req := clerk.NewAPIRequest(http.MethodGet, path)
 	req.SetParams(params)
-	resource := &clerk.SCIMDirectoryList{}
+	resource := &clerk.SCIMDirectoryList{} //nolint:staticcheck // SA1019: must match this method's deprecated return type.
 	err := c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
@@ -125,13 +125,13 @@ func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource,
 
 // RotateAPIKey rotates the API key for a SCIM directory.
 // The old API key will be valid for a grace period before expiring.
-func (c *Client) RotateAPIKey(ctx context.Context, id string) (*clerk.SCIMDirectory, error) {
+func (c *Client) RotateAPIKey(ctx context.Context, id string) (*clerk.Directory, error) {
 	path, err := clerk.JoinPath(path, id, "rotate_api_key")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPost, path)
-	resource := &clerk.SCIMDirectory{}
+	resource := &clerk.Directory{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
@@ -156,14 +156,14 @@ type CredentialsParams struct {
 // AddCredentials adds pull-provider credentials (e.g. a Google service-account
 // key and subject email) for a SCIM directory. They are validated and sealed
 // server-side; on success the directory is enabled.
-func (c *Client) AddCredentials(ctx context.Context, id string, params *CredentialsParams) (*clerk.SCIMDirectory, error) {
+func (c *Client) AddCredentials(ctx context.Context, id string, params *CredentialsParams) (*clerk.Directory, error) {
 	path, err := clerk.JoinPath(path, id, "credentials")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
-	resource := &clerk.SCIMDirectory{}
+	resource := &clerk.Directory{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }

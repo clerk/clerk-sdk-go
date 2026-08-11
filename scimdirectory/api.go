@@ -9,17 +9,17 @@ import (
 )
 
 // Create creates a new SCIM directory.
-func Create(ctx context.Context, params *CreateParams) (*clerk.SCIMDirectory, error) {
+func Create(ctx context.Context, params *CreateParams) (*clerk.Directory, error) {
 	return getClient().Create(ctx, params)
 }
 
 // Get returns details about a SCIM directory.
-func Get(ctx context.Context, id string) (*clerk.SCIMDirectory, error) {
+func Get(ctx context.Context, id string) (*clerk.Directory, error) {
 	return getClient().Get(ctx, id)
 }
 
 // Update updates a SCIM directory.
-func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.SCIMDirectory, error) {
+func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Directory, error) {
 	return getClient().Update(ctx, id, params)
 }
 
@@ -35,14 +35,14 @@ func Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 
 // RotateAPIKey rotates the API key for a SCIM directory.
 // The old API key will be valid for a grace period before expiring.
-func RotateAPIKey(ctx context.Context, id string) (*clerk.SCIMDirectory, error) {
+func RotateAPIKey(ctx context.Context, id string) (*clerk.Directory, error) {
 	return getClient().RotateAPIKey(ctx, id)
 }
 
 // AddCredentials adds pull-provider credentials (e.g. a Google service-account
 // key and subject email) for a SCIM directory. They are validated and sealed
 // server-side; on success the directory is enabled.
-func AddCredentials(ctx context.Context, id string, params *CredentialsParams) (*clerk.SCIMDirectory, error) {
+func AddCredentials(ctx context.Context, id string, params *CredentialsParams) (*clerk.Directory, error) {
 	return getClient().AddCredentials(ctx, id, params)
 }
 

@@ -58,26 +58,26 @@ func (p *ListGroupsParams) ToQuery() url.Values {
 }
 
 // List returns all group role mappings for a SCIM directory.
-func (c *Client) List(ctx context.Context, scimDirectoryID string) (*clerk.SCIMGroupRoleMappingList, error) {
+func (c *Client) List(ctx context.Context, scimDirectoryID string) (*clerk.SCIMGroupRoleMappingList, error) { //nolint:staticcheck // SA1019: this deprecated package returns the SCIM-named list on purpose. Its elements are SCIMGroupRoleMapping, which exposes the legacy scim_* field names that existing callers read.
 	path, err := clerk.JoinPath(path, scimDirectoryID, "group_role_mappings")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
-	list := &clerk.SCIMGroupRoleMappingList{}
+	list := &clerk.SCIMGroupRoleMappingList{} //nolint:staticcheck // SA1019: must match this method's deprecated return type.
 	err = c.Backend.Call(ctx, req, list)
 	return list, err
 }
 
 // ListGroups returns SCIM groups for a directory with cursor pagination.
-func (c *Client) ListGroups(ctx context.Context, scimDirectoryID string, params *ListGroupsParams) (*clerk.SCIMGroupList, error) {
+func (c *Client) ListGroups(ctx context.Context, scimDirectoryID string, params *ListGroupsParams) (*clerk.DirectoryGroupList, error) {
 	path, err := clerk.JoinPath(path, scimDirectoryID, "groups")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
 	req.SetParams(params)
-	list := &clerk.SCIMGroupList{}
+	list := &clerk.DirectoryGroupList{}
 	err = c.Backend.Call(ctx, req, list)
 	return list, err
 }
@@ -90,14 +90,14 @@ type CreateParams struct {
 }
 
 // Create creates a new group role mapping.
-func (c *Client) Create(ctx context.Context, scimDirectoryID string, params *CreateParams) (*clerk.SCIMGroupRoleMapping, error) {
+func (c *Client) Create(ctx context.Context, scimDirectoryID string, params *CreateParams) (*clerk.SCIMGroupRoleMapping, error) { //nolint:staticcheck // SA1019: this deprecated package returns the SCIM-named type on purpose. It decodes the legacy scim_* JSON fields that existing callers read, so swapping the type here would break them.
 	path, err := clerk.JoinPath(path, scimDirectoryID, "group_role_mappings")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
-	resource := &clerk.SCIMGroupRoleMapping{}
+	resource := &clerk.SCIMGroupRoleMapping{} //nolint:staticcheck // SA1019: must match this method's deprecated return type.
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
@@ -115,14 +115,14 @@ type BulkUpdateParams struct {
 // BulkUpdate updates multiple group role mappings at once.
 // The array position determines precedence (1-indexed).
 // All mappings in the directory must be included.
-func (c *Client) BulkUpdate(ctx context.Context, scimDirectoryID string, params *BulkUpdateParams) (*clerk.SCIMGroupRoleMappingList, error) {
+func (c *Client) BulkUpdate(ctx context.Context, scimDirectoryID string, params *BulkUpdateParams) (*clerk.SCIMGroupRoleMappingList, error) { //nolint:staticcheck // SA1019: this deprecated package returns the SCIM-named list on purpose. Its elements are SCIMGroupRoleMapping, which exposes the legacy scim_* field names that existing callers read.
 	path, err := clerk.JoinPath(path, scimDirectoryID, "group_role_mappings")
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodPatch, path)
 	req.SetParams(params)
-	list := &clerk.SCIMGroupRoleMappingList{}
+	list := &clerk.SCIMGroupRoleMappingList{} //nolint:staticcheck // SA1019: must match this method's deprecated return type.
 	err = c.Backend.Call(ctx, req, list)
 	return list, err
 }

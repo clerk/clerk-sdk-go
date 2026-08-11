@@ -14,7 +14,7 @@ func List(ctx context.Context, scimDirectoryID string) (*clerk.SCIMGroupRoleMapp
 }
 
 // ListGroups returns SCIM groups for a directory with cursor pagination.
-func ListGroups(ctx context.Context, scimDirectoryID string, params *ListGroupsParams) (*clerk.SCIMGroupList, error) {
+func ListGroups(ctx context.Context, scimDirectoryID string, params *ListGroupsParams) (*clerk.DirectoryGroupList, error) {
 	return getClient().ListGroups(ctx, scimDirectoryID, params)
 }
 
