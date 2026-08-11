@@ -1,5 +1,6 @@
 // Package directory provides the Directories API.
-// Directories are an experimental features, not enabled for all instances
+//
+// Directories are an experimental feature, not enabled for all instances.
 package directory
 
 import (
@@ -88,6 +89,9 @@ type ListParams struct {
 
 func (params *ListParams) ToQuery() url.Values {
 	q := url.Values{}
+	if params == nil {
+		return q
+	}
 	if params.Limit != nil {
 		q.Set("limit", strconv.FormatInt(*params.Limit, 10))
 	}

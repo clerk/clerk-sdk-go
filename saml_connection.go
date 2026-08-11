@@ -1,23 +1,89 @@
 package clerk
 
+import "encoding/json"
+
+// CustomAttribute is used for both reading and writing a custom attribute, and
+// the attribute's path has two names on the wire: the legacy scim_path and its
+// replacement directory_path. Responses carry both, requests accept either, and
+// a request that sends both with different values is rejected.
+//
+// One struct with two mutable fields for one value cannot tell which field the
+// caller edited, so the SDK keeps a single field authoritative and marshals a
+// single path key:
+//
+//   - On read, the path lands in SCIMPath. DirectoryPath stays nil, whichever
+//     name the response used.
+//   - On write, DirectoryPath wins when it is set and is sent as
+//     directory_path; otherwise SCIMPath is sent as scim_path. The two names
+//     are never both present, so a read-modify-write can never conflict.
+//   - Clearing the path means leaving both nil.
 type CustomAttribute struct {
 	Name    *string `json:"name"`
 	Key     *string `json:"key"`
 	SSOPath *string `json:"sso_path"`
-	// SCIMPath is the legacy name for DirectoryPath.
+	// SCIMPath is the legacy name for DirectoryPath. It is the field the path
+	// is decoded into, so existing code that reads it keeps working.
 	//
-	// Deprecated: use DirectoryPath. Both are populated on read, because the
-	// API emits the path under both names. On write, set either one; the API
-	// rejects a request only when both are set and disagree.
+	// Deprecated: use DirectoryPath on write. SCIMPath remains the field
+	// populated on read until the legacy name is retired.
 	SCIMPath *string `json:"scim_path,omitempty"`
-	// DirectoryPath is the new name for SCIMPath.
-	//
-	// Both path fields are omitempty, so an unset one is left out of the
-	// request rather than sent as null. The API treats an absent path and a
-	// null path identically, so leaving DirectoryPath unset keeps the wire
-	// behaviour of a SCIMPath-only request unchanged.
+	// DirectoryPath is the new name for SCIMPath. It is write-only: set it to
+	// send the path as directory_path. Reads leave it nil and populate
+	// SCIMPath instead.
 	DirectoryPath *string `json:"directory_path,omitempty"`
 	MultiValued   *bool   `json:"multi_valued,omitempty"`
+}
+
+// customAttributeJSON is the wire shape of a CustomAttribute. It carries both
+// path names so that either can be read or written, while CustomAttribute
+// exposes a single decoded path.
+type customAttributeJSON struct {
+	Name          *string `json:"name"`
+	Key           *string `json:"key"`
+	SSOPath       *string `json:"sso_path"`
+	SCIMPath      *string `json:"scim_path,omitempty"`
+	DirectoryPath *string `json:"directory_path,omitempty"`
+	MultiValued   *bool   `json:"multi_valued,omitempty"`
+}
+
+// MarshalJSON emits exactly one path key: directory_path when DirectoryPath is
+// set, scim_path otherwise. Sending both is what the API rejects when they
+// disagree, so the SDK never sends both.
+func (attr CustomAttribute) MarshalJSON() ([]byte, error) {
+	out := customAttributeJSON{
+		Name:        attr.Name,
+		Key:         attr.Key,
+		SSOPath:     attr.SSOPath,
+		MultiValued: attr.MultiValued,
+	}
+	if attr.DirectoryPath != nil {
+		out.DirectoryPath = attr.DirectoryPath
+	} else {
+		out.SCIMPath = attr.SCIMPath
+	}
+	return json.Marshal(out)
+}
+
+// UnmarshalJSON decodes the path from either name into SCIMPath and leaves
+// DirectoryPath nil, so that a decoded attribute sent back unchanged carries
+// one path key with the value it was read with.
+func (attr *CustomAttribute) UnmarshalJSON(data []byte) error {
+	var in customAttributeJSON
+	if err := json.Unmarshal(data, &in); err != nil {
+		return err
+	}
+
+	attr.Name = in.Name
+	attr.Key = in.Key
+	attr.SSOPath = in.SSOPath
+	attr.MultiValued = in.MultiValued
+	attr.SCIMPath = in.SCIMPath
+	if in.DirectoryPath != nil {
+		attr.SCIMPath = in.DirectoryPath
+	}
+	attr.DirectoryPath = nil
+
+	return nil
 }
 
 type SAMLConnection struct {

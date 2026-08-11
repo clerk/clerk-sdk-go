@@ -51,7 +51,10 @@ type SCIMGroupRoleMappingList struct {
 
 // SCIMGroup is the former name of [DirectoryGroup].
 //
-// Deprecated: use [DirectoryGroup].
+// Deprecated: use [DirectoryGroup]. The two are the same Go type, but the
+// Object field differs by route: the scimgrouprolemapping package returns
+// "scim_group" and the directorygrouprolemapping package returns
+// "directory_group".
 type SCIMGroup = DirectoryGroup
 
 // SCIMGroupList is the former name of [DirectoryGroupList].

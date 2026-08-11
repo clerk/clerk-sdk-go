@@ -1,4 +1,6 @@
 // Package directorygrouprolemapping provides the Directory Group Role Mappings API.
+//
+// Directories are an experimental feature, not enabled for all instances.
 package directorygrouprolemapping
 
 import (

@@ -2,8 +2,13 @@ package clerk
 
 // SCIMDirectory is the former name of [Directory].
 //
-// Deprecated: use [Directory]. The two types are identical; this alias exists
+// Deprecated: use [Directory]. The two are the same Go type; this alias exists
 // so that code written against the SCIM-era names keeps compiling.
+//
+// The Object field is not the same across packages: the API picks the `object`
+// discriminator by route, so the scimdirectory package returns
+// "scim_directory" and the directory package returns "directory". Code that
+// compares Object must be updated when it moves to the directory package.
 type SCIMDirectory = Directory
 
 // SCIMDirectoryList is the former name of [DirectoryList].
