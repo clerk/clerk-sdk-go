@@ -1,6 +1,13 @@
 package clerk
 
-// SCIMGroupRoleMappingRole represents the role in a group role mapping.
+// SCIMGroupRoleMappingRole is the former name of the role carried by a group
+// role mapping.
+//
+// Deprecated: use [DirectoryGroupRoleMapping], whose Role is an
+// [OrganizationRole]. This struct declares Permissions as []string, but the API
+// serializes permissions as objects, so decoding a role with permissions into
+// it fails. It is kept unchanged so that code written against the SCIM-era
+// names keeps compiling; the replacement type decodes correctly.
 type SCIMGroupRoleMappingRole struct {
 	Object            string   `json:"object"`
 	ID                string   `json:"id"`
@@ -13,7 +20,12 @@ type SCIMGroupRoleMappingRole struct {
 	UpdatedAt         int64    `json:"updated_at"`
 }
 
-// SCIMGroupRoleMapping represents a mapping from a SCIM group to an organization role.
+// SCIMGroupRoleMapping is the former name of [DirectoryGroupRoleMapping].
+//
+// Deprecated: use [DirectoryGroupRoleMapping]. This is a distinct type rather
+// than an alias because it decodes the legacy `scim_*` JSON fields. The API
+// emits both spellings with the same values, so either type decodes any
+// response.
 type SCIMGroupRoleMapping struct {
 	APIResource
 	Object               string                    `json:"object"`
@@ -27,25 +39,25 @@ type SCIMGroupRoleMapping struct {
 	UpdatedAt            int64                     `json:"updated_at"`
 }
 
-// SCIMGroupRoleMappingList represents a list of SCIM group role mappings.
+// SCIMGroupRoleMappingList is the former name of
+// [DirectoryGroupRoleMappingList].
+//
+// Deprecated: use [DirectoryGroupRoleMappingList].
 type SCIMGroupRoleMappingList struct {
 	APIResource
 	Data       []*SCIMGroupRoleMapping `json:"data"`
 	TotalCount int64                   `json:"total_count"`
 }
 
-// SCIMGroup represents a SCIM group from the directory provider.
-type SCIMGroup struct {
-	APIResource
-	Object      string `json:"object"`
-	ID          string `json:"id"`
-	DisplayName string `json:"display_name"`
-	UpdatedAt   int64  `json:"updated_at"`
-}
+// SCIMGroup is the former name of [DirectoryGroup].
+//
+// Deprecated: use [DirectoryGroup]. The two are the same Go type, but the
+// Object field differs by route: the scimgrouprolemapping package returns
+// "scim_group" and the directorygrouprolemapping package returns
+// "directory_group".
+type SCIMGroup = DirectoryGroup
 
-// SCIMGroupList represents a paginated list of SCIM groups.
-type SCIMGroupList struct {
-	APIResource
-	Data   []*SCIMGroup      `json:"data"`
-	Cursor *PaginationCursor `json:"cursor"`
-}
+// SCIMGroupList is the former name of [DirectoryGroupList].
+//
+// Deprecated: use [DirectoryGroupList].
+type SCIMGroupList = DirectoryGroupList

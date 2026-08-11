@@ -1,27 +1,21 @@
 package clerk
 
-// SCIMDirectory represents a SCIM directory resource.
-type SCIMDirectory struct {
-	APIResource
-	Object                  string  `json:"object"`
-	ID                      string  `json:"id"`
-	Name                    string  `json:"name"`
-	EnterpriseConnectionID  *string `json:"enterprise_connection_id"`
-	EndpointURL             string  `json:"endpoint_url"`
-	Provider                string  `json:"provider"`
-	Enabled                 bool    `json:"enabled"`
-	GroupRoleMappingEnabled bool    `json:"group_role_mapping_enabled"`
-	// CredentialsConfigured is only returned for pull-based directories
-	// (e.g. Google Workspace): whether validated provider credentials are
-	// stored for the directory.
-	CredentialsConfigured *bool             `json:"credentials_configured,omitempty"`
-	APIKey                *string           `json:"api_key,omitempty"`
-	CreatedAt             int64             `json:"created_at"`
-	UpdatedAt             int64             `json:"updated_at"`
-	AttributeMapping      map[string]string `json:"attribute_mapping,omitempty"`
-}
+// SCIMDirectory is the former name of [Directory].
+//
+// Deprecated: use [Directory]. The two are the same Go type; this alias exists
+// so that code written against the SCIM-era names keeps compiling.
+//
+// The Object field is not the same across packages: the API picks the `object`
+// discriminator by route, so the scimdirectory package returns
+// "scim_directory" and the directory package returns "directory". Code that
+// compares Object must be updated when it moves to the directory package.
+type SCIMDirectory = Directory
 
-// SCIMDirectoryList represents a paginated list of SCIM directories.
+// SCIMDirectoryList is the former name of [DirectoryList].
+//
+// Deprecated: use [DirectoryList]. This is a distinct type rather than an
+// alias because [DirectoryList] renamed the data field from SCIMDirectories to
+// Directories. Both decode the same `data` payload.
 type SCIMDirectoryList struct {
 	APIResource
 	SCIMDirectories []*SCIMDirectory `json:"data"`

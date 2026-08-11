@@ -1,11 +1,7 @@
-// Package scimdirectory provides the SCIM Directories API.
-// SCIM directories are an experimental features, not enabled for all instances
+// Package directory provides the Directories API.
 //
-// Deprecated: use package directory. This package is retained so that code
-// written against the SCIM-era names keeps compiling. It continues to call the
-// legacy /scim_directories routes, which stay mounted alongside /directories
-// and return the same resources.
-package scimdirectory
+// Directories are an experimental feature, not enabled for all instances.
+package directory
 
 import (
 	"context"
@@ -18,9 +14,9 @@ import (
 
 //go:generate go run ../cmd/gen/main.go
 
-const path = "/scim_directories"
+const path = "/directories"
 
-// Client is used to invoke the SCIM Directories API.
+// Client is used to invoke the Directories API.
 type Client struct {
 	Backend clerk.Backend
 }
@@ -38,7 +34,7 @@ type CreateParams struct {
 	Provider               *string `json:"provider,omitempty"`
 }
 
-// Create creates a new SCIM directory.
+// Create creates a new directory.
 func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Directory, error) {
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
@@ -47,7 +43,7 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Direc
 	return resource, err
 }
 
-// Get returns details about a SCIM directory.
+// Get returns details about a directory.
 func (c *Client) Get(ctx context.Context, id string) (*clerk.Directory, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
@@ -65,7 +61,7 @@ type UpdateParams struct {
 	Provider                *string `json:"provider,omitempty"`
 	Enabled                 *bool   `json:"enabled,omitempty"`
 	GroupRoleMappingEnabled *bool   `json:"group_role_mapping_enabled,omitempty"`
-	// AttributeMapping is a map of SCIM attributes to Clerk attributes.
+	// AttributeMapping is a map of directory attributes to Clerk attributes.
 	// The semantics of the PATCH request are as follows:
 	//   - If the attribute is not present in the request, it will be left unchanged.
 	//   - If the attribute is present in the request, it will be updated to the new value.
@@ -73,7 +69,7 @@ type UpdateParams struct {
 	AttributeMapping *map[string]string `json:"attribute_mapping,omitempty"`
 }
 
-// Update updates a SCIM directory.
+// Update updates a directory.
 func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Directory, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
@@ -93,6 +89,9 @@ type ListParams struct {
 
 func (params *ListParams) ToQuery() url.Values {
 	q := url.Values{}
+	if params == nil {
+		return q
+	}
 	if params.Limit != nil {
 		q.Set("limit", strconv.FormatInt(*params.Limit, 10))
 	}
@@ -102,16 +101,16 @@ func (params *ListParams) ToQuery() url.Values {
 	return q
 }
 
-// List returns a paginated list of SCIM directories.
-func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.SCIMDirectoryList, error) { //nolint:staticcheck // SA1019: this deprecated package returns the SCIM-named list on purpose. DirectoryList renames the data field from SCIMDirectories to Directories, so swapping the type here would break existing callers.
+// List returns a paginated list of directories.
+func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.DirectoryList, error) {
 	req := clerk.NewAPIRequest(http.MethodGet, path)
 	req.SetParams(params)
-	resource := &clerk.SCIMDirectoryList{} //nolint:staticcheck // SA1019: must match this method's deprecated return type.
+	resource := &clerk.DirectoryList{}
 	err := c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
 
-// Delete deletes a SCIM directory.
+// Delete deletes a directory.
 func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
 	path, err := clerk.JoinPath(path, id)
 	if err != nil {
@@ -123,7 +122,7 @@ func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource,
 	return resource, err
 }
 
-// RotateAPIKey rotates the API key for a SCIM directory.
+// RotateAPIKey rotates the API key for a directory.
 // The old API key will be valid for a grace period before expiring.
 func (c *Client) RotateAPIKey(ctx context.Context, id string) (*clerk.Directory, error) {
 	path, err := clerk.JoinPath(path, id, "rotate_api_key")
@@ -136,7 +135,7 @@ func (c *Client) RotateAPIKey(ctx context.Context, id string) (*clerk.Directory,
 	return resource, err
 }
 
-// Sync enqueues a sync run for a pull-based SCIM directory. The server
+// Sync enqueues a sync run for a pull-based directory. The server
 // responds 202 Accepted; the run itself is asynchronous.
 func (c *Client) Sync(ctx context.Context, id string) error {
 	path, err := clerk.JoinPath(path, id, "sync")
@@ -154,7 +153,7 @@ type CredentialsParams struct {
 }
 
 // AddCredentials adds pull-provider credentials (e.g. a Google service-account
-// key and subject email) for a SCIM directory. They are validated and sealed
+// key and subject email) for a directory. They are validated and sealed
 // server-side; on success the directory is enabled.
 func (c *Client) AddCredentials(ctx context.Context, id string, params *CredentialsParams) (*clerk.Directory, error) {
 	path, err := clerk.JoinPath(path, id, "credentials")
