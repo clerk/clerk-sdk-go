@@ -524,7 +524,7 @@ func TestSAMLConnectionClientCreate_WithLegacySCIMPath(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","directory_path":null}]}`, name, domain, provider)),
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","domain":"%s","provider":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups"}]}`, name, domain, provider)),
 			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","custom_attributes":[{"name":"groups","key":"groups","sso_path":"$.groups","scim_path":"groups","directory_path":"groups"}]}`, id, name, domain, provider)),
 			Method: http.MethodPost,
 			Path:   "/v1/saml_connections",

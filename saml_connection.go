@@ -9,8 +9,14 @@ type CustomAttribute struct {
 	// Deprecated: use DirectoryPath. Both are populated on read, because the
 	// API emits the path under both names. On write, set either one; the API
 	// rejects a request only when both are set and disagree.
-	SCIMPath      *string `json:"scim_path,omitempty"`
-	DirectoryPath *string `json:"directory_path"`
+	SCIMPath *string `json:"scim_path,omitempty"`
+	// DirectoryPath is the new name for SCIMPath.
+	//
+	// Both path fields are omitempty, so an unset one is left out of the
+	// request rather than sent as null. The API treats an absent path and a
+	// null path identically, so leaving DirectoryPath unset keeps the wire
+	// behaviour of a SCIMPath-only request unchanged.
+	DirectoryPath *string `json:"directory_path,omitempty"`
 	MultiValued   *bool   `json:"multi_valued,omitempty"`
 }
 

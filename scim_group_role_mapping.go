@@ -3,11 +3,22 @@ package clerk
 // SCIMGroupRoleMappingRole is the former name of the role carried by a group
 // role mapping.
 //
-// Deprecated: use [OrganizationRole]. The old standalone struct declared
-// Permissions as []string, but the API serializes permissions as objects, so
-// it could not decode a real response. This alias resolves to the correct
-// shape.
-type SCIMGroupRoleMappingRole = OrganizationRole
+// Deprecated: use [DirectoryGroupRoleMapping], whose Role is an
+// [OrganizationRole]. This struct declares Permissions as []string, but the API
+// serializes permissions as objects, so decoding a role with permissions into
+// it fails. It is kept unchanged so that code written against the SCIM-era
+// names keeps compiling; the replacement type decodes correctly.
+type SCIMGroupRoleMappingRole struct {
+	Object            string   `json:"object"`
+	ID                string   `json:"id"`
+	Name              string   `json:"name"`
+	Key               string   `json:"key"`
+	Description       *string  `json:"description"`
+	Permissions       []string `json:"permissions"`
+	IsCreatorEligible bool     `json:"is_creator_eligible"`
+	CreatedAt         int64    `json:"created_at"`
+	UpdatedAt         int64    `json:"updated_at"`
+}
 
 // SCIMGroupRoleMapping is the former name of [DirectoryGroupRoleMapping].
 //
@@ -17,15 +28,15 @@ type SCIMGroupRoleMappingRole = OrganizationRole
 // response.
 type SCIMGroupRoleMapping struct {
 	APIResource
-	Object               string            `json:"object"`
-	ID                   string            `json:"id"`
-	SCIMDirectoryID      string            `json:"scim_directory_id"`
-	SCIMGroupID          string            `json:"scim_group_id"`
-	SCIMGroupDisplayName string            `json:"scim_group_display_name"`
-	Role                 *OrganizationRole `json:"role,omitempty"`
-	Precedence           int               `json:"precedence"`
-	CreatedAt            int64             `json:"created_at"`
-	UpdatedAt            int64             `json:"updated_at"`
+	Object               string                    `json:"object"`
+	ID                   string                    `json:"id"`
+	SCIMDirectoryID      string                    `json:"scim_directory_id"`
+	SCIMGroupID          string                    `json:"scim_group_id"`
+	SCIMGroupDisplayName string                    `json:"scim_group_display_name"`
+	Role                 *SCIMGroupRoleMappingRole `json:"role,omitempty"`
+	Precedence           int                       `json:"precedence"`
+	CreatedAt            int64                     `json:"created_at"`
+	UpdatedAt            int64                     `json:"updated_at"`
 }
 
 // SCIMGroupRoleMappingList is the former name of
