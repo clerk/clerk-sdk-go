@@ -6,6 +6,7 @@ type AuditLog struct {
 	ID           string                `json:"id"`
 	EventTime    int64                 `json:"event_time"`
 	Actor        string                `json:"actor"`
+	ActorType    string                `json:"actor_type"`
 	Impersonator *ImpersonatorResponse `json:"impersonator"`
 	Subject      string                `json:"subject"`
 	Type         string                `json:"type"`

@@ -27,6 +27,7 @@ func TestPackageList(t *testing.T) {
 				"type":           "user.created",
 				"event_time":     1705315800000,
 				"actor":          "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
+				"actor_type":     "user",
 				"subject":        "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
 				"trace_id":       "00000000000000000000000000000001",
 				"span_id":        "0000000000000001",
@@ -80,6 +81,7 @@ func TestPackageList(t *testing.T) {
 	assert.Equal(t, "audit_log", auditLog.Object)
 	assert.Equal(t, "user.created", auditLog.Type)
 	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
+	assert.Equal(t, "user", auditLog.ActorType)
 	assert.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
 	assert.Equal(t, "00000000000000000000000000000001", auditLog.TraceID)
 	assert.Equal(t, "0000000000000001", auditLog.SpanID)
@@ -102,6 +104,7 @@ func TestPackageGet(t *testing.T) {
 		"type":           "user.created",
 		"event_time":     1705315800000,
 		"actor":          "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
+		"actor_type":     "instance_key",
 		"subject":        "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
 		"trace_id":       "00000000000000000000000000000001",
 		"span_id":        "0000000000000001",
@@ -138,6 +141,7 @@ func TestPackageGet(t *testing.T) {
 	assert.Equal(t, "audit_log", auditLog.Object)
 	assert.Equal(t, "user.created", auditLog.Type)
 	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
+	assert.Equal(t, "instance_key", auditLog.ActorType)
 	assert.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
 	assert.Equal(t, "00000000000000000000000000000001", auditLog.TraceID)
 	assert.Equal(t, "0000000000000001", auditLog.SpanID)
