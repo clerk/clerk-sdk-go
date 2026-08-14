@@ -15,12 +15,21 @@ import (
 func TestDomainCreate(t *testing.T) {
 	name := "clerk.com"
 	id := "dmn_123"
+	dmarcHost := "_dmarc." + name
 	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
 		HTTPClient: &http.Client{
 			Transport: &clerktest.RoundTripper{
-				T:      t,
-				In:     json.RawMessage(fmt.Sprintf(`{"name":"%s"}`, name)),
-				Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s"}`, id, name)),
+				T:  t,
+				In: json.RawMessage(fmt.Sprintf(`{"name":"%s"}`, name)),
+				Out: json.RawMessage(fmt.Sprintf(`{
+					"id":"%s",
+					"name":"%s",
+					"cname_targets":[{"host":"clerk.%s","value":"frontend-api.clerk.services","required":false}],
+					"dns_targets":[
+						{"host":"clerk.%s","value":"frontend-api.clerk.services","required":false,"record_type":"CNAME"},
+						{"host":"%s","value":"v=DMARC1; p=none;","required":true,"record_type":"TXT","automation_disposition":"safe_to_create"}
+					]
+				}`, id, name, name, name, dmarcHost)),
 				Path:   "/v1/domains",
 				Method: http.MethodPost,
 			},
@@ -33,6 +42,25 @@ func TestDomainCreate(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, dmn.ID)
 	require.Equal(t, name, dmn.Name)
+	require.Equal(t, []clerk.CNAMETarget{{
+		Host:  "clerk." + name,
+		Value: "frontend-api.clerk.services",
+	}}, dmn.CNAMETargets)
+	require.Equal(t, []clerk.DNSTarget{
+		{
+			Host:       "clerk." + name,
+			Value:      "frontend-api.clerk.services",
+			Required:   false,
+			RecordType: "CNAME",
+		},
+		{
+			Host:                  dmarcHost,
+			Value:                 "v=DMARC1; p=none;",
+			Required:              true,
+			RecordType:            "TXT",
+			AutomationDisposition: "safe_to_create",
+		},
+	}, dmn.DNSTargets)
 }
 
 func TestDomainCreate_Error(t *testing.T) {
@@ -63,12 +91,17 @@ func TestDomainCreate_Error(t *testing.T) {
 func TestDomainUpdate(t *testing.T) {
 	id := "dmn_456"
 	name := "clerk.dev"
+	dmarcHost := "_dmarc." + name
 	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
 		HTTPClient: &http.Client{
 			Transport: &clerktest.RoundTripper{
-				T:      t,
-				In:     json.RawMessage(fmt.Sprintf(`{"name":"%s"}`, name)),
-				Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s"}`, id, name)),
+				T:  t,
+				In: json.RawMessage(fmt.Sprintf(`{"name":"%s"}`, name)),
+				Out: json.RawMessage(fmt.Sprintf(`{
+					"id":"%s",
+					"name":"%s",
+					"dns_targets":[{"host":"%s","value":"v=DMARC1; p=none;","required":true,"record_type":"TXT"}]
+				}`, id, name, dmarcHost)),
 				Path:   fmt.Sprintf("/v1/domains/%s", id),
 				Method: http.MethodPatch,
 			},
@@ -81,6 +114,12 @@ func TestDomainUpdate(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, dmn.ID)
 	require.Equal(t, name, dmn.Name)
+	require.Equal(t, []clerk.DNSTarget{{
+		Host:       dmarcHost,
+		Value:      "v=DMARC1; p=none;",
+		Required:   true,
+		RecordType: "TXT",
+	}}, dmn.DNSTargets)
 }
 
 func TestDomainUpdate_Error(t *testing.T) {
