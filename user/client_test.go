@@ -66,6 +66,53 @@ func TestUserClientCreate_WithLocale(t *testing.T) {
 	require.Equal(t, locale, *user.Locale)
 }
 
+func TestUserClientCreate_WithSkipRestrictionChecks(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	email := "blocked@example.com"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"email_address":["%s"],"skip_restriction_checks":true}`, email)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, id)),
+			Method: http.MethodPost,
+			Path:   "/v1/users",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Create(context.Background(), &CreateParams{
+		EmailAddresses:        &[]string{email},
+		SkipRestrictionChecks: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+}
+
+// Omitting the field must leave it out of the payload entirely, so an
+// unrelated create can't be read as asking for an exemption.
+func TestUserClientCreate_WithoutSkipRestrictionChecks(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	email := "user@example.com"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"email_address":["%s"]}`, email)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, id)),
+			Method: http.MethodPost,
+			Path:   "/v1/users",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Create(context.Background(), &CreateParams{
+		EmailAddresses: &[]string{email},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+}
+
 func TestUserClientList_Request(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
