@@ -47,8 +47,14 @@ type CreateParams struct {
 	PasswordHasher          *string          `json:"password_hasher,omitempty"`
 	SkipPasswordRequirement *bool            `json:"skip_password_requirement,omitempty"`
 	SkipPasswordChecks      *bool            `json:"skip_password_checks,omitempty"`
-	TOTPSecret              *string          `json:"totp_secret,omitempty"`
-	BackupCodes             *[]string        `json:"backup_codes,omitempty"`
+	// SkipRestrictionChecks exempts this user from the instance's allowlist,
+	// blocklist, blocked disposable email domains and blocked email
+	// subaddresses. Those settings otherwise reject a matching identifier here
+	// just as they do at sign-up, so a backend creating a user it already
+	// trusts sets this rather than editing the instance's own lists.
+	SkipRestrictionChecks *bool     `json:"skip_restriction_checks,omitempty"`
+	TOTPSecret            *string   `json:"totp_secret,omitempty"`
+	BackupCodes           *[]string `json:"backup_codes,omitempty"`
 	// Banned, when set to true, creates the user already banned, saving a
 	// follow-up call to the /ban endpoint. Requires the same plan support as
 	// the ban user endpoint.
