@@ -10,12 +10,21 @@ type Domain struct {
 	AccountPortalURL  *string       `json:"accounts_portal_url,omitempty"`
 	ProxyURL          *string       `json:"proxy_url,omitempty"`
 	CNAMETargets      []CNAMETarget `json:"cname_targets,omitempty"`
+	DNSTargets        []DNSTarget   `json:"dns_targets,omitempty"`
 	DevelopmentOrigin string        `json:"development_origin"`
 }
 
 type CNAMETarget struct {
 	Host  string `json:"host"`
 	Value string `json:"value"`
+}
+
+type DNSTarget struct {
+	Host                  string `json:"host"`
+	Value                 string `json:"value"`
+	Required              bool   `json:"required"`
+	RecordType            string `json:"record_type"`
+	AutomationDisposition string `json:"automation_disposition,omitempty"`
 }
 
 type DomainList struct {

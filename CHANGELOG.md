@@ -2,6 +2,8 @@
 
 ## Next release
 
+- Add `SkipRestrictionChecks` to `user.CreateParams`. Creating a user now runs the instance's allowlist, blocklist, blocked disposable email domains and blocked email subaddresses, the same as sign-up does; set this to exempt a single create, for a backend creating a user it already trusts.
+
 - Add support for the OAuth Applications API. Added the oauthapplication package for API operations and a clerk.OAuthApplication type.
 - Add support for multiple invitation templates with the `TemplateSlug` field in `invitation.Create`.
 - Add support for listing and creating waitlist entries with the `waitlistentry.List` and `waitlistentry.Create` methods.
