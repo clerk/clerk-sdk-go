@@ -29,6 +29,7 @@ func TestList(t *testing.T) {
 				"source":         "bapi",
 				"event_time":     1705315800000,
 				"actor":          "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
+				"actor_type":     "user",
 				"subject":        "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
 				"client_id":      "client_123",
 				"trace_id":       "00000000000000000000000000000001",
@@ -116,6 +117,7 @@ func TestList(t *testing.T) {
 	require.NotNil(t, auditLog.Source)
 	require.Equal(t, "bapi", *auditLog.Source)
 	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
+	require.Equal(t, "user", auditLog.ActorType)
 	require.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
 	require.NotNil(t, auditLog.ClientID)
 	require.Equal(t, "client_123", *auditLog.ClientID)
@@ -345,6 +347,50 @@ func TestListParams_ToQuery_IPAddress(t *testing.T) {
 	require.Empty(t, (&ListParams{}).ToQuery()["ip_address"], "nil IPAddress should be omitted")
 }
 
+// TestList_ActorTypeOmitted verifies that a response without actor_type
+// decodes to the zero value rather than failing, so the SDK keeps working
+// against API responses predating the field.
+func TestList_ActorTypeOmitted(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"data": []map[string]interface{}{
+			{
+				"id":         "019400f7-c6e4-7f00-8000-000000000001",
+				"object":     "audit_log",
+				"type":       "user.created",
+				"event_time": 1705315800000,
+				"actor":      "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
+				"subject":    "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
+			},
+		},
+		"cursor": map[string]interface{}{
+			"starting_after":   nil,
+			"ending_before":    nil,
+			"has_next_page":    false,
+			"next_page_status": "false",
+		},
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    responseJSON,
+			Method: http.MethodGet,
+			Path:   "/v1/audit_logs",
+		},
+	}
+	client := NewClient(config)
+	list, err := client.List(context.Background(), &ListParams{})
+	require.NoError(t, err)
+	require.Equal(t, 1, len(list.AuditLogs))
+	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", list.AuditLogs[0].Actor)
+	require.Empty(t, list.AuditLogs[0].ActorType)
+}
+
 func TestList_RetentionLimitReached(t *testing.T) {
 	t.Parallel()
 
@@ -388,6 +434,7 @@ func TestGet(t *testing.T) {
 		"source":         "bapi",
 		"event_time":     1705315800000,
 		"actor":          "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
+		"actor_type":     "instance_key",
 		"subject":        "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w",
 		"client_id":      "client_123",
 		"trace_id":       "00000000000000000000000000000001",
@@ -457,6 +504,7 @@ func TestGet(t *testing.T) {
 	require.NotNil(t, auditLog.Source)
 	require.Equal(t, "bapi", *auditLog.Source)
 	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
+	require.Equal(t, "instance_key", auditLog.ActorType)
 	require.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
 	require.NotNil(t, auditLog.ClientID)
 	require.Equal(t, "client_123", *auditLog.ClientID)
