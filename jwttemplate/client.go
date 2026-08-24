@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/clerk/clerk-sdk-go/v3"
 )
@@ -95,6 +96,12 @@ func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource,
 
 type ListParams struct {
 	clerk.APIParams
+	clerk.ListParams
+}
+
+// ToQuery returns query string values from the params.
+func (params *ListParams) ToQuery() url.Values {
+	return params.ListParams.ToQuery()
 }
 
 // List returns a list of JWT templates.

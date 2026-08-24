@@ -173,3 +173,36 @@ func TestJWTTemplateClientList(t *testing.T) {
 	require.Equal(t, "jtmpl_123", list.JWTTemplates[0].ID)
 	require.Equal(t, "the-name", list.JWTTemplates[0].Name)
 }
+
+func TestJWTTemplateClientList_Pagination(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T: t,
+			Out: json.RawMessage(`{
+	"data": [{"id":"jtmpl_123","name":"the-name"}],
+	"total_count": 3
+}`),
+			Method: http.MethodGet,
+			Path:   "/v1/jwt_templates",
+			Query: &url.Values{
+				"paginated": []string{"true"},
+				"limit":     []string{"1"},
+				"offset":    []string{"2"},
+			},
+		},
+	}
+	client := NewClient(config)
+	params := &ListParams{
+		ListParams: clerk.ListParams{
+			Limit:  clerk.Int64(1),
+			Offset: clerk.Int64(2),
+		},
+	}
+	list, err := client.List(context.Background(), params)
+	require.NoError(t, err)
+	require.Equal(t, int64(3), list.TotalCount)
+	require.Equal(t, 1, len(list.JWTTemplates))
+	require.Equal(t, "jtmpl_123", list.JWTTemplates[0].ID)
+}
