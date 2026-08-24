@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
@@ -35,6 +37,32 @@ func TestOrganizationClientCreate(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, organization.ID)
 	require.Equal(t, name, organization.Name)
+}
+
+func TestOrganizationClientCreateWithRoleSet(t *testing.T) {
+	t.Parallel()
+	id := "org_123"
+	name := "Acme Inc"
+	roleSetKey := "admin-roles"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","role_set_key":"%s"}`, name, roleSetKey)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","role_set_key":"%s"}`, id, name, roleSetKey)),
+			Method: http.MethodPost,
+			Path:   "/v1/organizations",
+		},
+	}
+	client := NewClient(config)
+	organization, err := client.Create(context.Background(), &CreateParams{
+		Name:       clerk.String(name),
+		RoleSetKey: clerk.String(roleSetKey),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, organization.ID)
+	require.Equal(t, name, organization.Name)
+	require.Equal(t, roleSetKey, *organization.RoleSetKey)
 }
 
 func TestOrganizationClientCreate_Error(t *testing.T) {
@@ -291,4 +319,135 @@ func TestOrganizationClientUpdateMetadata(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, organization.ID)
 	require.JSONEq(t, metadata, string(organization.PrivateMetadata))
+}
+
+func TestOrganizationClientReplaceMetadata(t *testing.T) {
+	t.Parallel()
+	id := "org_123"
+	metadata := `{"foo":"bar"}`
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"private_metadata":%s}`, metadata)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","private_metadata":%s}`, id, metadata)),
+			Method: http.MethodPut,
+			Path:   "/v1/organizations/" + id + "/metadata",
+		},
+	}
+	client := NewClient(config)
+	metadataParam := json.RawMessage(metadata)
+	organization, err := client.ReplaceMetadata(context.Background(), id, &ReplaceMetadataParams{
+		PrivateMetadata: &metadataParam,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, organization.ID)
+	require.JSONEq(t, metadata, string(organization.PrivateMetadata))
+}
+
+type recordedRequest struct {
+	method string
+	path   string
+	body   string
+}
+
+func newUpdateRoutingServer(t *testing.T, recorded *[]recordedRequest, patchStatus int, putStatus int, body string) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		buf, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		*recorded = append(*recorded, recordedRequest{
+			method: r.Method,
+			path:   r.URL.Path,
+			body:   string(buf),
+		})
+		switch r.Method {
+		case http.MethodPut:
+			w.WriteHeader(putStatus)
+		case http.MethodPatch:
+			w.WriteHeader(patchStatus)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+		_, err = w.Write([]byte(body))
+		require.NoError(t, err)
+	}))
+}
+
+func TestOrganizationClientUpdate_OnlyMetadataRoutesToPut(t *testing.T) {
+	t.Parallel()
+	id := "org_123"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	var recorded []recordedRequest
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusOK, http.StatusOK,
+		fmt.Sprintf(`{"id":"%s","public_metadata":%s}`, id, string(metadata)))
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.URL = clerk.String(ts.URL)
+	config.HTTPClient = ts.Client()
+	client := NewClient(config)
+	organization, err := client.Update(context.Background(), id, &UpdateParams{
+		PublicMetadata: &metadata,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, organization.ID)
+	require.Len(t, recorded, 1)
+	require.Equal(t, http.MethodPut, recorded[0].method)
+	require.Equal(t, "/organizations/"+id+"/metadata", recorded[0].path)
+	require.JSONEq(t, fmt.Sprintf(`{"public_metadata":%s}`, string(metadata)), recorded[0].body)
+}
+
+func TestOrganizationClientUpdate_MetadataAndNonMetadataIssuesBothCalls(t *testing.T) {
+	t.Parallel()
+	id := "org_123"
+	name := "Acme Inc"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	var recorded []recordedRequest
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusOK, http.StatusOK,
+		fmt.Sprintf(`{"id":"%s","name":"%s","public_metadata":%s}`, id, name, string(metadata)))
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.URL = clerk.String(ts.URL)
+	config.HTTPClient = ts.Client()
+	client := NewClient(config)
+	organization, err := client.Update(context.Background(), id, &UpdateParams{
+		Name:           clerk.String(name),
+		PublicMetadata: &metadata,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, organization.ID)
+	require.Len(t, recorded, 2)
+
+	require.Equal(t, http.MethodPatch, recorded[0].method)
+	require.Equal(t, "/organizations/"+id, recorded[0].path)
+	require.JSONEq(t, fmt.Sprintf(`{"name":"%s"}`, name), recorded[0].body)
+
+	require.Equal(t, http.MethodPut, recorded[1].method)
+	require.Equal(t, "/organizations/"+id+"/metadata", recorded[1].path)
+	require.JSONEq(t, fmt.Sprintf(`{"public_metadata":%s}`, string(metadata)), recorded[1].body)
+}
+
+func TestOrganizationClientUpdate_MetadataPatchErrorAbortsPut(t *testing.T) {
+	t.Parallel()
+	id := "org_123"
+	name := "Acme Inc"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	var recorded []recordedRequest
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusBadRequest, http.StatusOK,
+		`{"errors":[{"code":"bad_request"}]}`)
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.URL = clerk.String(ts.URL)
+	config.HTTPClient = ts.Client()
+	client := NewClient(config)
+	_, err := client.Update(context.Background(), id, &UpdateParams{
+		Name:           clerk.String(name),
+		PublicMetadata: &metadata,
+	})
+	require.Error(t, err)
+	require.Len(t, recorded, 1)
+	require.Equal(t, http.MethodPatch, recorded[0].method)
 }

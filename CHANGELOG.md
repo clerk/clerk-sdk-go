@@ -2,6 +2,9 @@
 
 ## Next release
 
+- Add support for removing a user's password with `user.RemovePassword`.
+- Add `SkipRestrictionChecks` to `user.CreateParams`. Creating a user now runs the instance's allowlist, blocklist, blocked disposable email domains and blocked email subaddresses, the same as sign-up does; set this to exempt a single create, for a backend creating a user it already trusts.
+
 ## 2.3.1
 
 - Fix parsing the org claims in the new JWT session token version.

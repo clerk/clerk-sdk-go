@@ -114,6 +114,57 @@ func TestMachineClientGetSecretKey(t *testing.T) {
 	require.Equal(t, secret, secretKey.Secret)
 }
 
+func TestMachineClientRotateSecretKey(t *testing.T) {
+	t.Parallel()
+	id := "machine_123"
+	newSecret := "sk_test_NEW123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	previousTokenTTL := int64(7200)
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"previous_token_ttl":%d}`, previousTokenTTL)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"machine_secret_key","secret":"%s"}`, newSecret)),
+			Method: http.MethodPost,
+			Path:   "/v1/machines/" + id + "/secret_key/rotate",
+		},
+	}
+	client := NewClient(config)
+	secretKey, err := client.RotateSecretKey(context.Background(), id, &RotateSecretKeyParams{
+		PreviousTokenTTL: previousTokenTTL,
+	})
+	require.NoError(t, err)
+	require.Equal(t, "machine_secret_key", secretKey.Object)
+	require.Equal(t, newSecret, secretKey.Secret)
+}
+
+func TestMachineClientRotateSecretKey_Error(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Status: http.StatusBadRequest,
+			Out: json.RawMessage(`{
+  "errors":[{
+		"code":"rotate-secret-key-error-code"
+	}],
+	"clerk_trace_id":"rotate-secret-key-trace-id"
+}`),
+		},
+	}
+	client := NewClient(config)
+	_, err := client.RotateSecretKey(context.Background(), "machine_123", &RotateSecretKeyParams{
+		PreviousTokenTTL: 3600,
+	})
+	require.Error(t, err)
+	apiErr, ok := err.(*clerk.APIErrorResponse)
+	require.True(t, ok)
+	require.Equal(t, "rotate-secret-key-trace-id", apiErr.TraceID)
+	require.Equal(t, 1, len(apiErr.Errors))
+	require.Equal(t, "rotate-secret-key-error-code", apiErr.Errors[0].Code)
+}
+
 func TestMachineClientUpdate(t *testing.T) {
 	t.Parallel()
 	id := "machine_123"
@@ -191,6 +242,7 @@ func TestMachineClientDelete(t *testing.T) {
 
 func TestMachineClientList(t *testing.T) {
 	t.Parallel()
+	orderBy := "-created_at"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
@@ -199,15 +251,17 @@ func TestMachineClientList(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/machines",
 			Query: &url.Values{
-				"limit":  []string{"1"},
-				"offset": []string{"2"},
-				"query":  []string{"Test"},
+				"limit":    []string{"1"},
+				"offset":   []string{"2"},
+				"query":    []string{"Test"},
+				"order_by": []string{orderBy},
 			},
 		},
 	}
 	client := NewClient(config)
 	params := &ListParams{
-		Query: clerk.String("Test"),
+		Query:   clerk.String("Test"),
+		OrderBy: &orderBy,
 	}
 	params.Limit = clerk.Int64(1)
 	params.Offset = clerk.Int64(2)

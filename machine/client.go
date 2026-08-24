@@ -64,6 +64,24 @@ func (c *Client) GetSecretKey(ctx context.Context, id string) (*clerk.MachineSec
 	return secretKey, err
 }
 
+type RotateSecretKeyParams struct {
+	clerk.APIParams
+	PreviousTokenTTL int64 `json:"previous_token_ttl"`
+}
+
+// RotateSecretKey rotates the secret key for a machine.
+func (c *Client) RotateSecretKey(ctx context.Context, machineID string, params *RotateSecretKeyParams) (*clerk.MachineSecretKey, error) {
+	path, err := clerk.JoinPath(path, machineID, "secret_key", "rotate")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	secretKey := &clerk.MachineSecretKey{}
+	err = c.Backend.Call(ctx, req, secretKey)
+	return secretKey, err
+}
+
 type UpdateParams struct {
 	clerk.APIParams
 	Name            *string `json:"name,omitempty"`
@@ -98,13 +116,17 @@ func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource,
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
-	Query *string `json:"query,omitempty"`
+	OrderBy *string `json:"order_by,omitempty"`
+	Query   *string `json:"query,omitempty"`
 }
 
 func (params *ListParams) ToQuery() url.Values {
 	q := params.ListParams.ToQuery()
 	if params.Query != nil {
 		q.Set("query", *params.Query)
+	}
+	if params.OrderBy != nil {
+		q.Set("order_by", *params.OrderBy)
 	}
 	return q
 }

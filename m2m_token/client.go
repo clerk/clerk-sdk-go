@@ -29,14 +29,16 @@ func NewClient(config *clerk.ClientConfig) *Client {
 type CreateParams struct {
 	clerk.APIParams
 	SecondsUntilExpiration *int64           `json:"seconds_until_expiration,omitempty"`
+	MinRemainingTTLSeconds *int64           `json:"min_remaining_ttl_seconds,omitempty"`
 	Claims                 *json.RawMessage `json:"claims,omitempty"`
+	TokenFormat            *string          `json:"token_format,omitempty"`
 }
 
 // Create creates a new M2M token.
-func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.M2MTokenWithSecret, error) {
+func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.M2MTokenWithToken, error) {
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
-	resource := &clerk.M2MTokenWithSecret{}
+	resource := &clerk.M2MTokenWithToken{}
 	err := c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
@@ -99,7 +101,7 @@ func (c *Client) Revoke(ctx context.Context, tokenID string, params *RevokeParam
 
 type VerifyParams struct {
 	clerk.APIParams
-	Secret string `json:"secret"`
+	Token string `json:"token"`
 }
 
 // Verify verifies an M2M token.

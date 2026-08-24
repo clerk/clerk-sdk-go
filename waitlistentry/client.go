@@ -2,6 +2,7 @@ package waitlistentry
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/url"
 
@@ -68,4 +69,43 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.Waitl
 	invitation := &clerk.WaitlistEntry{}
 	err := c.Backend.Call(ctx, req, invitation)
 	return invitation, err
+}
+
+type BulkCreateParams struct {
+	clerk.APIParams
+	WaitlistEntries []*CreateParams
+}
+
+func (b BulkCreateParams) MarshalJSON() ([]byte, error) {
+	return json.Marshal(b.WaitlistEntries)
+}
+
+type bulkCreateResponse struct {
+	clerk.APIResource
+	WaitlistEntries []*clerk.WaitlistEntry
+}
+
+func (b *bulkCreateResponse) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, &b.WaitlistEntries)
+}
+
+// BulkCreate creates multiple waitlist entries.
+func (c *Client) BulkCreate(ctx context.Context, params *BulkCreateParams) (*clerk.WaitlistEntries, error) {
+	path, err := clerk.JoinPath(path, "bulk")
+	if err != nil {
+		return nil, err
+	}
+
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+
+	res := &bulkCreateResponse{}
+	if err := c.Backend.Call(ctx, req, res); err != nil {
+		return nil, err
+	}
+
+	return &clerk.WaitlistEntries{
+		APIResource:     res.APIResource,
+		WaitlistEntries: res.WaitlistEntries,
+	}, nil
 }

@@ -1,6 +1,7 @@
 package clerk
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -56,6 +57,98 @@ func TestSessionClaimsHasPermission(t *testing.T) {
 		claims := SessionClaims{}
 		claims.ActiveOrganizationPermissions = tc.active
 		require.Equal(t, claims.HasPermission(tc.permission), tc.want)
+	}
+}
+
+// TestSessionClaimsUnmarshalJSONFactorVerificationAge tests that a token which
+// carries no usable 'fva' claim decodes to the "not set" sentinel instead of
+// Go's zero value, which NeedsReverification would read as "verified just now".
+func TestSessionClaimsUnmarshalJSONFactorVerificationAge(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name    string
+		payload string
+		want    [2]int64
+	}{
+		{
+			name:    "claim present",
+			payload: `{"sid":"sess_123","fva":[10,5]}`,
+			want:    [2]int64{10, 5},
+		},
+		{
+			name:    "claim present, second factor not enrolled",
+			payload: `{"sid":"sess_123","fva":[10,-1]}`,
+			want:    [2]int64{10, -1},
+		},
+		{
+			name:    "claim present, both factors just verified",
+			payload: `{"sid":"sess_123","fva":[0,0]}`,
+			want:    [2]int64{0, 0},
+		},
+		{
+			// JWT template tokens, OIDC ID tokens and machine tokens.
+			name:    "claim absent",
+			payload: `{"sid":"sess_123"}`,
+			want:    [2]int64{-1, -1},
+		},
+		{
+			name:    "claim null",
+			payload: `{"sid":"sess_123","fva":null}`,
+			want:    [2]int64{-1, -1},
+		},
+		{
+			name:    "claim empty",
+			payload: `{"sid":"sess_123","fva":[]}`,
+			want:    [2]int64{-1, -1},
+		},
+		{
+			// Go would zero-fill the missing element to [5, 0], marking the
+			// second factor enrolled and freshly verified.
+			name:    "claim too short",
+			payload: `{"sid":"sess_123","fva":[5]}`,
+			want:    [2]int64{-1, -1},
+		},
+		{
+			name:    "claim too long",
+			payload: `{"sid":"sess_123","fva":[5,10,15]}`,
+			want:    [2]int64{-1, -1},
+		},
+		{
+			// Negative ages other than the sentinel compare as fresher than
+			// any policy threshold.
+			name:    "claim with out of range age",
+			payload: `{"sid":"sess_123","fva":[-5,-5]}`,
+			want:    [2]int64{-1, -1},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			claims := &SessionClaims{}
+			require.NoError(t, json.Unmarshal([]byte(tc.payload), claims))
+			require.Equal(t, tc.want, claims.FactorVerificationAge)
+			// The rest of the claims still decode.
+			require.Equal(t, "sess_123", claims.SessionID)
+		})
+	}
+}
+
+// TestNeedsReverificationWithoutFactorVerificationAge tests that every policy
+// fails closed for a token that carries no 'fva' claim.
+func TestNeedsReverificationWithoutFactorVerificationAge(t *testing.T) {
+	t.Parallel()
+	for name, policy := range map[string]SessionReverificationPolicy{
+		"strict mfa":   SessionReverificationStrictMFA,
+		"strict":       SessionReverificationStrict,
+		"moderate":     SessionReverificationModerate,
+		"lax":          SessionReverificationLax,
+		"first factor": {AfterMinutes: 10, Level: SessionReverificationLevelFirstFactor},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			claims := &SessionClaims{}
+			require.NoError(t, json.Unmarshal([]byte(`{"sid":"sess_123"}`), claims))
+			require.True(t, claims.NeedsReverification(policy))
+		})
 	}
 }
 

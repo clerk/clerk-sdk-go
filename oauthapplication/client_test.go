@@ -193,8 +193,11 @@ func TestOAuthApplicationClientList(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/oauth_applications",
 			Query: &url.Values{
-				"limit":  []string{"10"},
-				"offset": []string{"0"},
+				"limit":                  []string{"10"},
+				"offset":                 []string{"0"},
+				"order_by":               []string{"-name"},
+				"name_query":             []string{"app_123"},
+				"dynamically_registered": []string{"true"},
 			},
 		},
 	}
@@ -202,6 +205,9 @@ func TestOAuthApplicationClientList(t *testing.T) {
 	params := &ListParams{}
 	params.Limit = clerk.Int64(10)
 	params.Offset = clerk.Int64(0)
+	params.OrderBy = clerk.String("-name")
+	params.NameQuery = clerk.String("app_123")
+	params.DynamicallyRegistered = clerk.Bool(true)
 	appList, err := client.List(context.Background(), params)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), appList.TotalCount)

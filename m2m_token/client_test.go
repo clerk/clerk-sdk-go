@@ -22,7 +22,7 @@ func TestCreate(t *testing.T) {
 		"subject":           "mch_2xhFjEI5X2qWRvtV13BzSj8H6Dk",
 		"claims":            map[string]interface{}{"foo": "bar"},
 		"scopes":            []string{"mch_2xhFjEI5X2qWRvtV13BzSj8H6Dk"},
-		"secret":            "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+		"token":             "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 		"revoked":           false,
 		"revocation_reason": nil,
 		"expired":           false,
@@ -38,7 +38,7 @@ func TestCreate(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"claims":{"foo":"bar"},"seconds_until_expiration":3600}`),
+			In:     json.RawMessage(`{"claims":{"foo":"bar"},"seconds_until_expiration":3600,"min_remaining_ttl_seconds":240,"token_format":"opaque"}`),
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPost,
 			Path:   "/v1/m2m_tokens",
@@ -50,13 +50,15 @@ func TestCreate(t *testing.T) {
 	params := &CreateParams{
 		Claims:                 &claims,
 		SecondsUntilExpiration: clerk.Int64(3600),
+		MinRemainingTTLSeconds: clerk.Int64(240),
+		TokenFormat:            clerk.String("opaque"),
 	}
 
 	token, err := client.Create(context.Background(), params)
 	require.NoError(t, err)
 	assert.Equal(t, "mt_test123", token.ID)
 	assert.Equal(t, "mch_2xhFjEI5X2qWRvtV13BzSj8H6Dk", token.Subject)
-	assert.Equal(t, "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", token.Secret)
+	assert.Equal(t, "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", token.Token)
 }
 
 func TestList(t *testing.T) {
@@ -177,7 +179,7 @@ func TestVerify(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"secret":"mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"}`),
+			In:     json.RawMessage(`{"token":"mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"}`),
 			Out:    json.RawMessage(responseJSON),
 			Method: http.MethodPost,
 			Path:   "/v1/m2m_tokens/verify",
@@ -186,7 +188,7 @@ func TestVerify(t *testing.T) {
 
 	client := NewClient(config)
 	params := &VerifyParams{
-		Secret: "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+		Token: "mt_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 	}
 
 	token, err := client.Verify(context.Background(), params)

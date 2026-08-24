@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -39,6 +40,79 @@ func TestUserClientCreate(t *testing.T) {
 	require.Equal(t, username, *user.Username)
 }
 
+func TestUserClientCreate_WithLocale(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	username := "username"
+	locale := "en-US"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"username":"%s","locale":"%s"}`, username, locale)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","username":"%s","locale":"%s"}`, id, username, locale)),
+			Method: http.MethodPost,
+			Path:   "/v1/users",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Create(context.Background(), &CreateParams{
+		Username: clerk.String(username),
+		Locale:   clerk.String(locale),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Equal(t, username, *user.Username)
+	require.Equal(t, locale, *user.Locale)
+}
+
+func TestUserClientCreate_WithSkipRestrictionChecks(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	email := "blocked@example.com"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"email_address":["%s"],"skip_restriction_checks":true}`, email)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, id)),
+			Method: http.MethodPost,
+			Path:   "/v1/users",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Create(context.Background(), &CreateParams{
+		EmailAddresses:        &[]string{email},
+		SkipRestrictionChecks: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+}
+
+// Omitting the field must leave it out of the payload entirely, so an
+// unrelated create can't be read as asking for an exemption.
+func TestUserClientCreate_WithoutSkipRestrictionChecks(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	email := "user@example.com"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"email_address":["%s"]}`, email)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, id)),
+			Method: http.MethodPost,
+			Path:   "/v1/users",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Create(context.Background(), &CreateParams{
+		EmailAddresses: &[]string{email},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+}
+
 func TestUserClientList_Request(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
@@ -47,18 +121,20 @@ func TestUserClientList_Request(t *testing.T) {
 			T:      t,
 			Method: http.MethodGet,
 			Query: &url.Values{
-				"limit":                 []string{"1"},
-				"offset":                []string{"2"},
-				"order_by":              []string{"-created_at"},
-				"email_address":         []string{"foo@bar.com", "baz@bar.com"},
-				"organization_id":       []string{"org_123", "org_456"},
-				"email_address_query":   []string{"@bar.com"},
-				"name_query":            []string{"foobar"},
-				"created_at_before":     []string{"1730333164378"},
-				"created_at_after":      []string{"1730333164378"},
-				"last_active_at_before": []string{"1730333164378"},
-				"last_active_at_after":  []string{"1730333164378"},
-				"banned":                []string{"false"},
+				"limit":                  []string{"1"},
+				"offset":                 []string{"2"},
+				"order_by":               []string{"-created_at"},
+				"email_address":          []string{"foo@bar.com", "baz@bar.com"},
+				"organization_id":        []string{"org_123", "org_456"},
+				"email_address_query":    []string{"@bar.com"},
+				"name_query":             []string{"foobar"},
+				"created_at_before":      []string{"1730333164378"},
+				"created_at_after":       []string{"1730333164378"},
+				"last_active_at_before":  []string{"1730333164378"},
+				"last_active_at_after":   []string{"1730333164378"},
+				"last_sign_in_at_before": []string{"1730333164378"},
+				"last_sign_in_at_after":  []string{"1730333164378"},
+				"banned":                 []string{"false"},
 			},
 		},
 	}
@@ -76,6 +152,8 @@ func TestUserClientList_Request(t *testing.T) {
 	params.CreatedAtAfter = clerk.Int64(1730333164378)
 	params.LastActiveAtBefore = clerk.Int64(1730333164378)
 	params.LastActiveAtAfter = clerk.Int64(1730333164378)
+	params.LastSignInAtBefore = clerk.Int64(1730333164378)
+	params.LastSignInAtAfter = clerk.Int64(1730333164378)
 	params.Banned = clerk.Bool(false)
 	_, err := client.List(context.Background(), params)
 	require.NoError(t, err)
@@ -199,6 +277,29 @@ func TestUserClientUpdate(t *testing.T) {
 	require.Equal(t, username, *user.Username)
 }
 
+func TestUserClientUpdate_WithLocale(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	locale := "fr-FR"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"locale":"%s"}`, locale)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","locale":"%s"}`, id, locale)),
+			Method: http.MethodPatch,
+			Path:   "/v1/users/" + id,
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Update(context.Background(), id, &UpdateParams{
+		Locale: clerk.String(locale),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Equal(t, locale, *user.Locale)
+}
+
 type testFile struct {
 	bytes.Reader
 }
@@ -266,6 +367,136 @@ func TestUserClientUpdateMetadata(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, user.ID)
 	require.JSONEq(t, string(metadata), string(user.PrivateMetadata))
+}
+
+func TestUserClientReplaceMetadata(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"private_metadata":%s}`, string(metadata))),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","private_metadata":%s}`, id, string(metadata))),
+			Method: http.MethodPut,
+			Path:   "/v1/users/" + id + "/metadata",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.ReplaceMetadata(context.Background(), id, &ReplaceMetadataParams{
+		PrivateMetadata: &metadata,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.JSONEq(t, string(metadata), string(user.PrivateMetadata))
+}
+
+type recordedRequest struct {
+	method string
+	path   string
+	body   string
+}
+
+func newUpdateRoutingServer(t *testing.T, recorded *[]recordedRequest, patchStatus int, putStatus int, body string) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		buf, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		*recorded = append(*recorded, recordedRequest{
+			method: r.Method,
+			path:   r.URL.Path,
+			body:   string(buf),
+		})
+		switch r.Method {
+		case http.MethodPut:
+			w.WriteHeader(putStatus)
+		case http.MethodPatch:
+			w.WriteHeader(patchStatus)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+		_, err = w.Write([]byte(body))
+		require.NoError(t, err)
+	}))
+}
+
+func TestUserClientUpdate_OnlyMetadataRoutesToPut(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	var recorded []recordedRequest
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusOK, http.StatusOK,
+		fmt.Sprintf(`{"id":"%s","public_metadata":%s}`, id, string(metadata)))
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.URL = clerk.String(ts.URL)
+	config.HTTPClient = ts.Client()
+	client := NewClient(config)
+	user, err := client.Update(context.Background(), id, &UpdateParams{
+		PublicMetadata: &metadata,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Len(t, recorded, 1)
+	require.Equal(t, http.MethodPut, recorded[0].method)
+	require.Equal(t, "/users/"+id+"/metadata", recorded[0].path)
+	require.JSONEq(t, fmt.Sprintf(`{"public_metadata":%s}`, string(metadata)), recorded[0].body)
+}
+
+func TestUserClientUpdate_MetadataAndNonMetadataIssuesBothCalls(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	username := "username"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	var recorded []recordedRequest
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusOK, http.StatusOK,
+		fmt.Sprintf(`{"id":"%s","username":"%s","public_metadata":%s}`, id, username, string(metadata)))
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.URL = clerk.String(ts.URL)
+	config.HTTPClient = ts.Client()
+	client := NewClient(config)
+	user, err := client.Update(context.Background(), id, &UpdateParams{
+		Username:       clerk.String(username),
+		PublicMetadata: &metadata,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Len(t, recorded, 2)
+
+	require.Equal(t, http.MethodPatch, recorded[0].method)
+	require.Equal(t, "/users/"+id, recorded[0].path)
+	require.JSONEq(t, fmt.Sprintf(`{"username":"%s"}`, username), recorded[0].body)
+
+	require.Equal(t, http.MethodPut, recorded[1].method)
+	require.Equal(t, "/users/"+id+"/metadata", recorded[1].path)
+	require.JSONEq(t, fmt.Sprintf(`{"public_metadata":%s}`, string(metadata)), recorded[1].body)
+}
+
+func TestUserClientUpdate_MetadataPatchErrorAbortsPut(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	username := "username"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	var recorded []recordedRequest
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusBadRequest, http.StatusOK,
+		`{"errors":[{"code":"bad_request"}]}`)
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.URL = clerk.String(ts.URL)
+	config.HTTPClient = ts.Client()
+	client := NewClient(config)
+	_, err := client.Update(context.Background(), id, &UpdateParams{
+		Username:       clerk.String(username),
+		PublicMetadata: &metadata,
+	})
+	require.Error(t, err)
+	require.Len(t, recorded, 1)
+	require.Equal(t, http.MethodPatch, recorded[0].method)
 }
 
 func TestUserClientListOAuthAccessTokens(t *testing.T) {
@@ -613,4 +844,48 @@ func TestUserClientVerifyPassword(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.True(t, verified.Verified)
+}
+
+func TestUserClientRemovePassword(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	tests := []struct {
+		name   string
+		params *RemovePasswordParams
+		body   json.RawMessage
+	}{
+		{
+			name:   "keeps existing sessions active by default",
+			params: &RemovePasswordParams{},
+			body:   json.RawMessage(`{}`),
+		},
+		{
+			name: "revokes existing sessions when requested",
+			params: &RemovePasswordParams{
+				SignOutOfOtherSessions: clerk.Bool(true),
+			},
+			body: json.RawMessage(`{"sign_out_of_other_sessions":true}`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			config := &clerk.ClientConfig{}
+			config.HTTPClient = &http.Client{
+				Transport: &clerktest.RoundTripper{
+					T:      t,
+					Method: http.MethodPost,
+					In:     tt.body,
+					Out:    json.RawMessage(fmt.Sprintf(`{"object":"user","id":"%s"}`, userID)),
+					Path:   fmt.Sprintf("/v1/users/%s/remove_password", userID),
+				},
+			}
+			client := NewClient(config)
+			updatedUser, err := client.RemovePassword(context.Background(), userID, tt.params)
+			require.NoError(t, err)
+			require.Equal(t, userID, updatedUser.ID)
+			require.Equal(t, "user", updatedUser.Object)
+		})
+	}
 }

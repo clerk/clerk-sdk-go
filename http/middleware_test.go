@@ -396,3 +396,47 @@ func TestNeedsSessionReverification(t *testing.T) {
 		})
 	}
 }
+
+// TestNeedsSessionReverification_NoFactorVerificationAge tests that a route
+// gated on reverification rejects a token that carries no 'fva' claim, rather
+// than treating the absent claim as a fresh verification. The claims are
+// decoded from a payload rather than built in Go, because it's the decoding
+// that has to supply the "not set" sentinel. A JWT template token is the
+// example here: it authenticates as its subject, but describes no step-up.
+func TestNeedsSessionReverification_NoFactorVerificationAge(t *testing.T) {
+	for _, policy := range []clerk.SessionReverificationPolicy{
+		clerk.SessionReverificationStrictMFA,
+		clerk.SessionReverificationStrict,
+	} {
+		t.Run(string(policy.Level), func(t *testing.T) {
+			includeSessionClaims := func(next http.Handler) http.Handler {
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					claims := &clerk.SessionClaims{}
+					require.NoError(t, json.Unmarshal([]byte(`{"sid":"sess_123","sub":"user_123"}`), claims))
+					ctx := clerk.ContextWithSessionClaims(r.Context(), claims)
+					next.ServeHTTP(w, r.WithContext(ctx))
+				})
+			}
+
+			// This is the user's server, gating a sensitive route on reverification.
+			ts := httptest.NewServer(includeSessionClaims(NeedsSessionReverification(policy)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				_, err := w.Write([]byte("{}"))
+				require.NoError(t, err)
+			}))))
+			defer ts.Close()
+
+			req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+			require.NoError(t, err)
+
+			resp, err := ts.Client().Do(req)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			require.Equal(t, http.StatusForbidden, resp.StatusCode)
+
+			var errResp ClerkErrorResponse
+			require.NoError(t, json.NewDecoder(resp.Body).Decode(&errResp))
+			require.Equal(t, "reverification-error", errResp.ClerkError.Reason)
+		})
+	}
+}

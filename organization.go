@@ -14,7 +14,9 @@ type Organization struct {
 	MissingMemberWithElevatedPermissions *bool           `json:"missing_member_with_elevated_permissions,omitempty"`
 	PendingInvitationsCount              *int64          `json:"pending_invitations_count,omitempty"`
 	MaxAllowedMemberships                int64           `json:"max_allowed_memberships"`
+	MembershipLimitSetBy                 *string         `json:"membership_limit_set_by,omitempty"`
 	AdminDeleteEnabled                   bool            `json:"admin_delete_enabled"`
+	RoleSetKey                           *string         `json:"role_set_key,omitempty"`
 	PublicMetadata                       json.RawMessage `json:"public_metadata"`
 	PrivateMetadata                      json.RawMessage `json:"private_metadata"`
 	CreatedBy                            string          `json:"created_by"`

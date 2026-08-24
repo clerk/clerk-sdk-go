@@ -13,9 +13,9 @@
 The official [Clerk](https://clerk.com) Go client library for accessing the [Clerk Backend API](https://clerk.com/docs/reference/backend-api).
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/clerk/clerk-sdk-go/v2.svg)](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2)
-[![chat on Discord](https://img.shields.io/discord/856971667393609759.svg?logo=discord)](https://discord.com/invite/b5rXHjAg7A)
+[![chat on Discord](https://img.shields.io/discord/856971667393609759.svg?logo=discord)](https://clerk.com/discord)
 [![documentation](https://img.shields.io/badge/documentation-clerk-green.svg)](https://clerk.com/docs)
-[![twitter](https://img.shields.io/twitter/follow/ClerkDev?style=social)](https://twitter.com/intent/follow?screen_name=ClerkDev)
+[![Follow on X](https://img.shields.io/twitter/follow/clerk?style=social)](https://x.com/intent/follow?screen_name=clerk)
 
 ### Migrating from `v1`?
 
@@ -23,7 +23,7 @@ Check out the [upgrade guide](UPGRADING.md#1-x-x-to-2-x-x).
 
 ## Requirements
 
-- Go 1.19 or later.
+- Go 1.24 or later.
 
 ## Installation
 
@@ -77,13 +77,13 @@ clerk.SetKey("sk_live_XXX")
 resource, err := $resource$.Create(ctx, &$resource$.CreateParams{})
 
 // Get
-resource, err := $resource$.Get(ctx, id)
+resource, err = $resource$.Get(ctx, id)
 
 // Update
-resource, err := $resource$.Update(ctx, id, &$resource$.UpdateParams{})
+resource, err = $resource$.Update(ctx, id, &$resource$.UpdateParams{})
 
 // Delete
-resource, err := $resource$.Delete(ctx, id)
+deletedResource, err := $resource$.Delete(ctx, id)
 
 // List
 list, err := $resource$.List(ctx, &$resource$.ListParams{})
@@ -109,20 +109,20 @@ ctx := context.Background()
 
 // Initialize a client with an API key
 config := &clerk.ClientConfig{}
-config.Key = "sk_live_XXX"
+config.Key = clerk.String("sk_live_XXX")
 client := $resource$.NewClient(config)
 
 // Create
 resource, err := client.Create(ctx, &$resource$.CreateParams{})
 
 // Get
-resource, err := client.Get(ctx, id)
+resource, err = client.Get(ctx, id)
 
 // Update
-resource, err := client.Update(ctx, id, &$resource$.UpdateParams{})
+resource, err = client.Update(ctx, id, &$resource$.UpdateParams{})
 
 // Delete
-resource, err := client.Delete(ctx, id)
+deletedResource, err := client.Delete(ctx, id)
 
 // List
 list, err := client.List(ctx, &$resource$.ListParams{})
@@ -135,6 +135,9 @@ Here's an example of how the above operations would look like for specific APIs.
 
 ```go
 import (
+    "context"
+    "fmt"
+
     "github.com/clerk/clerk-sdk-go/v2"
     "github.com/clerk/clerk-sdk-go/v2/organization"
     "github.com/clerk/clerk-sdk-go/v2/organizationmembership"
@@ -152,23 +155,42 @@ func main() {
     org, err := organization.Create(ctx, &organization.CreateParams{
         Name: clerk.String("Clerk Inc"),
     })
+    if err != nil {
+        // handle the error
+        panic(err)
+    }
 
     // Update the organization
     org, err = organization.Update(ctx, org.ID, &organization.UpdateParams{
         Slug: clerk.String("clerk"),
     })
+    if err != nil {
+        // handle the error
+        panic(err)
+    }
 
-    // List organization memberships
-    listParams := organizationmembership.ListParams{}
+    // List the organization's memberships
+    listParams := organizationmembership.ListParams{
+        OrganizationID: org.ID,
+    }
     listParams.Limit = clerk.Int64(10)
-    memberships, err := organizationmembership.List(ctx, params)
-    if memberships.TotalCount < 0 {
+    memberships, err := organizationmembership.List(ctx, &listParams)
+    if err != nil {
+        // handle the error
+        panic(err)
+    }
+    if memberships.TotalCount == 0 {
         return
     }
-    membership := memberships[0]
+    membership := memberships.OrganizationMemberships[0]
 
-    // Get a user
-    usr, err := user.Get(ctx, membership.UserID)
+    // Get more details about the membership's user
+    usr, err := user.Get(ctx, membership.PublicUserData.UserID)
+    if err != nil {
+        // handle the error
+        panic(err)
+    }
+    fmt.Println(usr.ID)
 }
 ```
 
@@ -177,14 +199,17 @@ func main() {
 Each resource that is returned by an API operation has a `Response` field which
 contains information about the response that was sent from the Clerk Backend API.
 
-The `Response` contains fields like the the raw HTTP response's headers,
+The `Response` contains fields like the raw HTTP response's headers,
 the status and the raw response body. See the [APIResponse](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2#APIResponse)
 documentation for available fields and methods.
 
 ```go
 dmn, err := domain.Create(context.Background(), &domain.CreateParams{})
+if err != nil {
+    // handle the error
+}
 if !dmn.Response.Success() {
-    dmn.Response.TraceID
+    fmt.Println(dmn.Response.TraceID)
 }
 ```
 
@@ -201,9 +226,9 @@ See the [APIErrorResponse](https://pkg.go.dev/github.com/clerk/clerk-sdk-go/v2#A
 ```go
 _, err := user.List(context.Background(), &user.ListParams{})
 if apiErr, ok := err.(*clerk.APIErrorResponse); ok {
-    apiErr.TraceID
-    apiErr.Error()
-    apiErr.Response.RawJSON
+    fmt.Println(apiErr.TraceID)
+    fmt.Println(apiErr.Error())
+    fmt.Println(string(apiErr.Response.RawJSON))
 }
 ```
 
@@ -290,8 +315,9 @@ func TestWithCustomTransport(t *testing.T) {
 
 type mockRoundTripper struct {}
 // Implement the http.RoundTripper interface.
-func (r *mockRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
+func (m *mockRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
     // Construct and return the http.Response.
+    return &http.Response{}, nil
 }
 ```
 
@@ -327,6 +353,7 @@ type customBackend struct {}
 func (b *customBackend) Call(ctx context.Context, r *clerk.APIRequest, reader clerk.ResponseReader) error {
     // Construct a clerk.APIResponse and use the reader's Read method.
     reader.Read(&clerk.APIResponse{})
+    return nil
 }
 ```
 
@@ -345,12 +372,15 @@ func TestWithCustomTransport(t *testing.T) {
         Transport: &mockRoundTripper{},
     }
     client := user.NewClient(config)
+    // Requests will be handled by the mock round tripper.
+    client.Get(context.Background(), "user_id")
 }
 
 type mockRoundTripper struct {}
 // Implement the http.RoundTripper interface.
-func (r *mockRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
+func (m *mockRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
     // Construct and return the http.Response.
+    return &http.Response{}, nil
 }
 ```
 
@@ -369,6 +399,8 @@ func TestWithMockServer(t *testing.T) {
     config.HTTPClient = ts.Client()
     config.URL = &ts.URL
     client := user.NewClient(config)
+    // Requests will be handled by the test server.
+    client.Get(context.Background(), "user_id")
 }
 ```
 
@@ -384,9 +416,10 @@ func TestWithCustomBackend(t *testing.T) {
 
 type customBackend struct {}
 // Implement the Backend interface
-func (b *customBackend) Call(ctx context.Context, r *clerk.APIRequest, reader *clerk.ResponseReader) error {
+func (b *customBackend) Call(ctx context.Context, r *clerk.APIRequest, reader clerk.ResponseReader) error {
     // Construct a clerk.APIResponse and use the reader's Read method.
     reader.Read(&clerk.APIResponse{})
+    return nil
 }
 ```
 
