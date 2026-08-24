@@ -3,8 +3,10 @@ package jwt
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -628,16 +630,158 @@ func TestGetJSONWebKey_UsesTheJWKSClient(t *testing.T) {
 	require.Equal(t, 1, totalJWKSRequests)
 }
 
-func TestToBits(t *testing.T) {
+// permissionVocabulary returns an "o.per" claim value with n actions, named so
+// that the action at bit index i is "p<i>".
+func permissionVocabulary(n int) string {
+	perms := make([]string, n)
+	for i := range perms {
+		perms[i] = fmt.Sprintf("p%02d", i)
+	}
+	return strings.Join(perms, ",")
+}
+
+// fpmMask renders an "o.fpm" mask with the given bit indexes set, the way a
+// correct issuer would encode it: an unsigned decimal integer of arbitrary
+// width.
+func fpmMask(bits ...int) string {
+	m := new(big.Int)
+	for _, b := range bits {
+		m.SetBit(m, b, 1)
+	}
+	return m.String()
+}
+
+// TestVerify_V2OrganizationPermissionsWideMasks covers permission masks wider
+// than a signed 64-bit integer. A customer hit this with an action at bit index
+// 72 (CORE-3701): index 63 lands on the sign bit and index 64+ overflows
+// entirely when the mask is held in a signed int.
+func TestVerify_V2OrganizationPermissionsWideMasks(t *testing.T) {
 	t.Parallel()
-	testCases := map[int][]int{
-		0: {},
-		1: {1},
-		2: {0, 1},
-		3: {1, 1},
-		4: {0, 0, 1},
+	testCases := []struct {
+		Name        string
+		Permissions string
+		Mask        string
+		Expected    []string
+	}{
+		{
+			Name:        "action at bit index 62",
+			Permissions: permissionVocabulary(80),
+			Mask:        fpmMask(0, 62),
+			Expected:    []string{"org:repositories:p00", "org:repositories:p62"},
+		},
+		{
+			// 2^63 + 1. A signed-int encoder emits this as a negative number.
+			Name:        "action at bit index 63, the sign bit",
+			Permissions: permissionVocabulary(80),
+			Mask:        fpmMask(0, 63),
+			Expected:    []string{"org:repositories:p00", "org:repositories:p63"},
+		},
+		{
+			Name:        "action at bit index 64, past a 64-bit integer",
+			Permissions: permissionVocabulary(80),
+			Mask:        fpmMask(0, 64),
+			Expected:    []string{"org:repositories:p00", "org:repositories:p64"},
+		},
+		{
+			Name:        "action at bit index 72, as reported by the customer",
+			Permissions: permissionVocabulary(80),
+			Mask:        fpmMask(0, 72),
+			Expected:    []string{"org:repositories:p00", "org:repositories:p72"},
+		},
+		{
+			// A negative mask can only come from an issuer that overflowed a
+			// signed integer. Decoding its magnitude would grant permissions
+			// that were never assigned, so grant nothing at all.
+			Name:        "negative mask grants nothing",
+			Permissions: permissionVocabulary(80),
+			Mask:        "-9223372036854775807",
+			Expected:    []string{},
+		},
+		{
+			Name:        "mask wider than the permission vocabulary grants nothing",
+			Permissions: permissionVocabulary(8),
+			Mask:        fpmMask(0, 72),
+			Expected:    []string{},
+		},
+		{
+			Name:        "mask that is not a decimal integer grants nothing",
+			Permissions: permissionVocabulary(80),
+			Mask:        "0x1f",
+			Expected:    []string{},
+		},
 	}
-	for input, expected := range testCases {
-		assert.Equal(t, expected, toBits(input))
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			ctx := context.Background()
+			kid := "kid"
+
+			claims := map[string]any{
+				"iss": "https://clerk.com",
+				"v":   2,
+				"fea": "o:repositories",
+				"o": map[string]any{
+					"id":  "org_xxx",
+					"slg": "foobar",
+					"rol": "admin",
+					"per": tc.Permissions,
+					"fpm": tc.Mask,
+				},
+			}
+			token, pubKey := clerktest.GenerateJWT(t, claims, kid)
+
+			verifiedClaims, err := Verify(ctx, &VerifyParams{
+				Token: token,
+				JWK: &clerk.JSONWebKey{
+					Key:       pubKey,
+					KeyID:     kid,
+					Algorithm: string(jose.RS256),
+					Use:       "sig",
+				},
+			})
+			require.NoError(t, err)
+			assert.Equal(t, tc.Expected, verifiedClaims.ActiveOrganizationPermissions)
+		})
 	}
+}
+
+// TestVerify_V2OrganizationPermissionsSharedActionKey pins that two features
+// reusing the same action key are decoded independently. The action vocabulary
+// in "o.per" is shared across features by design: each feature carries its own
+// mask over that shared vocabulary.
+func TestVerify_V2OrganizationPermissionsSharedActionKey(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	kid := "kid"
+
+	claims := map[string]any{
+		"iss": "https://clerk.com",
+		"v":   2,
+		"fea": "o:leads,o:whatsapp",
+		"o": map[string]any{
+			"id":  "org_xxx",
+			"slg": "foobar",
+			"rol": "admin",
+			// Both features define a "view_history" action; only leads grants it.
+			"per": "chat_read,view_history",
+			"fpm": "2,1",
+		},
+	}
+	token, pubKey := clerktest.GenerateJWT(t, claims, kid)
+
+	verifiedClaims, err := Verify(ctx, &VerifyParams{
+		Token: token,
+		JWK: &clerk.JSONWebKey{
+			Key:       pubKey,
+			KeyID:     kid,
+			Algorithm: string(jose.RS256),
+			Use:       "sig",
+		},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, []string{
+		"org:leads:view_history",
+		"org:whatsapp:chat_read",
+	}, verifiedClaims.ActiveOrganizationPermissions)
 }
