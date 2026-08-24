@@ -66,6 +66,29 @@ func TestUserClientCreate_WithLocale(t *testing.T) {
 	require.Equal(t, locale, *user.Locale)
 }
 
+func TestUserClientCreate_WithTimezone(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	timezone := "America/New_York"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"timezone":"%s"}`, timezone)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","timezone":"%s"}`, id, timezone)),
+			Method: http.MethodPost,
+			Path:   "/v1/users",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Create(context.Background(), &CreateParams{
+		Timezone: clerk.String(timezone),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Equal(t, timezone, *user.Timezone)
+}
+
 func TestUserClientCreate_WithSkipRestrictionChecks(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
@@ -300,6 +323,29 @@ func TestUserClientUpdate_WithLocale(t *testing.T) {
 	require.Equal(t, locale, *user.Locale)
 }
 
+func TestUserClientUpdate_WithTimezone(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	timezone := "America/New_York"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"timezone":"%s"}`, timezone)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","timezone":"%s"}`, id, timezone)),
+			Method: http.MethodPatch,
+			Path:   "/v1/users/" + id,
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Update(context.Background(), id, &UpdateParams{
+		Timezone: clerk.String(timezone),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Equal(t, timezone, *user.Timezone)
+}
+
 type testFile struct {
 	bytes.Reader
 }
@@ -470,6 +516,37 @@ func TestUserClientUpdate_MetadataAndNonMetadataIssuesBothCalls(t *testing.T) {
 	require.Equal(t, http.MethodPatch, recorded[0].method)
 	require.Equal(t, "/users/"+id, recorded[0].path)
 	require.JSONEq(t, fmt.Sprintf(`{"username":"%s"}`, username), recorded[0].body)
+
+	require.Equal(t, http.MethodPut, recorded[1].method)
+	require.Equal(t, "/users/"+id+"/metadata", recorded[1].path)
+	require.JSONEq(t, fmt.Sprintf(`{"public_metadata":%s}`, string(metadata)), recorded[1].body)
+}
+
+func TestUserClientUpdate_TimezoneOnlyNonMetadataIssuesBothCalls(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	timezone := "America/New_York"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	var recorded []recordedRequest
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusOK, http.StatusOK,
+		fmt.Sprintf(`{"id":"%s","timezone":"%s","public_metadata":%s}`, id, timezone, string(metadata)))
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.URL = clerk.String(ts.URL)
+	config.HTTPClient = ts.Client()
+	client := NewClient(config)
+	user, err := client.Update(context.Background(), id, &UpdateParams{
+		Timezone:       clerk.String(timezone),
+		PublicMetadata: &metadata,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+	require.Len(t, recorded, 2)
+
+	require.Equal(t, http.MethodPatch, recorded[0].method)
+	require.Equal(t, "/users/"+id, recorded[0].path)
+	require.JSONEq(t, fmt.Sprintf(`{"timezone":"%s"}`, timezone), recorded[0].body)
 
 	require.Equal(t, http.MethodPut, recorded[1].method)
 	require.Equal(t, "/users/"+id+"/metadata", recorded[1].path)

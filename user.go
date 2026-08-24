@@ -44,6 +44,7 @@ type User struct {
 	LastActiveAt                  *int64                    `json:"last_active_at"`
 	MFAEnabledAt                  *int64                    `json:"mfa_enabled_at"`
 	Locale                        *string                   `json:"locale"`
+	Timezone                      *string                   `json:"timezone"`
 	MFADisabledAt                 *int64                    `json:"mfa_disabled_at"`
 	LegalAcceptedAt               *int64                    `json:"legal_accepted_at"`
 }
