@@ -5,7 +5,7 @@ package jwt
 import (
 	"context"
 	"fmt"
-	"strconv"
+	"math/big"
 	"strings"
 	"time"
 
@@ -191,17 +191,23 @@ func extractOrganizationPermissions(claims *version2Claims) []string {
 			// No mappings for this feature.
 			continue
 		}
-		mapping, err := strconv.Atoi(mappings[i])
-		if err != nil {
+		// Masks are arbitrary-width unsigned decimal integers: their bit
+		// width is len(permissions), which is not bounded by any integer
+		// type. Parse with big.Int so a wide mask is decoded exactly
+		// rather than being rejected as out of range.
+		mapping, ok := new(big.Int).SetString(mappings[i], 10)
+		if !ok || mapping.Sign() < 0 {
+			// Malformed token. A negative mask means the issuer overflowed
+			// a signed integer while encoding, so no bit in it can be
+			// trusted; grant nothing for this feature.
 			continue
 		}
-		mappingToBits := toBits(mapping)
-		if len(mappingToBits) > len(permissions) {
+		if mapping.BitLen() > len(permissions) {
 			// Malformed token
 			continue
 		}
-		for j, bit := range mappingToBits {
-			if bit == 0 {
+		for j := range permissions {
+			if mapping.Bit(j) == 0 {
 				// Disabled
 				continue
 			}
@@ -210,15 +216,6 @@ func extractOrganizationPermissions(claims *version2Claims) []string {
 		}
 	}
 	return organizationPermissions
-}
-
-func toBits(n int) []int {
-	bits := make([]int, 0)
-	for n > 0 {
-		bits = append(bits, n&1)
-		n = n >> 1
-	}
-	return bits
 }
 
 func isValidIssuer(iss string, proxyURL *string) bool {
