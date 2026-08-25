@@ -7,6 +7,7 @@ package email
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/clerk/clerk-sdk-go/v3"
@@ -51,12 +52,18 @@ type Recipient struct {
 
 type SendParams struct {
 	clerk.APIParams
-	To      Recipient `json:"to"`
-	From    Mailbox   `json:"from"`
-	ReplyTo *Mailbox  `json:"reply_to,omitempty"`
-	Subject string    `json:"subject"`
-	HTML    string    `json:"html,omitempty"`
-	Text    string    `json:"text,omitempty"`
+	// IdempotencyKey deduplicates retries of the same logical send. Reuse a
+	// key only when recipient and content are identical. The server replay
+	// window is 24 hours; keep a durable logical-send record if duplicates after
+	// that window matter. Keys may contain only ASCII letters, digits,
+	// underscores, and hyphens, up to 255 characters.
+	IdempotencyKey string    `json:"-"`
+	To             Recipient `json:"to"`
+	From           Mailbox   `json:"from"`
+	ReplyTo        *Mailbox  `json:"reply_to,omitempty"`
+	Subject        string    `json:"subject"`
+	HTML           string    `json:"html,omitempty"`
+	Text           string    `json:"text,omitempty"`
 }
 
 // Send sends a transactional email.
@@ -65,8 +72,26 @@ type SendParams struct {
 // subject to change. It is advised to pin the SDK version to avoid breaking
 // changes. See https://clerk.com/docs/pinning.
 func (c *Client) Send(ctx context.Context, params *SendParams) (*clerk.Email, error) {
+	if params == nil {
+		return nil, errors.New("email: send params are required")
+	}
 	req := clerk.NewAPIRequest(http.MethodPost, path)
 	req.SetParams(params)
+	if params.IdempotencyKey != "" {
+		req.SetIdempotencyKey(params.IdempotencyKey)
+	}
+	resource := &clerk.Email{}
+	err := c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
+// Get returns Clerk's stored provider-acceptance state for a transactional
+// email. An accepted status does not prove final delivery.
+func (c *Client) Get(ctx context.Context, emailID string) (*clerk.Email, error) {
+	if emailID == "" {
+		return nil, errors.New("email: email ID is required")
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path+"/"+emailID)
 	resource := &clerk.Email{}
 	err := c.Backend.Call(ctx, req, resource)
 	return resource, err

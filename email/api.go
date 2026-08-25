@@ -17,6 +17,12 @@ func Send(ctx context.Context, params *SendParams) (*clerk.Email, error) {
 	return getClient().Send(ctx, params)
 }
 
+// Get returns Clerk's stored provider-acceptance state for a transactional
+// email. An accepted status does not prove final delivery.
+func Get(ctx context.Context, emailID string) (*clerk.Email, error) {
+	return getClient().Get(ctx, emailID)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
