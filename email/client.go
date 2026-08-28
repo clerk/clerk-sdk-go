@@ -28,11 +28,8 @@ func NewClient(config *clerk.ClientConfig) *Client {
 	}
 }
 
-// Mailbox is an email address, with an optional display name.
+// Mailbox is an email address.
 type Mailbox struct {
-	// Name is the display name for the mailbox. It is currently
-	// accepted but not yet rendered by the server.
-	Name    string `json:"name,omitempty"`
 	Address string `json:"address"`
 }
 
@@ -41,9 +38,6 @@ type Mailbox struct {
 // user's primary email address on the server, from the instance the secret key
 // belongs to.
 type Recipient struct {
-	// Name is an optional display name. Only meaningful alongside Address. It is
-	// currently accepted but not yet rendered by the server.
-	Name string `json:"name,omitempty"`
 	// Address is a literal recipient email address.
 	Address string `json:"address,omitempty"`
 	// UserID sends to the primary email address of the Clerk user with this ID.
@@ -53,17 +47,23 @@ type Recipient struct {
 type SendParams struct {
 	clerk.APIParams
 	// IdempotencyKey deduplicates retries of the same logical send. Reuse a
-	// key only when recipient and content are identical. The server replay
-	// window is 24 hours; keep a durable logical-send record if duplicates after
-	// that window matter. Keys may contain only ASCII letters, digits,
-	// underscores, and hyphens, up to 255 characters.
+	// key only when recipient and content are identical. Clerk durably returns
+	// the original email for the same key and request, and returns a conflict if
+	// the key is reused with different parameters. Without a key, each call is a
+	// distinct send and the SDK does not retry an ambiguous POST. Keys may contain
+	// only ASCII letters, digits, underscores, and hyphens, up to 255 characters.
 	IdempotencyKey string    `json:"-"`
 	To             Recipient `json:"to"`
-	From           Mailbox   `json:"from"`
-	ReplyTo        *Mailbox  `json:"reply_to,omitempty"`
-	Subject        string    `json:"subject"`
-	HTML           string    `json:"html,omitempty"`
-	Text           string    `json:"text,omitempty"`
+	// From must use the instance's exact verified production sending domain.
+	From Mailbox `json:"from"`
+	// ReplyTo, when set, must use the same verified production domain as From.
+	ReplyTo *Mailbox `json:"reply_to,omitempty"`
+	// Subject is limited to 998 characters.
+	Subject string `json:"subject"`
+	// At least one of HTML and Text is required. Their combined UTF-8 encoding
+	// is limited to 50,000 bytes.
+	HTML string `json:"html,omitempty"`
+	Text string `json:"text,omitempty"`
 }
 
 // Send sends a transactional email.

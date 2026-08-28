@@ -73,6 +73,23 @@ func TestEmailSend(t *testing.T) {
 	require.True(t, email.DeliveredByClerk)
 }
 
+func TestEmailSuppressionReason(t *testing.T) {
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: &http.Client{Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(`{"id":"ema_123","object":"email","status":"suppressed","delivered_by_clerk":false,"suppression_reason":"application_communication_lock"}`),
+			Path:   "/v1/email/ema_123",
+			Method: http.MethodGet,
+		}},
+	}))
+
+	email, err := Get(context.Background(), "ema_123")
+	require.NoError(t, err)
+	require.Equal(t, "suppressed", email.Status)
+	require.NotNil(t, email.SuppressionReason)
+	require.Equal(t, "application_communication_lock", *email.SuppressionReason)
+}
+
 // TestEmailSendToUserID asserts the user_id recipient form serializes to
 // {"to":{"user_id":...}} (no stray "address" key) and surfaces the server's
 // resolved address plus the user/email_address linkage on the response.
