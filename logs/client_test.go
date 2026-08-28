@@ -1,4 +1,4 @@
-package audit_logs
+package logs
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func TestList(t *testing.T) {
 		"data": []map[string]interface{}{
 			{
 				"id":             "019400f7-c6e4-7f00-8000-000000000001",
-				"object":         "audit_log",
+				"object":         "log",
 				"type":           "user.created",
 				"source":         "bapi",
 				"event_time":     1705315800000,
@@ -90,7 +90,7 @@ func TestList(t *testing.T) {
 			T:      t,
 			Out:    responseJSON,
 			Method: http.MethodGet,
-			Path:   "/v1/audit_logs",
+			Path:   "/v1/logs",
 			Query: &url.Values{
 				"limit":                []string{"10"},
 				"subject":              []string{"user_2xPNCmYKPnPKaF3h0Ll8qas0I0w"},
@@ -108,62 +108,62 @@ func TestList(t *testing.T) {
 	}
 	list, err := client.List(context.Background(), params)
 	require.NoError(t, err)
-	require.Equal(t, 1, len(list.AuditLogs))
+	require.Equal(t, 1, len(list.Logs))
 
-	auditLog := list.AuditLogs[0]
-	require.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", auditLog.ID)
-	require.Equal(t, "audit_log", auditLog.Object)
-	require.Equal(t, "user.created", auditLog.Type)
-	require.NotNil(t, auditLog.Source)
-	require.Equal(t, "bapi", *auditLog.Source)
-	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
-	require.Equal(t, "user", auditLog.ActorType)
-	require.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
-	require.NotNil(t, auditLog.ClientID)
-	require.Equal(t, "client_123", *auditLog.ClientID)
-	require.Equal(t, "00000000000000000000000000000001", auditLog.TraceID)
-	require.Equal(t, "0000000000000001", auditLog.SpanID)
-	require.Equal(t, "0000000000000001", *auditLog.SessionID)
-	require.Nil(t, auditLog.ParentSpanID)
+	log := list.Logs[0]
+	require.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", log.ID)
+	require.Equal(t, "log", log.Object)
+	require.Equal(t, "user.created", log.Type)
+	require.NotNil(t, log.Source)
+	require.Equal(t, "bapi", *log.Source)
+	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", log.Actor)
+	require.Equal(t, "user", log.ActorType)
+	require.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", log.Subject)
+	require.NotNil(t, log.ClientID)
+	require.Equal(t, "client_123", *log.ClientID)
+	require.Equal(t, "00000000000000000000000000000001", log.TraceID)
+	require.Equal(t, "0000000000000001", log.SpanID)
+	require.Equal(t, "0000000000000001", *log.SessionID)
+	require.Nil(t, log.ParentSpanID)
 
 	// Verify EventContext fields
-	require.NotNil(t, auditLog.EventContext.Environment)
-	require.NotNil(t, auditLog.EventContext.Environment.Type)
-	require.Equal(t, "production", *auditLog.EventContext.Environment.Type)
-	require.NotNil(t, auditLog.EventContext.Environment.Application)
-	require.Equal(t, "app_123", *auditLog.EventContext.Environment.Application.ID)
-	require.Equal(t, "My Application", *auditLog.EventContext.Environment.Application.Name)
-	require.NotNil(t, auditLog.EventContext.Environment.Domain)
-	require.Equal(t, "domain_123", *auditLog.EventContext.Environment.Domain.ID)
-	require.Equal(t, "example.com", *auditLog.EventContext.Environment.Domain.Name)
-	require.NotNil(t, auditLog.EventContext.Environment.PrimaryDomain)
-	require.Equal(t, "domain_456", *auditLog.EventContext.Environment.PrimaryDomain.ID)
-	require.Equal(t, "primary.example.com", *auditLog.EventContext.Environment.PrimaryDomain.Name)
+	require.NotNil(t, log.EventContext.Environment)
+	require.NotNil(t, log.EventContext.Environment.Type)
+	require.Equal(t, "production", *log.EventContext.Environment.Type)
+	require.NotNil(t, log.EventContext.Environment.Application)
+	require.Equal(t, "app_123", *log.EventContext.Environment.Application.ID)
+	require.Equal(t, "My Application", *log.EventContext.Environment.Application.Name)
+	require.NotNil(t, log.EventContext.Environment.Domain)
+	require.Equal(t, "domain_123", *log.EventContext.Environment.Domain.ID)
+	require.Equal(t, "example.com", *log.EventContext.Environment.Domain.Name)
+	require.NotNil(t, log.EventContext.Environment.PrimaryDomain)
+	require.Equal(t, "domain_456", *log.EventContext.Environment.PrimaryDomain.ID)
+	require.Equal(t, "primary.example.com", *log.EventContext.Environment.PrimaryDomain.Name)
 
-	require.NotNil(t, auditLog.EventContext.DeviceInfo)
-	require.NotNil(t, auditLog.EventContext.DeviceInfo.IPAddress)
-	require.Equal(t, "192.168.1.1", *auditLog.EventContext.DeviceInfo.IPAddress)
-	require.NotNil(t, auditLog.EventContext.DeviceInfo.UserAgent)
-	require.Equal(t, "Mozilla/5.0", *auditLog.EventContext.DeviceInfo.UserAgent)
-	require.NotNil(t, auditLog.EventContext.DeviceInfo.Browser)
-	require.Equal(t, "Chrome", *auditLog.EventContext.DeviceInfo.Browser.Name)
-	require.Equal(t, "120.0.0", *auditLog.EventContext.DeviceInfo.Browser.Version)
-	require.NotNil(t, auditLog.EventContext.DeviceInfo.DeviceType)
-	require.Equal(t, "desktop", *auditLog.EventContext.DeviceInfo.DeviceType)
-	require.NotNil(t, auditLog.EventContext.DeviceInfo.IsMobile)
-	require.False(t, *auditLog.EventContext.DeviceInfo.IsMobile)
-	require.NotNil(t, auditLog.EventContext.DeviceInfo.ClerkJSVersion)
-	require.Equal(t, "5.0.0", *auditLog.EventContext.DeviceInfo.ClerkJSVersion)
-	require.NotNil(t, auditLog.EventContext.DeviceInfo.IsNative)
-	require.False(t, *auditLog.EventContext.DeviceInfo.IsNative)
-	require.NotNil(t, auditLog.EventContext.DeviceInfo.Location)
-	require.Equal(t, "New York", *auditLog.EventContext.DeviceInfo.Location.City)
-	require.Equal(t, "US", *auditLog.EventContext.DeviceInfo.Location.Country)
+	require.NotNil(t, log.EventContext.DeviceInfo)
+	require.NotNil(t, log.EventContext.DeviceInfo.IPAddress)
+	require.Equal(t, "192.168.1.1", *log.EventContext.DeviceInfo.IPAddress)
+	require.NotNil(t, log.EventContext.DeviceInfo.UserAgent)
+	require.Equal(t, "Mozilla/5.0", *log.EventContext.DeviceInfo.UserAgent)
+	require.NotNil(t, log.EventContext.DeviceInfo.Browser)
+	require.Equal(t, "Chrome", *log.EventContext.DeviceInfo.Browser.Name)
+	require.Equal(t, "120.0.0", *log.EventContext.DeviceInfo.Browser.Version)
+	require.NotNil(t, log.EventContext.DeviceInfo.DeviceType)
+	require.Equal(t, "desktop", *log.EventContext.DeviceInfo.DeviceType)
+	require.NotNil(t, log.EventContext.DeviceInfo.IsMobile)
+	require.False(t, *log.EventContext.DeviceInfo.IsMobile)
+	require.NotNil(t, log.EventContext.DeviceInfo.ClerkJSVersion)
+	require.Equal(t, "5.0.0", *log.EventContext.DeviceInfo.ClerkJSVersion)
+	require.NotNil(t, log.EventContext.DeviceInfo.IsNative)
+	require.False(t, *log.EventContext.DeviceInfo.IsNative)
+	require.NotNil(t, log.EventContext.DeviceInfo.Location)
+	require.Equal(t, "New York", *log.EventContext.DeviceInfo.Location.City)
+	require.Equal(t, "US", *log.EventContext.DeviceInfo.Location.Country)
 
 	// Verify Impersonator field
-	require.NotNil(t, auditLog.Impersonator)
-	require.NotNil(t, auditLog.Impersonator.UserID)
-	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *auditLog.Impersonator.UserID)
+	require.NotNil(t, log.Impersonator)
+	require.NotNil(t, log.Impersonator.UserID)
+	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *log.Impersonator.UserID)
 
 	require.NotNil(t, list.Cursor)
 	require.Equal(t, expectedCursor, *list.Cursor.StartingAfter)
@@ -196,7 +196,7 @@ func TestList_FilterMatchAny(t *testing.T) {
 			T:      t,
 			Out:    responseJSON,
 			Method: http.MethodGet,
-			Path:   "/v1/audit_logs",
+			Path:   "/v1/logs",
 			Query: &url.Values{
 				"subject":      []string{"user_alpha"},
 				"actor":        []string{"actor_b"},
@@ -207,7 +207,7 @@ func TestList_FilterMatchAny(t *testing.T) {
 	}
 	client := NewClient(config)
 
-	filterMatch := clerk.AuditLogFilterMatchAny
+	filterMatch := clerk.LogFilterMatchAny
 	params := &ListParams{
 		Subject:     clerk.String("user_alpha"),
 		Actor:       clerk.String("actor_b"),
@@ -240,7 +240,7 @@ func TestList_FilterMatchAll(t *testing.T) {
 			T:      t,
 			Out:    responseJSON,
 			Method: http.MethodGet,
-			Path:   "/v1/audit_logs",
+			Path:   "/v1/logs",
 			Query: &url.Values{
 				"subject":      []string{"user_alpha"},
 				"type":         []string{"user.created"},
@@ -250,7 +250,7 @@ func TestList_FilterMatchAll(t *testing.T) {
 	}
 	client := NewClient(config)
 
-	filterMatch := clerk.AuditLogFilterMatchAll
+	filterMatch := clerk.LogFilterMatchAll
 	params := &ListParams{
 		Subject:     clerk.String("user_alpha"),
 		Type:        clerk.String("user.created"),
@@ -283,7 +283,7 @@ func TestList_FilterMatchOmitted(t *testing.T) {
 			T:      t,
 			Out:    responseJSON,
 			Method: http.MethodGet,
-			Path:   "/v1/audit_logs",
+			Path:   "/v1/logs",
 			Query: &url.Values{
 				"subject": []string{"user_alpha"},
 			},
@@ -305,18 +305,18 @@ func TestListParams_ToQuery_FilterMatch(t *testing.T) {
 
 	cases := []struct {
 		name        string
-		filterMatch *clerk.AuditLogFilterMatch
+		filterMatch *clerk.LogFilterMatch
 		want        []string
 	}{
 		{name: "nil omits the param", filterMatch: nil, want: nil},
 		{
 			name:        "any serializes as \"any\"",
-			filterMatch: filterMatchPtr(clerk.AuditLogFilterMatchAny),
+			filterMatch: filterMatchPtr(clerk.LogFilterMatchAny),
 			want:        []string{"any"},
 		},
 		{
 			name:        "all serializes as \"all\"",
-			filterMatch: filterMatchPtr(clerk.AuditLogFilterMatchAll),
+			filterMatch: filterMatchPtr(clerk.LogFilterMatchAll),
 			want:        []string{"all"},
 		},
 	}
@@ -331,13 +331,13 @@ func TestListParams_ToQuery_FilterMatch(t *testing.T) {
 	}
 }
 
-func filterMatchPtr(v clerk.AuditLogFilterMatch) *clerk.AuditLogFilterMatch {
+func filterMatchPtr(v clerk.LogFilterMatch) *clerk.LogFilterMatch {
 	return &v
 }
 
 // TestListParams_ToQuery_IPAddress locks the wire name for the IP filter
 // so the SDK stays in sync with the ip_address query parameter accepted by
-// the audit_logs list endpoint.
+// the logs list endpoint.
 func TestListParams_ToQuery_IPAddress(t *testing.T) {
 	t.Parallel()
 
@@ -357,7 +357,7 @@ func TestList_ActorTypeOmitted(t *testing.T) {
 		"data": []map[string]interface{}{
 			{
 				"id":         "019400f7-c6e4-7f00-8000-000000000001",
-				"object":     "audit_log",
+				"object":     "log",
 				"type":       "user.created",
 				"event_time": 1705315800000,
 				"actor":      "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
@@ -380,15 +380,15 @@ func TestList_ActorTypeOmitted(t *testing.T) {
 			T:      t,
 			Out:    responseJSON,
 			Method: http.MethodGet,
-			Path:   "/v1/audit_logs",
+			Path:   "/v1/logs",
 		},
 	}
 	client := NewClient(config)
 	list, err := client.List(context.Background(), &ListParams{})
 	require.NoError(t, err)
-	require.Equal(t, 1, len(list.AuditLogs))
-	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", list.AuditLogs[0].Actor)
-	require.Empty(t, list.AuditLogs[0].ActorType)
+	require.Equal(t, 1, len(list.Logs))
+	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", list.Logs[0].Actor)
+	require.Empty(t, list.Logs[0].ActorType)
 }
 
 func TestList_RetentionLimitReached(t *testing.T) {
@@ -413,7 +413,7 @@ func TestList_RetentionLimitReached(t *testing.T) {
 			T:      t,
 			Out:    responseJSON,
 			Method: http.MethodGet,
-			Path:   "/v1/audit_logs",
+			Path:   "/v1/logs",
 		},
 	}
 	client := NewClient(config)
@@ -429,7 +429,7 @@ func TestGet(t *testing.T) {
 
 	response := map[string]interface{}{
 		"id":             "019400f7-c6e4-7f00-8000-000000000001",
-		"object":         "audit_log",
+		"object":         "log",
 		"type":           "user.created",
 		"source":         "bapi",
 		"event_time":     1705315800000,
@@ -488,39 +488,39 @@ func TestGet(t *testing.T) {
 			T:      t,
 			Out:    responseJSON,
 			Method: http.MethodGet,
-			Path:   "/v1/audit_logs/1705315800000:019400f7-c6e4-7f00-8000-000000000001",
+			Path:   "/v1/logs/1705315800000:019400f7-c6e4-7f00-8000-000000000001",
 		},
 	}
 	client := NewClient(config)
-	auditLog, err := client.Get(context.Background(), &GetParams{
+	log, err := client.Get(context.Background(), &GetParams{
 		EventTimeMs: 1705315800000,
 		EventID:     "019400f7-c6e4-7f00-8000-000000000001",
 	})
 	require.NoError(t, err)
 
-	require.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", auditLog.ID)
-	require.Equal(t, "audit_log", auditLog.Object)
-	require.Equal(t, "user.created", auditLog.Type)
-	require.NotNil(t, auditLog.Source)
-	require.Equal(t, "bapi", *auditLog.Source)
-	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
-	require.Equal(t, "instance_key", auditLog.ActorType)
-	require.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
-	require.NotNil(t, auditLog.ClientID)
-	require.Equal(t, "client_123", *auditLog.ClientID)
-	require.Equal(t, "00000000000000000000000000000001", auditLog.TraceID)
-	require.Equal(t, "0000000000000001", auditLog.SpanID)
-	require.Equal(t, "0000000000000001", *auditLog.SessionID)
-	require.Nil(t, auditLog.ParentSpanID)
+	require.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", log.ID)
+	require.Equal(t, "log", log.Object)
+	require.Equal(t, "user.created", log.Type)
+	require.NotNil(t, log.Source)
+	require.Equal(t, "bapi", *log.Source)
+	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", log.Actor)
+	require.Equal(t, "instance_key", log.ActorType)
+	require.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", log.Subject)
+	require.NotNil(t, log.ClientID)
+	require.Equal(t, "client_123", *log.ClientID)
+	require.Equal(t, "00000000000000000000000000000001", log.TraceID)
+	require.Equal(t, "0000000000000001", log.SpanID)
+	require.Equal(t, "0000000000000001", *log.SessionID)
+	require.Nil(t, log.ParentSpanID)
 
-	require.NotNil(t, auditLog.Payload)
-	require.Equal(t, "user_123", auditLog.Payload["user_id"])
+	require.NotNil(t, log.Payload)
+	require.Equal(t, "user_123", log.Payload["user_id"])
 
-	require.NotNil(t, auditLog.EventContext.Environment)
-	require.NotNil(t, auditLog.EventContext.Environment.Type)
-	require.Equal(t, "production", *auditLog.EventContext.Environment.Type)
+	require.NotNil(t, log.EventContext.Environment)
+	require.NotNil(t, log.EventContext.Environment.Type)
+	require.Equal(t, "production", *log.EventContext.Environment.Type)
 
-	require.NotNil(t, auditLog.Impersonator)
-	require.NotNil(t, auditLog.Impersonator.UserID)
-	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *auditLog.Impersonator.UserID)
+	require.NotNil(t, log.Impersonator)
+	require.NotNil(t, log.Impersonator.UserID)
+	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *log.Impersonator.UserID)
 }

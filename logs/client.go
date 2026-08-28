@@ -1,5 +1,5 @@
-// Package audit_logs provides the Audit Logs API
-package audit_logs
+// Package logs provides the Logs API
+package logs
 
 import (
 	"context"
@@ -13,9 +13,9 @@ import (
 
 //go:generate go run ../cmd/gen/main.go
 
-const path = "/audit_logs"
+const path = "/logs"
 
-// Client is used to invoke the Audit Logs API.
+// Client is used to invoke the Logs API.
 type Client struct {
 	Backend clerk.Backend
 }
@@ -35,37 +35,37 @@ type ListParams struct {
 	StartingAfter *string `json:"starting_after,omitempty"`
 	// A cursor for pagination. Provide the ending_before cursor from a previous response to fetch the previous page.
 	EndingBefore *string `json:"ending_before,omitempty"`
-	// Filter audit logs by subject.
+	// Filter logs by subject.
 	Subject *string `json:"subject,omitempty"`
-	// Filter audit logs by actor.
+	// Filter logs by actor.
 	Actor *string `json:"actor,omitempty"`
-	// Filter audit logs by trace ID.
+	// Filter logs by trace ID.
 	TraceID *string `json:"trace_id,omitempty"`
-	// Filter audit logs by event type (e.g., email_send).
+	// Filter logs by event type (e.g., email_send).
 	Type *string `json:"type,omitempty"`
-	// Filter audit logs by client ID.
+	// Filter logs by client ID.
 	ClientID *string `json:"client_id,omitempty"`
-	// Filter audit logs by impersonator user ID.
+	// Filter logs by impersonator user ID.
 	ImpersonatorUserID *string `json:"impersonator_user_id,omitempty"`
-	// Filter audit logs by device IP address (exact match against
+	// Filter logs by device IP address (exact match against
 	// device_info_ip_address).
 	IPAddress *string `json:"ip_address,omitempty"`
 	// FilterMatch controls how Subject, Type, Actor, TraceID, ClientID,
 	// ImpersonatorUserID, and IPAddress are combined when more than one
 	// is supplied.
 	//
-	//   - AuditLogFilterMatchAll (default, also when nil): every supplied
+	//   - LogFilterMatchAll (default, also when nil): every supplied
 	//     filter must match (AND).
-	//   - AuditLogFilterMatchAny: an event matches if at least one of the
+	//   - LogFilterMatchAny: an event matches if at least one of the
 	//     supplied filters matches (OR).
 	//
 	// EventTimeAfter, EventTimeBefore, and EndUserFacingOnly are always
 	// ANDed with the (possibly OR-ed) string filter group regardless of
 	// FilterMatch.
-	FilterMatch *clerk.AuditLogFilterMatch `json:"filter_match,omitempty"`
-	// Filter audit logs to events on or after this date (Unix timestamp in milliseconds).
+	FilterMatch *clerk.LogFilterMatch `json:"filter_match,omitempty"`
+	// Filter logs to events on or after this date (Unix timestamp in milliseconds).
 	EventTimeAfter *int64 `json:"event_time_after,omitempty"`
-	// Filter audit logs to events on or before this date (Unix timestamp in milliseconds).
+	// Filter logs to events on or before this date (Unix timestamp in milliseconds).
 	EventTimeBefore *int64 `json:"event_time_before,omitempty"`
 	// When true, only returns events marked as end-user facing.
 	// When false or omitted, returns all events.
@@ -125,25 +125,25 @@ type GetParams struct {
 	EventID     string
 }
 
-// Get retrieves a single audit log by its composite key (event_time_ms:event_id).
+// Get retrieves a single log by its composite key (event_time_ms:event_id).
 // Unlike List, the returned object includes the full event payload.
-func (c *Client) Get(ctx context.Context, params *GetParams) (*clerk.AuditLogWithPayload, error) {
+func (c *Client) Get(ctx context.Context, params *GetParams) (*clerk.LogWithPayload, error) {
 	compositeID := fmt.Sprintf("%d:%s", params.EventTimeMs, params.EventID)
 	path, err := clerk.JoinPath(path, compositeID)
 	if err != nil {
 		return nil, err
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
-	resource := &clerk.AuditLogWithPayload{}
+	resource := &clerk.LogWithPayload{}
 	err = c.Backend.Call(ctx, req, resource)
 	return resource, err
 }
 
-// List returns a list of audit logs.
-func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.AuditLogList, error) {
+// List returns a list of logs.
+func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.LogList, error) {
 	req := clerk.NewAPIRequest(http.MethodGet, path)
 	req.SetParams(params)
-	list := &clerk.AuditLogList{}
+	list := &clerk.LogList{}
 	err := c.Backend.Call(ctx, req, list)
 	return list, err
 }
