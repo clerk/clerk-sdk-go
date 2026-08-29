@@ -48,6 +48,54 @@ func TestOrganizationMembershipClientCreate(t *testing.T) {
 	require.Equal(t, userID, membership.PublicUserData.UserID)
 }
 
+func TestOrganizationMembershipClientCreate_WithMetadata(t *testing.T) {
+	t.Parallel()
+	id := "orgmem_123"
+	organizationID := "org_123"
+	userID := "user_123"
+	role := "admin"
+	publicMeta := `{"plan":"enterprise"}`
+	privateMeta := `{"internal_id":"abc"}`
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T: t,
+			In: json.RawMessage(fmt.Sprintf(
+				`{"user_id":"%s","role":"%s","public_metadata":%s,"private_metadata":%s}`,
+				userID, role, publicMeta, privateMeta,
+			)),
+			Out: json.RawMessage(fmt.Sprintf(`{
+"id":"%s",
+"role":"%s",
+"organization":{"id":"%s"},
+"public_user_data":{"user_id":"%s"},
+"public_metadata":%s,
+"private_metadata":%s
+}`,
+				id, role, organizationID, userID, publicMeta, privateMeta)),
+			Method: http.MethodPost,
+			Path:   "/v1/organizations/" + organizationID + "/memberships",
+		},
+	}
+	client := NewClient(config)
+	pubMeta := json.RawMessage(publicMeta)
+	privMeta := json.RawMessage(privateMeta)
+	membership, err := client.Create(context.Background(), &CreateParams{
+		UserID:          clerk.String(userID),
+		Role:            clerk.String(role),
+		OrganizationID:  organizationID,
+		PublicMetadata:  &pubMeta,
+		PrivateMetadata: &privMeta,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, membership.ID)
+	require.Equal(t, role, membership.Role)
+	require.Equal(t, organizationID, membership.Organization.ID)
+	require.Equal(t, userID, membership.PublicUserData.UserID)
+	require.JSONEq(t, publicMeta, string(membership.PublicMetadata))
+	require.JSONEq(t, privateMeta, string(membership.PrivateMetadata))
+}
+
 func TestOrganizationMembershipClientCreate_Error(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
@@ -231,4 +279,73 @@ func TestOrganizationMembershipClientList(t *testing.T) {
 	require.Equal(t, userID, list.OrganizationMemberships[0].PublicUserData.UserID)
 	require.Equal(t, "string", list.OrganizationMemberships[0].RoleName)
 	require.Equal(t, "string", list.OrganizationMemberships[0].Role)
+}
+
+func TestOrganizationMembershipClientUpdateMetadata(t *testing.T) {
+	t.Parallel()
+	id := "orgmem_123"
+	organizationID := "org_123"
+	userID := "user_123"
+	publicMeta := `{"plan":"enterprise"}`
+	privateMeta := `{"internal_id":"abc"}`
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T: t,
+			In: json.RawMessage(fmt.Sprintf(
+				`{"public_metadata":%s,"private_metadata":%s}`,
+				publicMeta, privateMeta,
+			)),
+			Out: json.RawMessage(fmt.Sprintf(`{
+"id":"%s",
+"organization":{"id":"%s"},
+"public_user_data":{"user_id":"%s"},
+"public_metadata":%s,
+"private_metadata":%s
+}`,
+				id, organizationID, userID, publicMeta, privateMeta)),
+			Method: http.MethodPatch,
+			Path:   "/v1/organizations/" + organizationID + "/memberships/" + userID + "/metadata",
+		},
+	}
+	client := NewClient(config)
+	pubMeta := json.RawMessage(publicMeta)
+	privMeta := json.RawMessage(privateMeta)
+	membership, err := client.UpdateMetadata(context.Background(), &UpdateMetadataParams{
+		OrganizationID:  organizationID,
+		UserID:          userID,
+		PublicMetadata:  &pubMeta,
+		PrivateMetadata: &privMeta,
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, membership.ID)
+	require.Equal(t, organizationID, membership.Organization.ID)
+	require.Equal(t, userID, membership.PublicUserData.UserID)
+	require.JSONEq(t, publicMeta, string(membership.PublicMetadata))
+	require.JSONEq(t, privateMeta, string(membership.PrivateMetadata))
+}
+
+func TestOrganizationMembershipClientUpdateMetadata_Error(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Status: http.StatusBadRequest,
+			Out: json.RawMessage(`{
+  "errors":[{
+		"code":"update-metadata-error-code"
+	}],
+	"clerk_trace_id":"update-metadata-trace-id"
+}`),
+		},
+	}
+	client := NewClient(config)
+	_, err := client.UpdateMetadata(context.Background(), &UpdateMetadataParams{})
+	require.Error(t, err)
+	apiErr, ok := err.(*clerk.APIErrorResponse)
+	require.True(t, ok)
+	require.Equal(t, "update-metadata-trace-id", apiErr.TraceID)
+	require.Equal(t, 1, len(apiErr.Errors))
+	require.Equal(t, "update-metadata-error-code", apiErr.Errors[0].Code)
 }
