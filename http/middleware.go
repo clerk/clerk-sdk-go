@@ -14,6 +14,8 @@ import (
 	"github.com/clerk/clerk-sdk-go/v2/jwt"
 )
 
+const authErrorContextKey string = "auth_error"
+
 // RequireHeaderAuthorization will respond with HTTP 403 Forbidden if
 // the Authorization header does not contain a valid session token.
 func RequireHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) http.Handler {
@@ -69,6 +71,7 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 			if params.JWK == nil {
 				params.JWK, err = getJWK(r.Context(), params.JWKSClient, decoded.KeyID, params.Clock)
 				if err != nil {
+					r := requestWithAuthError(r, err)
 					params.AuthorizationFailureHandler.ServeHTTP(w, r)
 					return
 				}
@@ -76,6 +79,7 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 			params.Token = token
 			claims, err := jwt.Verify(r.Context(), &params.VerifyParams)
 			if err != nil {
+				r := requestWithAuthError(r, err)
 				params.AuthorizationFailureHandler.ServeHTTP(w, r)
 				return
 			}
@@ -126,6 +130,8 @@ type AuthorizationParams struct {
 	// fails. Pass a custom http.Handler to control the http.Response for
 	// invalid authorization. The default is a Response with an empty body
 	// and 401 Unauthorized status.
+	// Errors are passed to the handler in the http.Request context under
+	// the auth_error key.
 	AuthorizationFailureHandler http.Handler
 	// JWKSClient is the jwks.Client that will be used to fetch the
 	// JSON Web Key Set. A default client will be used if none is
@@ -380,4 +386,9 @@ func NeedsSessionReverification(policy clerk.SessionReverificationPolicy) func(h
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func requestWithAuthError(r *http.Request, err error) *http.Request {
+	ctx := context.WithValue(r.Context(), authErrorContextKey, err)
+	return r.WithContext(ctx)
 }
