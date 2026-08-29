@@ -78,6 +78,7 @@ type CreateParams struct {
 	Scopes               string `json:"scopes"`
 	Public               bool   `json:"public"`
 	ConsentScreenEnabled *bool  `json:"consent_screen_enabled"`
+	PKCERequired         *bool  `json:"pkce_required"`
 }
 
 // Create creates a new OAuth application with the given parameters.
@@ -95,6 +96,7 @@ type UpdateParams struct {
 	CallbackURL          *string `json:"callback_url,omitempty"`
 	Scopes               *string `json:"scopes,omitempty"`
 	ConsentScreenEnabled *bool   `json:"consent_screen_enabled,omitempty"`
+	PKCERequired         *bool   `json:"pkce_required,omitempty"`
 }
 
 // Update updates an existing OAuth application.
