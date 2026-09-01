@@ -1,4 +1,4 @@
-package audit_logs
+package logs
 
 import (
 	"context"
@@ -23,7 +23,7 @@ func TestPackageList(t *testing.T) {
 		"data": []map[string]interface{}{
 			{
 				"id":             "019400f7-c6e4-7f00-8000-000000000001",
-				"object":         "audit_log",
+				"object":         "log",
 				"type":           "user.created",
 				"event_time":     1705315800000,
 				"actor":          "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
@@ -54,7 +54,7 @@ func TestPackageList(t *testing.T) {
 				T:      t,
 				Out:    json.RawMessage(responseJSON),
 				Method: http.MethodGet,
-				Path:   "/v1/audit_logs",
+				Path:   "/v1/logs",
 				Query: &url.Values{
 					"limit":   []string{"10"},
 					"subject": []string{"user_2xPNCmYKPnPKaF3h0Ll8qas0I0w"},
@@ -72,35 +72,35 @@ func TestPackageList(t *testing.T) {
 		Type:    clerk.String("user.created"),
 	}
 
-	auditLogs, err := List(context.Background(), params)
+	logs, err := List(context.Background(), params)
 	require.NoError(t, err)
-	assert.Len(t, auditLogs.AuditLogs, 1)
+	assert.Len(t, logs.Logs, 1)
 
-	auditLog := auditLogs.AuditLogs[0]
-	assert.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", auditLog.ID)
-	assert.Equal(t, "audit_log", auditLog.Object)
-	assert.Equal(t, "user.created", auditLog.Type)
-	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
-	assert.Equal(t, "user", auditLog.ActorType)
-	assert.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
-	assert.Equal(t, "00000000000000000000000000000001", auditLog.TraceID)
-	assert.Equal(t, "0000000000000001", auditLog.SpanID)
-	assert.Equal(t, "0000000000000001", *auditLog.SessionID)
-	assert.Nil(t, auditLog.ParentSpanID)
-	assert.NotNil(t, auditLog.Impersonator)
-	assert.NotNil(t, auditLog.Impersonator.UserID)
-	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *auditLog.Impersonator.UserID)
+	log := logs.Logs[0]
+	assert.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", log.ID)
+	assert.Equal(t, "log", log.Object)
+	assert.Equal(t, "user.created", log.Type)
+	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", log.Actor)
+	assert.Equal(t, "user", log.ActorType)
+	assert.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", log.Subject)
+	assert.Equal(t, "00000000000000000000000000000001", log.TraceID)
+	assert.Equal(t, "0000000000000001", log.SpanID)
+	assert.Equal(t, "0000000000000001", *log.SessionID)
+	assert.Nil(t, log.ParentSpanID)
+	assert.NotNil(t, log.Impersonator)
+	assert.NotNil(t, log.Impersonator.UserID)
+	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *log.Impersonator.UserID)
 
-	assert.NotNil(t, auditLogs.Cursor)
-	assert.Equal(t, expectedCursor, *auditLogs.Cursor.StartingAfter)
-	assert.Equal(t, clerk.NextPageTrue, auditLogs.Cursor.NextPageStatus)
-	assert.False(t, auditLogs.Cursor.RetentionLimitReached)
+	assert.NotNil(t, logs.Cursor)
+	assert.Equal(t, expectedCursor, *logs.Cursor.StartingAfter)
+	assert.Equal(t, clerk.NextPageTrue, logs.Cursor.NextPageStatus)
+	assert.False(t, logs.Cursor.RetentionLimitReached)
 }
 
 func TestPackageGet(t *testing.T) {
 	response := map[string]interface{}{
 		"id":             "019400f7-c6e4-7f00-8000-000000000001",
-		"object":         "audit_log",
+		"object":         "log",
 		"type":           "user.created",
 		"event_time":     1705315800000,
 		"actor":          "user_2xPNClBrCHGhpOITVJlhdhBfGS7",
@@ -124,32 +124,32 @@ func TestPackageGet(t *testing.T) {
 				T:      t,
 				Out:    json.RawMessage(responseJSON),
 				Method: http.MethodGet,
-				Path:   "/v1/audit_logs/1705315800000:019400f7-c6e4-7f00-8000-000000000001",
+				Path:   "/v1/logs/1705315800000:019400f7-c6e4-7f00-8000-000000000001",
 			},
 		},
 	}
 
 	clerk.SetBackend(clerk.NewBackend(backend))
 
-	auditLog, err := Get(context.Background(), &GetParams{
+	log, err := Get(context.Background(), &GetParams{
 		EventTimeMs: 1705315800000,
 		EventID:     "019400f7-c6e4-7f00-8000-000000000001",
 	})
 	require.NoError(t, err)
 
-	assert.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", auditLog.ID)
-	assert.Equal(t, "audit_log", auditLog.Object)
-	assert.Equal(t, "user.created", auditLog.Type)
-	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", auditLog.Actor)
-	assert.Equal(t, "instance_key", auditLog.ActorType)
-	assert.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", auditLog.Subject)
-	assert.Equal(t, "00000000000000000000000000000001", auditLog.TraceID)
-	assert.Equal(t, "0000000000000001", auditLog.SpanID)
-	assert.Equal(t, "0000000000000001", *auditLog.SessionID)
-	assert.Nil(t, auditLog.ParentSpanID)
-	assert.NotNil(t, auditLog.Payload)
-	assert.Equal(t, "user_123", auditLog.Payload["user_id"])
-	assert.NotNil(t, auditLog.Impersonator)
-	assert.NotNil(t, auditLog.Impersonator.UserID)
-	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *auditLog.Impersonator.UserID)
+	assert.Equal(t, "019400f7-c6e4-7f00-8000-000000000001", log.ID)
+	assert.Equal(t, "log", log.Object)
+	assert.Equal(t, "user.created", log.Type)
+	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS7", log.Actor)
+	assert.Equal(t, "instance_key", log.ActorType)
+	assert.Equal(t, "user_2xPNCmYKPnPKaF3h0Ll8qas0I0w", log.Subject)
+	assert.Equal(t, "00000000000000000000000000000001", log.TraceID)
+	assert.Equal(t, "0000000000000001", log.SpanID)
+	assert.Equal(t, "0000000000000001", *log.SessionID)
+	assert.Nil(t, log.ParentSpanID)
+	assert.NotNil(t, log.Payload)
+	assert.Equal(t, "user_123", log.Payload["user_id"])
+	assert.NotNil(t, log.Impersonator)
+	assert.NotNil(t, log.Impersonator.UserID)
+	assert.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *log.Impersonator.UserID)
 }

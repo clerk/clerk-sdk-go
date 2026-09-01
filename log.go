@@ -1,6 +1,6 @@
 package clerk
 
-type AuditLog struct {
+type Log struct {
 	APIResource
 	Object       string                `json:"object"`
 	ID           string                `json:"id"`
@@ -16,20 +16,20 @@ type AuditLog struct {
 	SpanID       string                `json:"span_id"`
 	ParentSpanID *string               `json:"parent_span_id"`
 	SessionID    *string               `json:"session_id"`
-	EventContext AuditLogContext       `json:"event_context"`
+	EventContext LogContext            `json:"event_context"`
 }
 
-// AuditLogWithPayload is returned by the single-event endpoint and includes
-// the full event payload. List responses use AuditLog which omits payload.
-type AuditLogWithPayload struct {
-	AuditLog
+// LogWithPayload is returned by the single-event endpoint and includes
+// the full event payload. List responses use Log which omits payload.
+type LogWithPayload struct {
+	Log
 	Payload map[string]any `json:"payload"`
 }
 
-type AuditLogList struct {
+type LogList struct {
 	APIResource
-	AuditLogs []*AuditLog               `json:"data"`
-	Cursor    *ExtendedPaginationCursor `json:"cursor"`
+	Logs   []*Log                    `json:"data"`
+	Cursor *ExtendedPaginationCursor `json:"cursor"`
 }
 
 // NextPageStatus is the tri-state value for has_next_page in cursor pagination.
@@ -44,23 +44,23 @@ const (
 	NextPageUnknown NextPageStatus = "unknown"
 )
 
-// AuditLogFilterMatch controls how the string filters on the audit logs list
-// endpoint (subject, type, actor, trace_id, client_id, impersonator_user_id)
-// are combined when more than one is supplied.
+// LogFilterMatch controls how the string filters on the logs list
+// endpoint (subject, type, actor, trace_id, client_id, impersonator_user_id,
+// ip_address) are combined when more than one is supplied.
 //
-//   - AuditLogFilterMatchAll (default): every supplied filter must match.
+//   - LogFilterMatchAll (default): every supplied filter must match.
 //     Filters are joined with AND.
-//   - AuditLogFilterMatchAny: an event matches if at least one of the
+//   - LogFilterMatchAny: an event matches if at least one of the
 //     supplied filters matches. Filters are joined with OR.
 //
 // Time bounds (event_time_after, event_time_before) and end_user_facing_only
 // are always ANDed with the (possibly OR-ed) string filter group regardless
 // of the value.
-type AuditLogFilterMatch string
+type LogFilterMatch string
 
 const (
-	AuditLogFilterMatchAll AuditLogFilterMatch = "all"
-	AuditLogFilterMatchAny AuditLogFilterMatch = "any"
+	LogFilterMatchAll LogFilterMatch = "all"
+	LogFilterMatchAny LogFilterMatch = "any"
 )
 
 type ExtendedPaginationCursor struct {
@@ -83,7 +83,7 @@ type PaginationCursor struct {
 	HasNextPage   bool    `json:"has_next_page"`
 }
 
-type AuditLogContext struct {
+type LogContext struct {
 	Environment *EnvironmentContext `json:"environment"`
 	DeviceInfo  *DeviceContext      `json:"device"`
 }
