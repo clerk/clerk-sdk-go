@@ -108,15 +108,21 @@ func NewAPIResponse(resp *http.Response, body json.RawMessage) *APIResponse {
 
 // APIRequest describes requests to the Clerk API.
 type APIRequest struct {
-	Method      string
-	Path        string
-	Params      Params
-	isMultipart bool
+	Method         string
+	Path           string
+	Params         Params
+	IdempotencyKey string
+	isMultipart    bool
 }
 
 // SetParams sets the APIRequest.Params.
 func (req *APIRequest) SetParams(params Params) {
 	req.Params = params
+}
+
+// SetIdempotencyKey sets the request's Idempotency-Key header.
+func (req *APIRequest) SetIdempotencyKey(value string) {
+	req.IdempotencyKey = value
 }
 
 // NewAPIRequest creates an APIRequest with the provided HTTP method
@@ -275,6 +281,9 @@ func (b *defaultBackend) newRequest(ctx context.Context, apiReq *APIRequest) (*h
 	req.Header.Add("Clerk-API-Version", clerkAPIVersion)
 	req.Header.Add("X-Clerk-SDK", fmt.Sprintf("go/%s", sdkVersion))
 	b.CustomRequestHeaders.apply(req)
+	if apiReq.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", apiReq.IdempotencyKey)
+	}
 
 	return req, nil
 }

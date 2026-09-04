@@ -11,41 +11,59 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type headerAssertingRoundTripper struct {
+	t                  *testing.T
+	wantIdempotencyKey string
+	next               http.RoundTripper
+}
+
+func (rt *headerAssertingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	rt.t.Helper()
+	require.Equal(rt.t, rt.wantIdempotencyKey, req.Header.Get("Idempotency-Key"))
+	return rt.next.RoundTrip(req)
+}
+
 func TestEmailSend(t *testing.T) {
 	id := "ema_123"
+	response := &clerktest.RoundTripper{
+		T: t,
+		In: json.RawMessage(`{
+			"to": {"address": "admin@acme.com"},
+			"from": {"address": "noreply@acme.com"},
+			"reply_to": {"address": "support@acme.com"},
+			"subject": "Hello",
+			"html": "<p>hi</p>"
+		}`),
+		Out: json.RawMessage(`{
+			"id": "ema_123",
+			"object": "email",
+			"from_email_name": "noreply",
+			"to_email_address": "admin@acme.com",
+			"subject": "Hello",
+			"body": "<p>hi</p>",
+			"status": "queued",
+			"delivered_by_clerk": true
+		}`),
+		Path:   "/v1/email",
+		Method: http.MethodPost,
+	}
 	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
 		HTTPClient: &http.Client{
-			Transport: &clerktest.RoundTripper{
-				T: t,
-				In: json.RawMessage(`{
-					"to": {"address": "admin@acme.com"},
-					"from": {"address": "noreply@acme.com"},
-					"reply_to": {"address": "support@acme.com"},
-					"subject": "Hello",
-					"html": "<p>hi</p>"
-				}`),
-				Out: json.RawMessage(`{
-					"id": "ema_123",
-					"object": "email",
-					"from_email_name": "noreply",
-					"to_email_address": "admin@acme.com",
-					"subject": "Hello",
-					"body": "<p>hi</p>",
-					"status": "queued",
-					"delivered_by_clerk": true
-				}`),
-				Path:   "/v1/email",
-				Method: http.MethodPost,
+			Transport: &headerAssertingRoundTripper{
+				t:                  t,
+				wantIdempotencyKey: "roadmap-notification-123",
+				next:               response,
 			},
 		},
 	}))
 
 	email, err := Send(context.Background(), &SendParams{
-		To:      Recipient{Address: "admin@acme.com"},
-		From:    Mailbox{Address: "noreply@acme.com"},
-		ReplyTo: &Mailbox{Address: "support@acme.com"},
-		Subject: "Hello",
-		HTML:    "<p>hi</p>",
+		IdempotencyKey: "roadmap-notification-123",
+		To:             Recipient{Address: "admin@acme.com"},
+		From:           Mailbox{Address: "noreply@acme.com"},
+		ReplyTo:        &Mailbox{Address: "support@acme.com"},
+		Subject:        "Hello",
+		HTML:           "<p>hi</p>",
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, email.ID)
@@ -53,6 +71,23 @@ func TestEmailSend(t *testing.T) {
 	require.Equal(t, "admin@acme.com", email.ToEmailAddress)
 	require.Equal(t, "queued", email.Status)
 	require.True(t, email.DeliveredByClerk)
+}
+
+func TestEmailSuppressionReason(t *testing.T) {
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: &http.Client{Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(`{"id":"ema_123","object":"email","status":"suppressed","delivered_by_clerk":false,"suppression_reason":"application_communication_lock"}`),
+			Path:   "/v1/email/ema_123",
+			Method: http.MethodGet,
+		}},
+	}))
+
+	email, err := Get(context.Background(), "ema_123")
+	require.NoError(t, err)
+	require.Equal(t, "suppressed", email.Status)
+	require.NotNil(t, email.SuppressionReason)
+	require.Equal(t, "application_communication_lock", *email.SuppressionReason)
 }
 
 // TestEmailSendToUserID asserts the user_id recipient form serializes to
@@ -99,4 +134,32 @@ func TestEmailSendToUserID(t *testing.T) {
 	require.Equal(t, "user_123", *email.UserID)
 	require.NotNil(t, email.EmailAddressID)
 	require.Equal(t, "idn_123", *email.EmailAddressID)
+}
+
+func TestEmailGet(t *testing.T) {
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T:      t,
+				Out:    json.RawMessage(`{"id":"ema_123","object":"email","status":"accepted"}`),
+				Path:   "/v1/email/ema_123",
+				Method: http.MethodGet,
+			},
+		},
+	}))
+
+	email, err := Get(context.Background(), "ema_123")
+	require.NoError(t, err)
+	require.Equal(t, "ema_123", email.ID)
+	require.Equal(t, "accepted", email.Status)
+}
+
+func TestEmailSendRequiresParams(t *testing.T) {
+	_, err := (&Client{}).Send(context.Background(), nil)
+	require.EqualError(t, err, "email: send params are required")
+}
+
+func TestEmailGetRequiresID(t *testing.T) {
+	_, err := (&Client{}).Get(context.Background(), "")
+	require.EqualError(t, err, "email: email ID is required")
 }
