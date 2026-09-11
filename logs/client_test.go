@@ -524,3 +524,113 @@ func TestGet(t *testing.T) {
 	require.NotNil(t, log.Impersonator.UserID)
 	require.Equal(t, "user_2xPNClBrCHGhpOITVJlhdhBfGS8", *log.Impersonator.UserID)
 }
+
+func TestList_PayloadParams(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"data": []map[string]interface{}{
+			{
+				"id":         "019400f7-c6e4-7f00-8000-000000000001",
+				"object":     "log",
+				"type":       "sign_in.completed",
+				"event_time": 1705315800000,
+				// Partial by construction: only the requested fields.
+				"payload": map[string]interface{}{
+					"user_id":  "user_123",
+					"strategy": "password",
+				},
+			},
+		},
+	}
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    responseJSON,
+			Method: http.MethodGet,
+			Path:   "/v1/logs",
+			Query: &url.Values{
+				"type":                     []string{"sign_in.completed"},
+				"payload_filter[strategy]": []string{"password"},
+				"payload_filter[user_id]":  []string{"user_123"},
+				"payload_fields":           []string{"user_id,strategy"},
+			},
+		},
+	}
+	client := NewClient(config)
+	list, err := client.List(context.Background(), &ListParams{
+		Type: clerk.String("sign_in.completed"),
+		PayloadFilters: map[string]string{
+			"user_id":  "user_123",
+			"strategy": "password",
+		},
+		PayloadFields: []string{"user_id", "strategy"},
+	})
+	require.NoError(t, err)
+	require.Equal(t, 1, len(list.Logs))
+	require.Equal(t, map[string]any{
+		"user_id":  "user_123",
+		"strategy": "password",
+	}, list.Logs[0].Payload)
+}
+
+func TestList_PayloadFiltersSerializeSorted(t *testing.T) {
+	t.Parallel()
+
+	params := &ListParams{
+		PayloadFilters: map[string]string{
+			"b.nested": "2",
+			"a":        "1",
+		},
+	}
+	require.Equal(t,
+		"payload_filter%5Ba%5D=1&payload_filter%5Bb.nested%5D=2",
+		params.ToQuery().Encode(),
+	)
+}
+
+func TestGetSchema(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":      "log_schema",
+		"event_type":  "sign_in.completed",
+		"description": "Sign in was completed",
+		"severity":    "success",
+		"docs_group":  "Sign-in events",
+		"fields": []map[string]interface{}{
+			{"path": "user_id", "type": "string", "optional": false},
+			{"path": "second_factor_strategy", "type": "string", "optional": true},
+		},
+	}
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    responseJSON,
+			Method: http.MethodGet,
+			Path:   "/v1/logs/schemas",
+			Query: &url.Values{
+				"type": []string{"sign_in.completed"},
+			},
+		},
+	}
+	client := NewClient(config)
+	schema, err := client.GetSchema(context.Background(), &GetSchemaParams{Type: "sign_in.completed"})
+	require.NoError(t, err)
+	require.Equal(t, "log_schema", schema.Object)
+	require.Equal(t, "sign_in.completed", schema.EventType)
+	require.Equal(t, "Sign in was completed", schema.Description)
+	require.Equal(t, "success", schema.Severity)
+	require.Empty(t, schema.MatchedEventTypes)
+	require.Equal(t, 2, len(schema.Fields))
+	require.Equal(t, "user_id", schema.Fields[0].Path)
+	require.Equal(t, "string", schema.Fields[0].Type)
+	require.False(t, schema.Fields[0].Optional)
+	require.True(t, schema.Fields[1].Optional)
+}

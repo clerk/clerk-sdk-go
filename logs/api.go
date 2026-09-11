@@ -19,6 +19,13 @@ func List(ctx context.Context, params *ListParams) (*clerk.LogList, error) {
 	return getClient().List(ctx, params)
 }
 
+// GetSchema retrieves the payload schema of a log event type: the fields
+// its payload carries, addressed by the dot-paths that List's PayloadFilters
+// and PayloadFields accept.
+func GetSchema(ctx context.Context, params *GetSchemaParams) (*clerk.LogSchema, error) {
+	return getClient().GetSchema(ctx, params)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),

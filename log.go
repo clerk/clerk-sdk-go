@@ -17,6 +17,12 @@ type Log struct {
 	ParentSpanID *string               `json:"parent_span_id"`
 	SessionID    *string               `json:"session_id"`
 	EventContext LogContext            `json:"event_context"`
+	// Payload is present only when the request selected payload fields via
+	// the payload_fields list parameter. It is partial by construction:
+	// just the requested fields, keyed by their dot-paths, with fields
+	// absent from this event's payload omitted. Use the single-event
+	// endpoint (LogWithPayload) for the full payload.
+	Payload map[string]any `json:"payload,omitempty"`
 }
 
 // LogWithPayload is returned by the single-event endpoint and includes
@@ -128,4 +134,48 @@ type LocationContext struct {
 
 type ImpersonatorResponse struct {
 	UserID *string `json:"user_id"`
+}
+
+// LogSchema describes the payload schema of a log event type: the fields
+// its payload carries, addressed by the dot-paths that the list endpoint's
+// payload_filter and payload_fields parameters accept. Field entries use
+// JSON Schema vocabulary (Type is the data type, Enum the accepted values);
+// the event type identifier lives in EventType.
+type LogSchema struct {
+	APIResource
+	Object string `json:"object"`
+	// EventType is the event type this schema describes: a concrete type
+	// ("sign_in.completed") or a trailing-* wildcard ("sign_in.*"). A bare
+	// family name in the request ("sign_in") is normalized to its wildcard
+	// form here.
+	EventType string `json:"event_type"`
+	// Description, Severity, and DocsGroup carry the event type's
+	// annotation metadata; they are empty for wildcard lookups, where they
+	// vary per matched type.
+	Description string `json:"description,omitempty"`
+	Severity    string `json:"severity,omitempty"`
+	DocsGroup   string `json:"docs_group,omitempty"`
+	// MatchedEventTypes lists the concrete event types a wildcard expanded
+	// to; Fields are the intersection across these types. Empty for
+	// concrete lookups.
+	MatchedEventTypes []string          `json:"matched_event_types,omitempty"`
+	Fields            []*LogSchemaField `json:"fields"`
+}
+
+// LogSchemaField is one payload field, addressed by dot-path.
+type LogSchemaField struct {
+	// Path is the field's dot-path (nested fields use dots, e.g.
+	// "captcha_attempt_payload.provider") — the exact string that
+	// payload_filter and payload_fields accept.
+	Path string `json:"path"`
+	// Type is the field's data type: "string", "boolean", "integer", or
+	// "number".
+	Type string `json:"type"`
+	// Optional reports whether the field is optional in the payload. Even
+	// non-optional fields can be absent from a stored event when they held
+	// their zero value at record time.
+	Optional bool `json:"optional"`
+	// Enum lists the accepted values for enum-backed fields (which have
+	// Type "string").
+	Enum []string `json:"enum,omitempty"`
 }

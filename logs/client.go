@@ -4,9 +4,12 @@ package logs
 import (
 	"context"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/clerk/clerk-sdk-go/v3"
 )
@@ -51,8 +54,8 @@ type ListParams struct {
 	// device_info_ip_address).
 	IPAddress *string `json:"ip_address,omitempty"`
 	// FilterMatch controls how Subject, Type, Actor, TraceID, ClientID,
-	// ImpersonatorUserID, and IPAddress are combined when more than one
-	// is supplied.
+	// ImpersonatorUserID, IPAddress, and PayloadFilters are combined when
+	// more than one is supplied.
 	//
 	//   - LogFilterMatchAll (default, also when nil): every supplied
 	//     filter must match (AND).
@@ -70,6 +73,23 @@ type ListParams struct {
 	// When true, only returns events marked as end-user facing.
 	// When false or omitted, returns all events.
 	EndUserFacingOnly *bool `json:"end_user_facing_only,omitempty"`
+	// PayloadFilters are exact-match filters on event payload fields,
+	// keyed by the field's dot-path (nested fields use dots, e.g.
+	// "captcha_attempt_payload.provider"). Serialized as
+	// payload_filter[<path>]=<value>, one value per field.
+	//
+	// Requires Type. Fields are validated by the API against the payload
+	// schema of that event type (discoverable via GetSchema); an unknown
+	// field returns a 422 listing the allowed fields. Values must parse as
+	// the field's type and match exactly; an event whose payload lacks the
+	// field never matches. At most 10 filters per request. Payload filters
+	// join the same FilterMatch group as the string filters.
+	PayloadFilters map[string]string `json:"-"`
+	// PayloadFields are payload field dot-paths to include per returned
+	// log. Requires Type and is validated like PayloadFilters. Each
+	// returned log gains a partial Payload map containing only the
+	// requested fields. Not allowed together with LogFilterMatchAny.
+	PayloadFields []string `json:"-"`
 }
 
 // ToQuery returns the params as url.Values.
@@ -117,6 +137,13 @@ func (params *ListParams) ToQuery() url.Values {
 	if params.EndUserFacingOnly != nil {
 		q.Add("end_user_facing_only", strconv.FormatBool(*params.EndUserFacingOnly))
 	}
+	// Sorted so the query string is deterministic regardless of map order.
+	for _, path := range slices.Sorted(maps.Keys(params.PayloadFilters)) {
+		q.Add("payload_filter["+path+"]", params.PayloadFilters[path])
+	}
+	if len(params.PayloadFields) > 0 {
+		q.Add("payload_fields", strings.Join(params.PayloadFields, ","))
+	}
 	return q
 }
 
@@ -146,4 +173,35 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.LogList, 
 	list := &clerk.LogList{}
 	err := c.Backend.Call(ctx, req, list)
 	return list, err
+}
+
+type GetSchemaParams struct {
+	clerk.APIParams
+	// Type is the event type to describe: concrete ("sign_in.completed"),
+	// trailing-* wildcard ("sign_in.*", whose fields are the intersection
+	// across every matching type), or bare family name ("sign_in",
+	// normalized to its wildcard form). Unknown types return a 422.
+	Type string `json:"type"`
+}
+
+// ToQuery returns the params as url.Values.
+func (params *GetSchemaParams) ToQuery() url.Values {
+	q := url.Values{}
+	q.Add("type", params.Type)
+	return q
+}
+
+// GetSchema retrieves the payload schema of a log event type: the fields
+// its payload carries, addressed by the dot-paths that List's PayloadFilters
+// and PayloadFields accept.
+func (c *Client) GetSchema(ctx context.Context, params *GetSchemaParams) (*clerk.LogSchema, error) {
+	path, err := clerk.JoinPath(path, "schemas")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
+	resource := &clerk.LogSchema{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
 }
