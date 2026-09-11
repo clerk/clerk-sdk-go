@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/clerk/clerk-sdk-go/v3"
 	"github.com/clerk/clerk-sdk-go/v3/clerktest"
+	"github.com/clerk/clerk-sdk-go/v3/jwks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -339,6 +341,139 @@ func TestWithHeaderAuthorization_CacheFixedTTL(t *testing.T) {
 	_, err = ts.Client().Do(req)
 	require.NoError(t, err)
 	require.Equal(t, 2, totalJWKSRequests)
+}
+
+// Regression test for SDK-149: the package-level JWK cache was keyed on the
+// bare kid, so a key fetched for one Clerk instance was served to any other
+// instance in the same process. A token minted by tenant B then authenticated
+// against tenant A. Cache entries must be scoped to the instance they were
+// fetched for.
+func TestWithHeaderAuthorization_CacheIsScopedPerInstance(t *testing.T) {
+	newTenant := func(name string) (*jwks.Client, string, *int) {
+		kid := "kid-" + name
+		claims := map[string]any{
+			"sid": "sess_" + name,
+			"sub": "user_" + name,
+			"iss": "https://clerk.com",
+			"exp": time.Now().Add(time.Hour).Unix(),
+		}
+		token, pubKey := clerktest.GenerateJWT(t, claims, clerktest.WithKID(kid))
+		jwksBody := clerktest.ConvertToJWKS(t, pubKey, kid)
+
+		requests := 0
+		api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
+				requests++
+				_, err := w.Write(jwksBody)
+				require.NoError(t, err)
+			}
+		}))
+		t.Cleanup(api.Close)
+
+		client := &jwks.Client{Backend: clerk.NewBackend(&clerk.BackendConfig{
+			HTTPClient: api.Client(),
+			URL:        &api.URL,
+			Key:        clerk.String("sk_test_" + name),
+		})}
+		return client, token, &requests
+	}
+
+	clientA, _, requestsA := newTenant("tenantA")
+	clientB, tokenB, requestsB := newTenant("tenantB")
+
+	// Each tenant's endpoint is guarded by middleware bound to its own instance.
+	serverFor := func(client *jwks.Client) *httptest.Server {
+		ts := httptest.NewServer(WithHeaderAuthorization(JWKSClient(client))(
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				claims, _ := clerk.SessionClaimsFromContext(r.Context())
+				_, err := fmt.Fprintf(w, `{"sub":%q}`, claims.Subject)
+				require.NoError(t, err)
+			})))
+		t.Cleanup(ts.Close)
+		return ts
+	}
+	serverA, serverB := serverFor(clientA), serverFor(clientB)
+
+	get := func(ts *httptest.Server, token string) *http.Response {
+		req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+		require.NoError(t, err)
+		req.Header.Set("Authorization", "Bearer "+token)
+		res, err := ts.Client().Do(req)
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = res.Body.Close() })
+		return res
+	}
+
+	// Legitimate tenant-B request warms the cache with tenant B's key.
+	res := get(serverB, tokenB)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, 1, *requestsB)
+
+	// The same token presented to tenant A must be rejected. Tenant A's
+	// JWKS is fetched under tenant A's credentials and has no such kid.
+	res = get(serverA, tokenB)
+	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
+	require.Equal(t, 1, *requestsA, "tenant A must fetch its own JWKS instead of reusing tenant B's cached key")
+
+	// Tenant B's own cache entry survives: still served from cache.
+	res = get(serverB, tokenB)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, 1, *requestsB)
+}
+
+// unscopedBackend deliberately does not implement clerk.CacheScoper.
+type unscopedBackend struct{ backend clerk.Backend }
+
+func (b unscopedBackend) Call(ctx context.Context, req *clerk.APIRequest, reader clerk.ResponseReader) error {
+	return b.backend.Call(ctx, req, reader)
+}
+
+// A custom Backend cannot tell us which instance it authenticates as, so its
+// keys are not cached at all rather than risking reuse across instances.
+func TestWithHeaderAuthorization_UnscopedBackendIsNotCached(t *testing.T) {
+	kid := "kid-" + t.Name()
+	token, pubKey := clerktest.GenerateJWT(t, map[string]any{
+		"sid": "sess_123",
+		"sub": "user_123",
+		"iss": "https://clerk.com",
+		"exp": time.Now().Add(time.Hour).Unix(),
+	}, clerktest.WithKID(kid))
+	jwksBody := clerktest.ConvertToJWKS(t, pubKey, kid)
+
+	requests := 0
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/jwks" && r.Method == http.MethodGet {
+			requests++
+			_, err := w.Write(jwksBody)
+			require.NoError(t, err)
+		}
+	}))
+	defer api.Close()
+
+	backend := clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: api.Client(),
+		URL:        &api.URL,
+		Key:        clerk.String("sk_test_unscoped"),
+	})
+	client := &jwks.Client{Backend: unscopedBackend{backend}}
+
+	ts := httptest.NewServer(WithHeaderAuthorization(JWKSClient(client))(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, err := w.Write([]byte("{}"))
+			require.NoError(t, err)
+		})))
+	defer ts.Close()
+
+	req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
+	require.NoError(t, err)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	for i := 1; i <= 2; i++ {
+		res, err := ts.Client().Do(req)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, res.StatusCode)
+		require.Equal(t, i, requests, "an unscopable Backend must not be cached")
+	}
 }
 
 func TestWithHeaderAuthorization_CustomFailureHandler(t *testing.T) {
