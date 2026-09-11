@@ -67,6 +67,21 @@ func (rt *RoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 	}, nil
 }
 
+// ConvertToJWKS returns JSON for a JWKS document containing one RSA key,
+// suitable for mocking a Clerk GET /jwks response.
+func ConvertToJWKS(tb testing.TB, pubKey crypto.PublicKey, kid string) []byte {
+	tb.Helper()
+	keySet := jose.JSONWebKeySet{Keys: []jose.JSONWebKey{{
+		Key:       pubKey,
+		KeyID:     kid,
+		Algorithm: string(jose.RS256),
+		Use:       "sig",
+	}}}
+	raw, err := json.Marshal(keySet)
+	require.NoError(tb, err)
+	return raw
+}
+
 // GenerateJWT creates a JSON web token with the provided claims
 // and key ID.
 func GenerateJWT(t *testing.T, claims any, kid string) (string, crypto.PublicKey) {
