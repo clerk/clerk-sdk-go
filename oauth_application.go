@@ -14,8 +14,6 @@ type OAuthApplication struct {
 	Public                bool    `json:"public"`
 	DynamicallyRegistered bool    `json:"dynamically_registered"`
 	ConsentScreenEnabled  bool    `json:"consent_screen_enabled"`
-	// Experimental: This feature is not publicly available and requires the
-	// instance to be opted into this feature.
 	DeviceAuthorizationGrantEnabled bool     `json:"device_authorization_grant_enabled"`
 	Scopes                          string   `json:"scopes"`
 	RedirectURIs                    []string `json:"redirect_uris"`
