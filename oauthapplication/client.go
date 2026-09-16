@@ -74,13 +74,13 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.OAuthAppl
 
 type CreateParams struct {
 	clerk.APIParams
-	Name                 string   `json:"name"`
-	RedirectURIs         []string `json:"redirect_uris,omitempty"`
-	Scopes               *string  `json:"scopes,omitempty"`
-	Public               *bool    `json:"public,omitempty"`
-	ConsentScreenEnabled *bool    `json:"consent_screen_enabled"`
-	DeviceAuthorizationGrantEnabled *bool `json:"device_authorization_grant_enabled"`
-	PKCERequired                    *bool `json:"pkce_required"`
+	Name                            string   `json:"name"`
+	RedirectURIs                    []string `json:"redirect_uris,omitempty"`
+	Scopes                          *string  `json:"scopes,omitempty"`
+	Public                          *bool    `json:"public,omitempty"`
+	ConsentScreenEnabled            *bool    `json:"consent_screen_enabled"`
+	DeviceAuthorizationGrantEnabled *bool    `json:"device_authorization_grant_enabled"`
+	PKCERequired                    *bool    `json:"pkce_required"`
 
 	// Deprecated: Use RedirectURIs instead
 	CallbackURL *string `json:"callback_url,omitempty"`
@@ -97,13 +97,13 @@ func (c *Client) Create(ctx context.Context, params *CreateParams) (*clerk.OAuth
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name                 *string  `json:"name,omitempty"`
-	RedirectURIs         []string `json:"redirect_uris,omitempty"`
-	Scopes               *string  `json:"scopes,omitempty"`
-	Public               *bool    `json:"public,omitempty"`
-	PKCERequired         *bool    `json:"pkce_required,omitempty"`
-	ConsentScreenEnabled *bool    `json:"consent_screen_enabled,omitempty"`
-	DeviceAuthorizationGrantEnabled *bool `json:"device_authorization_grant_enabled,omitempty"`
+	Name                            *string  `json:"name,omitempty"`
+	RedirectURIs                    []string `json:"redirect_uris,omitempty"`
+	Scopes                          *string  `json:"scopes,omitempty"`
+	Public                          *bool    `json:"public,omitempty"`
+	PKCERequired                    *bool    `json:"pkce_required,omitempty"`
+	ConsentScreenEnabled            *bool    `json:"consent_screen_enabled,omitempty"`
+	DeviceAuthorizationGrantEnabled *bool    `json:"device_authorization_grant_enabled,omitempty"`
 
 	// AccessTokenTTL is the TTL for access tokens in seconds. Omit = no change; null = reset to default; number = set. Only used when instance has the feature enabled.
 	AccessTokenTTL optional.Int64 `json:"access_token_ttl,omitzero"`

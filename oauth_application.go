@@ -2,18 +2,18 @@ package clerk
 
 type OAuthApplication struct {
 	APIResource
-	Object                string  `json:"object"`
-	ID                    string  `json:"id"`
-	InstanceID            string  `json:"instance_id"`
-	Name                  string  `json:"name"`
-	ClientID              string  `json:"client_id"`
-	ClientSecret          *string `json:"client_secret,omitempty"`
-	ClientImageURL        *string `json:"client_image_url"`
-	ClientURL             *string `json:"client_url"`
-	PKCERequired          bool    `json:"pkce_required"`
-	Public                bool    `json:"public"`
-	DynamicallyRegistered bool    `json:"dynamically_registered"`
-	ConsentScreenEnabled  bool    `json:"consent_screen_enabled"`
+	Object                          string   `json:"object"`
+	ID                              string   `json:"id"`
+	InstanceID                      string   `json:"instance_id"`
+	Name                            string   `json:"name"`
+	ClientID                        string   `json:"client_id"`
+	ClientSecret                    *string  `json:"client_secret,omitempty"`
+	ClientImageURL                  *string  `json:"client_image_url"`
+	ClientURL                       *string  `json:"client_url"`
+	PKCERequired                    bool     `json:"pkce_required"`
+	Public                          bool     `json:"public"`
+	DynamicallyRegistered           bool     `json:"dynamically_registered"`
+	ConsentScreenEnabled            bool     `json:"consent_screen_enabled"`
 	DeviceAuthorizationGrantEnabled bool     `json:"device_authorization_grant_enabled"`
 	Scopes                          string   `json:"scopes"`
 	RedirectURIs                    []string `json:"redirect_uris"`
