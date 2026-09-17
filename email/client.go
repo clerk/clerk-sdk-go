@@ -28,9 +28,10 @@ func NewClient(config *clerk.ClientConfig) *Client {
 	}
 }
 
-// Mailbox is an email address.
+// Mailbox is an email address with an optional display name.
 type Mailbox struct {
-	Address string `json:"address"`
+	Address string  `json:"address"`
+	Name    *string `json:"name,omitempty"`
 }
 
 // Recipient is the addressee of an email. Provide exactly one of Address or

@@ -29,8 +29,8 @@ func TestEmailSend(t *testing.T) {
 		T: t,
 		In: json.RawMessage(`{
 			"to": {"address": "admin@acme.com"},
-			"from": {"address": "noreply@acme.com"},
-			"reply_to": {"address": "support@acme.com"},
+			"from": {"address": "noreply@acme.com", "name": "Acme"},
+			"reply_to": {"address": "support@acme.com", "name": "Acme Support"},
 			"subject": "Hello",
 			"html": "<p>hi</p>"
 		}`),
@@ -60,8 +60,8 @@ func TestEmailSend(t *testing.T) {
 	email, err := Send(context.Background(), &SendParams{
 		IdempotencyKey: "roadmap-notification-123",
 		To:             Recipient{Address: "admin@acme.com"},
-		From:           Mailbox{Address: "noreply@acme.com"},
-		ReplyTo:        &Mailbox{Address: "support@acme.com"},
+		From:           Mailbox{Address: "noreply@acme.com", Name: clerk.String("Acme")},
+		ReplyTo:        &Mailbox{Address: "support@acme.com", Name: clerk.String("Acme Support")},
 		Subject:        "Hello",
 		HTML:           "<p>hi</p>",
 	})
@@ -71,6 +71,24 @@ func TestEmailSend(t *testing.T) {
 	require.Equal(t, "admin@acme.com", email.ToEmailAddress)
 	require.Equal(t, "queued", email.Status)
 	require.True(t, email.DeliveredByClerk)
+}
+
+func TestMailboxNameSerialization(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		value *string
+		want  string
+	}{
+		{"omitted", nil, `{"address":"support@acme.com"}`},
+		{"explicit empty", clerk.String(""), `{"address":"support@acme.com","name":""}`},
+		{"unicode", clerk.String("Acme Équipe"), `{"address":"support@acme.com","name":"Acme Équipe"}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			body, err := json.Marshal(Mailbox{Address: "support@acme.com", Name: tc.value})
+			require.NoError(t, err)
+			require.JSONEq(t, tc.want, string(body))
+		})
+	}
 }
 
 func TestEmailSuppressionReason(t *testing.T) {
