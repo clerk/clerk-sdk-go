@@ -64,7 +64,8 @@ type CreateParams struct {
 	// Specified in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
 	// Specified in BCP-47 format
-	Locale *string `json:"locale,omitempty"`
+	Locale   *string `json:"locale,omitempty"`
+	Timezone *string `json:"timezone,omitempty"`
 }
 
 // Create creates a new user.
@@ -125,7 +126,8 @@ type UpdateParams struct {
 	// Specified in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
 	// Specified in BCP-47 format
-	Locale *string `json:"locale,omitempty"`
+	Locale   *string `json:"locale,omitempty"`
+	Timezone *string `json:"timezone,omitempty"`
 }
 
 // Update updates a user.
@@ -199,7 +201,8 @@ func hasNonMetadataUpdateFields(p *UpdateParams) bool {
 		p.LegalAcceptedAt != nil ||
 		p.SkipLegalChecks != nil ||
 		p.CreatedAt != nil ||
-		p.Locale != nil
+		p.Locale != nil ||
+		p.Timezone != nil
 }
 
 type UpdateProfileImageParams struct {
