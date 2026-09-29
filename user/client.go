@@ -421,6 +421,64 @@ type TotalCount struct {
 	TotalCount int64  `json:"total_count"`
 }
 
+type SearchParams struct {
+	clerk.APIParams
+	UserIDs            []string `json:"user_id,omitempty"`
+	ExternalIDs        []string `json:"external_id,omitempty"`
+	OrganizationIDs    []string `json:"organization_id,omitempty"`
+	EmailAddresses     []string `json:"email_address,omitempty"`
+	PhoneNumbers       []string `json:"phone_number,omitempty"`
+	Usernames          []string `json:"username,omitempty"`
+	Web3Wallets        []string `json:"web3_wallet,omitempty"`
+	Provider           *string  `json:"provider,omitempty"`
+	ProviderUserIDs    []string `json:"provider_user_id,omitempty"`
+	LastActiveAtBefore *int64   `json:"last_active_at_before,omitempty"`
+	LastActiveAtAfter  *int64   `json:"last_active_at_after,omitempty"`
+	LastSignInAtBefore *int64   `json:"last_sign_in_at_before,omitempty"`
+	LastSignInAtAfter  *int64   `json:"last_sign_in_at_after,omitempty"`
+	CreatedAtBefore    *int64   `json:"created_at_before,omitempty"`
+	CreatedAtAfter     *int64   `json:"created_at_after,omitempty"`
+	Query              *string  `json:"query,omitempty"`
+	EmailAddressQuery  *string  `json:"email_address_query,omitempty"`
+	PhoneNumberQuery   *string  `json:"phone_number_query,omitempty"`
+	UsernameQuery      *string  `json:"username_query,omitempty"`
+	NameQuery          *string  `json:"name_query,omitempty"`
+	OrderBy            *string  `json:"order_by,omitempty"`
+	Banned             *bool    `json:"banned,omitempty"`
+	Deprovisioned      *bool    `json:"deprovisioned,omitempty"`
+	// Metadata filters are ANDed together. Accepts up to 10 filters.
+	Metadata      []SearchMetadataFilter `json:"metadata,omitempty"`
+	Limit         *int64                 `json:"limit,omitempty"`
+	StartingAfter *string                `json:"starting_after,omitempty"`
+	EndingBefore  *string                `json:"ending_before,omitempty"`
+}
+
+// SearchMetadataFilter matches users on a single metadata key.
+type SearchMetadataFilter struct {
+	// One of "public", "private" or "unsafe".
+	Scope string `json:"scope"`
+	Key   string `json:"key"`
+	// Required when Match is "equals", not allowed when it is "exists".
+	Value *string `json:"value,omitempty"`
+	// One of "equals" or "exists".
+	Match  string `json:"match"`
+	Negate *bool  `json:"negate,omitempty"`
+}
+
+// Search returns a page of users matching the parameters. Pages are
+// linked by the opaque cursors in the response.
+func (c *Client) Search(ctx context.Context, params *SearchParams) (*clerk.UserSearchList, error) {
+	path, err := clerk.JoinPath(path, "/search")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	list := &clerk.UserSearchList{}
+	err = c.Backend.Call(ctx, req, list)
+	return list, err
+}
+
 type ListOAuthAccessTokensParams struct {
 	clerk.APIParams
 	ID       string `json:"-"`

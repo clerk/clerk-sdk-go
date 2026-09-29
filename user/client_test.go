@@ -245,6 +245,55 @@ func TestUserClientCount(t *testing.T) {
 	require.Equal(t, int64(10), totalCount.TotalCount)
 }
 
+func TestUserClientSearch(t *testing.T) {
+	t.Parallel()
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Method: http.MethodPost,
+			Path:   "/v1/users/search",
+			In: json.RawMessage(`{
+				"email_address":["foo@bar.com"],
+				"query":"foo",
+				"banned":false,
+				"created_at_after":1730333164378,
+				"metadata":[
+					{"scope":"public","key":"plan","value":"pro","match":"equals"},
+					{"scope":"private","key":"legacy","match":"exists","negate":true}
+				],
+				"limit":2,
+				"starting_after":"cur_prev"
+			}`),
+			Out: json.RawMessage(`{
+				"data":[{"object":"user","id":"user_123"},{"object":"user","id":"user_456"}],
+				"cursor":{"starting_after":"cur_next","ending_before":"cur_back","has_next_page":true}
+			}`),
+		},
+	}
+	client := NewClient(config)
+	list, err := client.Search(context.Background(), &SearchParams{
+		EmailAddresses: []string{"foo@bar.com"},
+		Query:          clerk.String("foo"),
+		Banned:         clerk.Bool(false),
+		CreatedAtAfter: clerk.Int64(1730333164378),
+		Metadata: []SearchMetadataFilter{
+			{Scope: "public", Key: "plan", Value: clerk.String("pro"), Match: "equals"},
+			{Scope: "private", Key: "legacy", Match: "exists", Negate: clerk.Bool(true)},
+		},
+		Limit:         clerk.Int64(2),
+		StartingAfter: clerk.String("cur_prev"),
+	})
+	require.NoError(t, err)
+	require.Len(t, list.Users, 2)
+	require.Equal(t, "user_123", list.Users[0].ID)
+	require.Equal(t, "user_456", list.Users[1].ID)
+	require.NotNil(t, list.Cursor)
+	require.Equal(t, "cur_next", *list.Cursor.StartingAfter)
+	require.Equal(t, "cur_back", *list.Cursor.EndingBefore)
+	require.True(t, list.Cursor.HasNextPage)
+}
+
 func TestUserClientGet(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
