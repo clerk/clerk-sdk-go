@@ -42,6 +42,20 @@ type ListParams struct {
 	Subject *string `json:"subject,omitempty"`
 	// Filter logs by actor.
 	Actor *string `json:"actor,omitempty"`
+	// Identifier filters to every event involving one user, whether the
+	// user performed the action or the action was performed on them. It
+	// takes an identifier the user owns: an email address, a phone number,
+	// a username or a web3 wallet.
+	//
+	// The API resolves the value to its owning user, matching exactly
+	// against the stored identifier the same way the user list does, so a
+	// value that is not stored in that form does not resolve. An identifier
+	// no user in the instance owns returns an empty page, not an error.
+	//
+	// A user ID is not accepted and returns a 422: filter by user ID with
+	// Actor or Subject instead, which say which side of the event you mean.
+	// Identifier is likewise not allowed together with Actor or Subject.
+	Identifier *string `json:"identifier,omitempty"`
 	// Filter logs by trace ID.
 	TraceID *string `json:"trace_id,omitempty"`
 	// Filter logs by event type (e.g., email_send).
@@ -53,9 +67,11 @@ type ListParams struct {
 	// Filter logs by device IP address (exact match against
 	// device_info_ip_address).
 	IPAddress *string `json:"ip_address,omitempty"`
-	// FilterMatch controls how Subject, Type, Actor, TraceID, ClientID,
-	// ImpersonatorUserID, IPAddress, and PayloadFilters are combined when
-	// more than one is supplied.
+	// FilterMatch controls how Subject, Type, Actor, Identifier, TraceID,
+	// ClientID, ImpersonatorUserID, IPAddress, and PayloadFilters are
+	// combined when more than one is supplied. Identifier joins the group as
+	// a single unit, keeping its internal actor-or-subject match intact
+	// under both modes.
 	//
 	//   - LogFilterMatchAll (default, also when nil): every supplied
 	//     filter must match (AND).
@@ -109,6 +125,9 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.Actor != nil {
 		q.Add("actor", *params.Actor)
+	}
+	if params.Identifier != nil {
+		q.Add("identifier", *params.Identifier)
 	}
 	if params.TraceID != nil {
 		q.Add("trace_id", *params.TraceID)
