@@ -2,6 +2,7 @@
 
 ## Next release
 
+- Add `IdpCertificates` to `clerk.SAMLConnection` and accept an `IdpCertificates` list in `samlconnection.CreateParams`, `samlconnection.UpdateParams`, `enterpriseconnection.CreateParamsSaml` and `enterpriseconnection.UpdateParamsSaml`. The single `IdpCertificate` param is deprecated in favor of the list.
 - Add `SkipRestrictionChecks` to `user.CreateParams`. Creating a user now runs the instance's allowlist, blocklist, blocked disposable email domains and blocked email subaddresses, the same as sign-up does; set this to exempt a single create, for a backend creating a user it already trusts.
 
 - Add support for the OAuth Applications API. Added the oauthapplication package for API operations and a clerk.OAuthApplication type.

@@ -242,3 +242,46 @@ func TestEnterpriseConnectionClientDelete(t *testing.T) {
 	require.True(t, res.Deleted)
 	require.Equal(t, id, res.ID)
 }
+
+func TestEnterpriseConnectionClientCreate_WithIdpCertificates(t *testing.T) {
+	t.Parallel()
+	id := "entconn_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"protocol":"saml","saml":{"idp_certificates":["cert-a","cert-b"]}}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"enterprise_connection","protocol":"saml","provider":"saml_custom","active":true}`, id)),
+			Method: http.MethodPost,
+			Path:   "/v1/enterprise_connections",
+		},
+	}
+	client := NewClient(config)
+	conn, err := client.Create(context.Background(), &CreateParams{
+		Protocol: clerk.String("saml"),
+		Saml:     &CreateParamsSaml{IdpCertificates: &[]string{"cert-a", "cert-b"}},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, conn.ID)
+}
+
+func TestEnterpriseConnectionClientUpdate_WithIdpCertificates(t *testing.T) {
+	t.Parallel()
+	id := "entconn_abc"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"saml":{"idp_certificates":["cert-b"]}}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"enterprise_connection","protocol":"saml","provider":"saml_custom","active":true}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/enterprise_connections/" + id,
+		},
+	}
+	client := NewClient(config)
+	conn, err := client.Update(context.Background(), id, &UpdateParams{
+		Saml: &UpdateParamsSaml{IdpCertificates: &[]string{"cert-b"}},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, conn.ID)
+}
