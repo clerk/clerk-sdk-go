@@ -347,6 +347,42 @@ func TestListParams_ToQuery_IPAddress(t *testing.T) {
 	require.Empty(t, (&ListParams{}).ToQuery()["ip_address"], "nil IPAddress should be omitted")
 }
 
+// TestListParams_ToQuery_UserFilters locks the wire names for the two
+// user-scoped filters so the SDK stays in sync with the user_id and
+// identifier query parameters accepted by the logs list endpoint. Both ask
+// "every event involving this user", one by ID and one by an identifier
+// associated with them.
+func TestListParams_ToQuery_UserFilters(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name   string
+		params *ListParams
+		param  string
+		want   string
+	}{
+		{
+			name:   "user_id",
+			params: &ListParams{UserID: clerk.String("user_2abcDEF")},
+			param:  "user_id",
+			want:   "user_2abcDEF",
+		},
+		{
+			name:   "identifier",
+			params: &ListParams{Identifier: clerk.String("ana@example.com")},
+			param:  "identifier",
+			want:   "ana@example.com",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.Equal(t, []string{tc.want}, tc.params.ToQuery()[tc.param])
+			require.Empty(t, (&ListParams{}).ToQuery()[tc.param], "nil %s should be omitted", tc.param)
+		})
+	}
+}
+
 // TestList_ActorTypeOmitted verifies that a response without actor_type
 // decodes to the zero value rather than failing, so the SDK keeps working
 // against API responses predating the field.

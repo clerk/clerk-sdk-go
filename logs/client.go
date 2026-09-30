@@ -42,6 +42,27 @@ type ListParams struct {
 	Subject *string `json:"subject,omitempty"`
 	// Filter logs by actor.
 	Actor *string `json:"actor,omitempty"`
+	// UserID filters to every event involving one user, whether the user
+	// performed the action or the action was performed on them. It takes the
+	// user's ID.
+	//
+	// A value that is not a user ID returns a 422; use Identifier for an
+	// email address, phone number, username or web3 wallet. UserID is also
+	// not allowed together with Actor, Subject or Identifier.
+	UserID *string `json:"user_id,omitempty"`
+	// Identifier asks the same question as UserID, given an identifier
+	// associated with the user instead: an email address, a phone number, a
+	// username or a web3 wallet.
+	//
+	// The value is matched exactly against the stored identifier, so one
+	// that is not stored in that form does not resolve. Verification status
+	// is not considered, so an identifier associated with several users
+	// matches events for all of them. If it is associated with no user in
+	// the instance the result is an empty page, not an error.
+	//
+	// A user ID is not accepted and returns a 422; use UserID for that.
+	// Identifier is also not allowed together with Actor or Subject.
+	Identifier *string `json:"identifier,omitempty"`
 	// Filter logs by trace ID.
 	TraceID *string `json:"trace_id,omitempty"`
 	// Filter logs by event type (e.g., email_send).
@@ -53,9 +74,9 @@ type ListParams struct {
 	// Filter logs by device IP address (exact match against
 	// device_info_ip_address).
 	IPAddress *string `json:"ip_address,omitempty"`
-	// FilterMatch controls how Subject, Type, Actor, TraceID, ClientID,
-	// ImpersonatorUserID, IPAddress, and PayloadFilters are combined when
-	// more than one is supplied.
+	// FilterMatch controls how Subject, Type, Actor, UserID, Identifier,
+	// TraceID, ClientID, ImpersonatorUserID, IPAddress, and PayloadFilters
+	// are combined when more than one is supplied.
 	//
 	//   - LogFilterMatchAll (default, also when nil): every supplied
 	//     filter must match (AND).
@@ -109,6 +130,12 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.Actor != nil {
 		q.Add("actor", *params.Actor)
+	}
+	if params.UserID != nil {
+		q.Add("user_id", *params.UserID)
+	}
+	if params.Identifier != nil {
+		q.Add("identifier", *params.Identifier)
 	}
 	if params.TraceID != nil {
 		q.Add("trace_id", *params.TraceID)
