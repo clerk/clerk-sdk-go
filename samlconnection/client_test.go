@@ -660,3 +660,53 @@ func TestSAMLConnectionClientUpdate_DirectoryPathWins(t *testing.T) {
 	})
 	require.NoError(t, err)
 }
+
+func TestSAMLConnectionClientCreate_WithIdpCertificates(t *testing.T) {
+	t.Parallel()
+	id := "samlc_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"idp_certificates":["cert-a","cert-b"]}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","idp_certificate":"cert-a","idp_certificates":[{"certificate":"cert-a","issued_at":1000,"expires_at":2000},{"certificate":"cert-b","issued_at":null,"expires_at":null}]}`, id)),
+			Method: http.MethodPost,
+			Path:   "/v1/saml_connections",
+		},
+	}
+	client := NewClient(config)
+	samlConnection, err := client.Create(context.Background(), &CreateParams{
+		IdpCertificates: &[]string{"cert-a", "cert-b"},
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, samlConnection.ID)
+	require.Equal(t, "cert-a", *samlConnection.IdpCertificate)
+	require.Len(t, samlConnection.IdpCertificates, 2)
+	require.Equal(t, "cert-a", samlConnection.IdpCertificates[0].Certificate)
+	require.Equal(t, int64(1000), *samlConnection.IdpCertificates[0].IssuedAt)
+	require.Equal(t, int64(2000), *samlConnection.IdpCertificates[0].ExpiresAt)
+	require.Equal(t, "cert-b", samlConnection.IdpCertificates[1].Certificate)
+	require.Nil(t, samlConnection.IdpCertificates[1].IssuedAt)
+}
+
+func TestSAMLConnectionClientUpdate_WithIdpCertificates(t *testing.T) {
+	t.Parallel()
+	id := "samlc_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"idp_certificates":["cert-b"]}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","idp_certificate":"cert-b","idp_certificates":[{"certificate":"cert-b","issued_at":null,"expires_at":null}]}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/saml_connections/" + id,
+		},
+	}
+	client := NewClient(config)
+	samlConnection, err := client.Update(context.Background(), id, &UpdateParams{
+		IdpCertificates: &[]string{"cert-b"},
+	})
+	require.NoError(t, err)
+	require.Len(t, samlConnection.IdpCertificates, 1)
+	require.Equal(t, "cert-b", samlConnection.IdpCertificates[0].Certificate)
+}

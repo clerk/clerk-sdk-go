@@ -86,6 +86,15 @@ func (attr *CustomAttribute) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// IdpCertificate is one of the IdP signing certificates a SAML connection
+// trusts. The first entry is the primary, mirrored in
+// [SAMLConnection.IdpCertificate]. The timestamps are Unix milliseconds.
+type IdpCertificate struct {
+	Certificate string `json:"certificate"`
+	IssuedAt    *int64 `json:"issued_at"`
+	ExpiresAt   *int64 `json:"expires_at"`
+}
+
 type SAMLConnection struct {
 	APIResource
 	ID     string `json:"id"`
@@ -101,6 +110,7 @@ type SAMLConnection struct {
 	IdpCertificate                   *string                        `json:"idp_certificate"`
 	IdpCertificateIssuedAt           *int64                         `json:"idp_certificate_issued_at"`
 	IdpCertificateExpiresAt          *int64                         `json:"idp_certificate_expires_at"`
+	IdpCertificates                  []IdpCertificate               `json:"idp_certificates"`
 	IdpMetadataURL                   *string                        `json:"idp_metadata_url"`
 	IdpMetadata                      *string                        `json:"idp_metadata"`
 	AcsURL                           string                         `json:"acs_url"`

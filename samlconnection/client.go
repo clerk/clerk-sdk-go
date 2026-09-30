@@ -51,12 +51,16 @@ type CreateParams struct {
 	Name           *string `json:"name,omitempty"`
 	OrganizationID *string `json:"organization_id,omitempty"`
 	// Deprecated: Use `domains` instead.
-	Domain                 *string                 `json:"domain,omitempty"`
-	Domains                *[]string               `json:"domains,omitempty"`
-	Provider               *string                 `json:"provider,omitempty"`
-	IdpEntityID            *string                 `json:"idp_entity_id,omitempty"`
-	IdpSsoURL              *string                 `json:"idp_sso_url,omitempty"`
-	IdpCertificate         *string                 `json:"idp_certificate,omitempty"`
+	Domain      *string   `json:"domain,omitempty"`
+	Domains     *[]string `json:"domains,omitempty"`
+	Provider    *string   `json:"provider,omitempty"`
+	IdpEntityID *string   `json:"idp_entity_id,omitempty"`
+	IdpSsoURL   *string   `json:"idp_sso_url,omitempty"`
+	// Deprecated: Use IdpCertificates instead.
+	IdpCertificate *string `json:"idp_certificate,omitempty"`
+	// IdpCertificates is the complete set of IdP signing certificates, one
+	// per entry, and replaces any certificates the connection already has.
+	IdpCertificates        *[]string               `json:"idp_certificates,omitempty"`
 	IdpMetadataURL         *string                 `json:"idp_metadata_url,omitempty"`
 	IdpMetadata            *string                 `json:"idp_metadata,omitempty"`
 	AttributeMapping       *AttributeMappingParams `json:"attribute_mapping,omitempty"`
@@ -115,9 +119,13 @@ type UpdateParams struct {
 	//   - If nil or unset, no action will be taken.
 	//   - If an empty value (""), the organization_id will be unset.
 	//   - If a valid ID is provided, the organization_id will be updated.
-	OrganizationID                   *string                 `json:"organization_id,omitempty"`
-	IdpSsoURL                        *string                 `json:"idp_sso_url,omitempty"`
-	IdpCertificate                   *string                 `json:"idp_certificate,omitempty"`
+	OrganizationID *string `json:"organization_id,omitempty"`
+	IdpSsoURL      *string `json:"idp_sso_url,omitempty"`
+	// Deprecated: Use IdpCertificates instead.
+	IdpCertificate *string `json:"idp_certificate,omitempty"`
+	// IdpCertificates is the complete set of IdP signing certificates, one
+	// per entry, and replaces any certificates the connection already has.
+	IdpCertificates                  *[]string               `json:"idp_certificates,omitempty"`
 	IdpMetadataURL                   *string                 `json:"idp_metadata_url,omitempty"`
 	IdpMetadata                      *string                 `json:"idp_metadata,omitempty"`
 	AttributeMapping                 *AttributeMappingParams `json:"attribute_mapping,omitempty"`

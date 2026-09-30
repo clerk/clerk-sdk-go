@@ -35,9 +35,13 @@ type AttributeMappingParams struct {
 // CreateParamsSaml is the request body for creating a SAML enterprise connection.
 // See: https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.saml
 type CreateParamsSaml struct {
-	IdpEntityID      *string                 `json:"idp_entity_id,omitempty"`
-	IdpSsoURL        *string                 `json:"idp_sso_url,omitempty"`
-	IdpCertificate   *string                 `json:"idp_certificate,omitempty"`
+	IdpEntityID *string `json:"idp_entity_id,omitempty"`
+	IdpSsoURL   *string `json:"idp_sso_url,omitempty"`
+	// Deprecated: Use IdpCertificates instead.
+	IdpCertificate *string `json:"idp_certificate,omitempty"`
+	// IdpCertificates is the complete set of IdP signing certificates, one
+	// per entry, and replaces any certificates the connection already has.
+	IdpCertificates  *[]string               `json:"idp_certificates,omitempty"`
 	IdpMetadataURL   *string                 `json:"idp_metadata_url,omitempty"`
 	IdpMetadata      *string                 `json:"idp_metadata,omitempty"`
 	AttributeMapping *AttributeMappingParams `json:"attribute_mapping,omitempty"`
@@ -96,9 +100,13 @@ func (c *Client) Get(ctx context.Context, id string) (*clerk.EnterpriseConnectio
 // Pass as UpdateParams.Saml for SAML connections.
 // See: https://clerk.com/docs/reference/backend-api/tag/enterprise-connections/post/enterprise_connections.body.saml
 type UpdateParamsSaml struct {
-	IdpEntityID                    *string                  `json:"idp_entity_id,omitempty"`
-	IdpSsoURL                      *string                  `json:"idp_sso_url,omitempty"`
-	IdpCertificate                 *string                  `json:"idp_certificate,omitempty"`
+	IdpEntityID *string `json:"idp_entity_id,omitempty"`
+	IdpSsoURL   *string `json:"idp_sso_url,omitempty"`
+	// Deprecated: Use IdpCertificates instead.
+	IdpCertificate *string `json:"idp_certificate,omitempty"`
+	// IdpCertificates is the complete set of IdP signing certificates, one
+	// per entry, and replaces any certificates the connection already has.
+	IdpCertificates                *[]string                `json:"idp_certificates,omitempty"`
 	IdpMetadataURL                 *string                  `json:"idp_metadata_url,omitempty"`
 	IdpMetadata                    *string                  `json:"idp_metadata,omitempty"`
 	AttributeMapping               *AttributeMappingParams  `json:"attribute_mapping,omitempty"`
