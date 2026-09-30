@@ -102,6 +102,12 @@ type UserList struct {
 	TotalCount int64   `json:"total_count"`
 }
 
+type UserSearchList struct {
+	APIResource
+	Users  []*User           `json:"data"`
+	Cursor *PaginationCursor `json:"cursor"`
+}
+
 type SAMLAccountConnection struct {
 	ID                               string   `json:"id"`
 	Name                             string   `json:"name"`

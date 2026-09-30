@@ -69,6 +69,12 @@ func Count(ctx context.Context, params *ListParams) (*TotalCount, error) {
 	return getClient().Count(ctx, params)
 }
 
+// Search returns a page of users matching the parameters. Pages are
+// linked by the opaque cursors in the response.
+func Search(ctx context.Context, params *SearchParams) (*clerk.UserSearchList, error) {
+	return getClient().Search(ctx, params)
+}
+
 // ListOAuthAccessTokens retrieves a list of the user's access
 // tokens for a specific OAuth provider.
 func ListOAuthAccessTokens(ctx context.Context, params *ListOAuthAccessTokensParams) (*clerk.OAuthAccessTokenList, error) {
