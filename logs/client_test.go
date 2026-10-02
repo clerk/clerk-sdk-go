@@ -373,6 +373,12 @@ func TestListParams_ToQuery_UserFilters(t *testing.T) {
 			param:  "identifier",
 			want:   "ana@example.com",
 		},
+		{
+			name:   "session_id",
+			params: &ListParams{SessionID: clerk.String("sess_2abcDEF")},
+			param:  "session_id",
+			want:   "sess_2abcDEF",
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
@@ -669,4 +675,80 @@ func TestGetSchema(t *testing.T) {
 	require.Equal(t, "string", schema.Fields[0].Type)
 	require.False(t, schema.Fields[0].Optional)
 	require.True(t, schema.Fields[1].Optional)
+}
+
+// TestList_SearchedWindow covers the window and retention fields on the
+// cursor: the range a page was actually read from, and the plan cutoff that
+// explains why it can start later than the bound that was asked for.
+func TestList_SearchedWindow(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"data": []map[string]interface{}{},
+		"cursor": map[string]interface{}{
+			"starting_after":          nil,
+			"ending_before":           nil,
+			"has_next_page":           false,
+			"next_page_status":        "unknown",
+			"retention_limit_reached": false,
+			"searched_from":           1775602310588,
+			"searched_to":             1775616710588,
+			"retention_days":          7,
+			"retention_floor":         1775000000000,
+		},
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    responseJSON,
+			Method: http.MethodGet,
+			Path:   "/v1/logs",
+		},
+	}
+	client := NewClient(config)
+	list, err := client.List(context.Background(), &ListParams{})
+	require.NoError(t, err)
+	require.NotNil(t, list.Cursor)
+	require.Equal(t, int64(1775602310588), list.Cursor.SearchedFrom)
+	require.Equal(t, int64(1775616710588), list.Cursor.SearchedTo)
+	require.Equal(t, 7, list.Cursor.RetentionDays)
+	require.Equal(t, int64(1775000000000), list.Cursor.RetentionFloor)
+}
+
+// TestList_SearchedWindowAbsent pins the zero values an older API that does
+// not send these fields yields, so a caller sees 0 rather than a panic.
+func TestList_SearchedWindowAbsent(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"data": []map[string]interface{}{},
+		"cursor": map[string]interface{}{
+			"starting_after":   nil,
+			"ending_before":    nil,
+			"has_next_page":    false,
+			"next_page_status": "false",
+		},
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    responseJSON,
+			Method: http.MethodGet,
+			Path:   "/v1/logs",
+		},
+	}
+	client := NewClient(config)
+	list, err := client.List(context.Background(), &ListParams{})
+	require.NoError(t, err)
+	require.NotNil(t, list.Cursor)
+	require.Zero(t, list.Cursor.SearchedFrom)
+	require.Zero(t, list.Cursor.RetentionDays)
 }
