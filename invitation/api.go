@@ -28,6 +28,13 @@ func Revoke(ctx context.Context, id string) (*clerk.Invitation, error) {
 	return getClient().Revoke(ctx, id)
 }
 
+// Delete permanently deletes an invitation of any status, along with the
+// copies of the invitation email Clerk stored for its recipient. Unlike
+// Revoke, this removes the invitation record itself.
+func Delete(ctx context.Context, id string) (*clerk.DeletedResource, error) {
+	return getClient().Delete(ctx, id)
+}
+
 func getClient() *Client {
 	return &Client{
 		Backend: clerk.GetBackend(),
