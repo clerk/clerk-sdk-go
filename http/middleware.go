@@ -14,6 +14,48 @@ import (
 	"github.com/clerk/clerk-sdk-go/v2/jwt"
 )
 
+// AuthorizationErrorType defines the type of authorization error.
+type AuthorizationErrorType string
+
+const (
+	// ErrorTypeMissingToken indicates the authorization token is missing.
+	ErrorTypeMissingToken AuthorizationErrorType = "missing_token"
+	// ErrorTypeInvalidToken indicates the token format is invalid.
+	ErrorTypeInvalidToken AuthorizationErrorType = "invalid_token"
+	// ErrorTypeJWKSFetch indicates an error fetching the JSON Web Key Set.
+	ErrorTypeJWKSFetch AuthorizationErrorType = "jwks_fetch_error"
+	// ErrorTypeTokenVerification indicates the token verification failed.
+	ErrorTypeTokenVerification AuthorizationErrorType = "token_verification_error"
+	// ErrorTypeInvalidMissingKID indicates the token is missing the 'kid' header claim.
+	ErrorTypeInvalidMissingKID AuthorizationErrorType = "invalid_missing_kid"
+)
+
+// AuthorizationError contains information about an authorization failure.
+type AuthorizationError struct {
+	// Type indicates the type of authorization error.
+	Type AuthorizationErrorType
+	// Message is a human-readable error message.
+	Message string
+	// Err is the underlying error that caused the authorization failure.
+	Err error
+}
+
+// Error implements the error interface.
+func (e *AuthorizationError) Error() string {
+	if e.Err != nil {
+		return fmt.Sprintf("[%s] %s: %v", e.Type, e.Message, e.Err)
+	}
+	return fmt.Sprintf("[%s] %s", e.Type, e.Message)
+}
+
+// ErrorAwareHandler is an HTTP handler that can handle authorization errors.
+// Implement this interface in addition to or instead of the standard http.Handler
+// to receive detailed error information during authorization failures.
+type ErrorAwareHandler interface {
+	// ServeHTTPWithError is called when authorization fails, providing error details.
+	ServeHTTPWithError(w http.ResponseWriter, r *http.Request, authErr *AuthorizationError)
+}
+
 // RequireHeaderAuthorization will respond with HTTP 403 Forbidden if
 // the Authorization header does not contain a valid session token.
 func RequireHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) http.Handler {
@@ -35,27 +77,31 @@ func RequireHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) 
 // The middleware uses Bearer authentication, so the Authorization header
 // is expected to have the following format:
 // Authorization: Bearer <token>
+//
+// Handlers can implement ErrorAwareHandler interface to receive detailed
+// error information when authorization fails. If a handler implements both
+// http.Handler and ErrorAwareHandler, ServeHTTPWithError will be called.
 func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) http.Handler {
+	params := &AuthorizationParams{}
+	for _, opt := range opts {
+		if err := opt(params); err != nil {
+			// If an AuthorizationOption returns an error it indicates a misconfiguration.
+			// Panic here because such problems should be detected at application
+			// startup, not during handling of the first user request.
+			panic(err)
+		}
+	}
+	if params.Clock == nil {
+		params.Clock = clerk.NewClock()
+	}
+	if params.AuthorizationFailureHandler == nil {
+		params.AuthorizationFailureHandler = http.HandlerFunc(defaultAuthorizationFailureHandler)
+	}
+	if params.AuthorizationJWTExtractor == nil {
+		params.AuthorizationJWTExtractor = defaultAuthorizationJWTExtractor
+	}
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			params := &AuthorizationParams{}
-			for _, opt := range opts {
-				err := opt(params)
-				if err != nil {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-			}
-			if params.Clock == nil {
-				params.Clock = clerk.NewClock()
-			}
-			if params.AuthorizationFailureHandler == nil {
-				params.AuthorizationFailureHandler = http.HandlerFunc(defaultAuthorizationFailureHandler)
-			}
-			if params.AuthorizationJWTExtractor == nil {
-				params.AuthorizationJWTExtractor = defaultAuthorizationJWTExtractor
-			}
-
 			token := params.AuthorizationJWTExtractor(r)
 			if token == "" {
 				next.ServeHTTP(w, r)
@@ -63,20 +109,41 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 			}
 			decoded, err := jwt.Decode(r.Context(), &jwt.DecodeParams{Token: token})
 			if err != nil {
-				next.ServeHTTP(w, r)
+				authErr := &AuthorizationError{
+					Type:    ErrorTypeInvalidToken,
+					Message: "failed to decode token",
+					Err:     err,
+				}
+				callAuthorizationFailureHandler(params.AuthorizationFailureHandler, w, r, authErr)
 				return
 			}
 			if params.JWK == nil {
 				params.JWK, err = getJWK(r.Context(), params.JWKSClient, decoded.KeyID, params.Clock)
 				if err != nil {
-					params.AuthorizationFailureHandler.ServeHTTP(w, r)
+					var errType AuthorizationErrorType
+					if decoded.KeyID == "" {
+						errType = ErrorTypeInvalidMissingKID
+					} else {
+						errType = ErrorTypeJWKSFetch
+					}
+					authErr := &AuthorizationError{
+						Type:    errType,
+						Message: "failed to get JSON Web Key",
+						Err:     err,
+					}
+					callAuthorizationFailureHandler(params.AuthorizationFailureHandler, w, r, authErr)
 					return
 				}
 			}
 			params.Token = token
 			claims, err := jwt.Verify(r.Context(), &params.VerifyParams)
 			if err != nil {
-				params.AuthorizationFailureHandler.ServeHTTP(w, r)
+				authErr := &AuthorizationError{
+					Type:    ErrorTypeTokenVerification,
+					Message: "failed to verify token",
+					Err:     err,
+				}
+				callAuthorizationFailureHandler(params.AuthorizationFailureHandler, w, r, authErr)
 				return
 			}
 
@@ -87,7 +154,63 @@ func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) htt
 	}
 }
 
+// callAuthorizationFailureHandler calls the appropriate error handler method.
+// If the handler implements ErrorAwareHandler, ServeHTTPWithError is called.
+// Otherwise, the standard ServeHTTP is called.
+func callAuthorizationFailureHandler(handler http.Handler, w http.ResponseWriter, r *http.Request, authErr *AuthorizationError) {
+	if errorAwareHandler, ok := handler.(ErrorAwareHandler); ok {
+		errorAwareHandler.ServeHTTPWithError(w, r, authErr)
+		return
+	}
+	handler.ServeHTTP(w, r)
+}
+
 func defaultAuthorizationFailureHandler(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusUnauthorized)
+}
+
+// WithErrorHandler returns an AuthorizationOption that configures a handler
+// which receives detailed error information when authorization fails.
+// The error handler receives the AuthorizationError with type and underlying error.
+//
+// Example:
+//
+//	http.Handler = WithHeaderAuthorization(
+//	    WithErrorHandler(func(w http.ResponseWriter, r *http.Request, authErr *AuthorizationError) {
+//	        switch authErr.Type {
+//	        case ErrorTypeInvalidToken:
+//	            w.WriteHeader(http.StatusBadRequest)
+//	            w.Write([]byte("Invalid token format"))
+//	        case ErrorTypeTokenVerification:
+//	            w.WriteHeader(http.StatusUnauthorized)
+//	            w.Write([]byte("Token verification failed"))
+//	        case ErrorTypeJWKSFetch:
+//	            w.WriteHeader(http.StatusServiceUnavailable)
+//	            w.Write([]byte("Unable to verify token at this time"))
+//	        default:
+//	            w.WriteHeader(http.StatusUnauthorized)
+//	        }
+//	    }),
+//	)
+func WithErrorHandler(handler func(w http.ResponseWriter, r *http.Request, authErr *AuthorizationError)) AuthorizationOption {
+	return func(params *AuthorizationParams) error {
+		params.AuthorizationFailureHandler = &errorHandlerAdapter{handler: handler}
+		return nil
+	}
+}
+
+// errorHandlerAdapter adapts a simple error handler function to the ErrorAwareHandler interface
+type errorHandlerAdapter struct {
+	handler func(w http.ResponseWriter, r *http.Request, authErr *AuthorizationError)
+}
+
+// ServeHTTPWithError implements ErrorAwareHandler
+func (a *errorHandlerAdapter) ServeHTTPWithError(w http.ResponseWriter, r *http.Request, authErr *AuthorizationError) {
+	a.handler(w, r, authErr)
+}
+
+// ServeHTTP implements http.Handler for backward compatibility
+func (a *errorHandlerAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusUnauthorized)
 }
 
