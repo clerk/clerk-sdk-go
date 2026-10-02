@@ -2,6 +2,7 @@
 
 ## Next release
 
+- Add support for permanently deleting an invitation with `invitation.Delete`. Unlike `invitation.Revoke`, this removes the invitation record and the stored copies of its invitation email, so it can be used to honor a data erasure request from someone who was invited but never signed up.
 - Add support for removing a user's password with `user.RemovePassword`.
 - Add `SkipRestrictionChecks` to `user.CreateParams`. Creating a user now runs the instance's allowlist, blocklist, blocked disposable email domains and blocked email subaddresses, the same as sign-up does; set this to exempt a single create, for a backend creating a user it already trusts.
 
