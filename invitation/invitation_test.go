@@ -272,3 +272,22 @@ func TestInvitationRevoke_Error(t *testing.T) {
 	require.Equal(t, 1, len(apiErr.Errors))
 	require.Equal(t, "revoke-error-code", apiErr.Errors[0].Code)
 }
+
+func TestInvitationDelete(t *testing.T) {
+	id := "inv_123"
+	clerk.SetBackend(clerk.NewBackend(&clerk.BackendConfig{
+		HTTPClient: &http.Client{
+			Transport: &clerktest.RoundTripper{
+				T:      t,
+				Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","object":"invitation","deleted":true}`, id)),
+				Path:   fmt.Sprintf("/v1/invitations/%s", id),
+				Method: http.MethodDelete,
+			},
+		},
+	}))
+
+	invitation, err := Delete(context.Background(), id)
+	require.NoError(t, err)
+	require.Equal(t, id, invitation.ID)
+	require.True(t, invitation.Deleted)
+}
