@@ -80,6 +80,29 @@ type ExtendedPaginationCursor struct {
 	// was the plan's retention period, not the caller's event_time_after bound.
 	// When true, extending event_time_after further back will not yield more results.
 	RetentionLimitReached bool `json:"retention_limit_reached"`
+	// SearchedFrom and SearchedTo are the bounds the query actually ran with,
+	// in Unix milliseconds: where in the requested range this page sits.
+	//
+	// A request is not served by scanning the whole range asked for. The API
+	// picks a sub-window per request and pages through the range one
+	// sub-window at a time, which is why NextPageStatus can be
+	// NextPageUnknown on a page that looks short.
+	//
+	// On a first page with no EventTimeBefore, SearchedTo sits a few minutes
+	// ahead of the current time: events can arrive with timestamps marginally
+	// ahead of the service clock, and that is the bound the query ran with.
+	SearchedFrom int64 `json:"searched_from"`
+	SearchedTo   int64 `json:"searched_to"`
+	// RetentionDays is the plan's log retention window and RetentionFloor is
+	// the resulting cutoff, in Unix milliseconds. SearchedFrom is never
+	// earlier than the floor, whatever EventTimeAfter asked for, so comparing
+	// the floor against the bound sent tells whether part of the requested
+	// range is unavailable.
+	//
+	// Unlike RetentionLimitReached, which only becomes true once pagination
+	// reaches the floor, both are known on the first page.
+	RetentionDays  int   `json:"retention_days"`
+	RetentionFloor int64 `json:"retention_floor"`
 }
 
 // PaginationCursor contains the cursors for pagination.

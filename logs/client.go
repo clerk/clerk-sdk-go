@@ -69,14 +69,25 @@ type ListParams struct {
 	Type *string `json:"type,omitempty"`
 	// Filter logs by client ID.
 	ClientID *string `json:"client_id,omitempty"`
+	// SessionID filters to events produced by one session: the session that
+	// was authenticated on the request behind the event.
+	//
+	// This is the acting session, not the session an event is about. A
+	// sign-in creates a session on a request that had none, so
+	// session.created carries no session and names the new one in its
+	// payload instead; reach that through PayloadFilters with a Type.
+	// Events with no authenticated session behind them, from sign-in,
+	// sign-up and verification requests or from a background job, never
+	// match.
+	SessionID *string `json:"session_id,omitempty"`
 	// Filter logs by impersonator user ID.
 	ImpersonatorUserID *string `json:"impersonator_user_id,omitempty"`
 	// Filter logs by device IP address (exact match against
 	// device_info_ip_address).
 	IPAddress *string `json:"ip_address,omitempty"`
 	// FilterMatch controls how Subject, Type, Actor, UserID, Identifier,
-	// TraceID, ClientID, ImpersonatorUserID, IPAddress, and PayloadFilters
-	// are combined when more than one is supplied.
+	// TraceID, ClientID, SessionID, ImpersonatorUserID, IPAddress, and
+	// PayloadFilters are combined when more than one is supplied.
 	//
 	//   - LogFilterMatchAll (default, also when nil): every supplied
 	//     filter must match (AND).
@@ -145,6 +156,9 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.ClientID != nil {
 		q.Add("client_id", *params.ClientID)
+	}
+	if params.SessionID != nil {
+		q.Add("session_id", *params.SessionID)
 	}
 	if params.ImpersonatorUserID != nil {
 		q.Add("impersonator_user_id", *params.ImpersonatorUserID)
