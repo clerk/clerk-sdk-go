@@ -7,6 +7,7 @@ type OAuthApplication struct {
 	InstanceID            string  `json:"instance_id"`
 	Name                  string  `json:"name"`
 	ClientID              string  `json:"client_id"`
+	PKCERequired          bool    `json:"pkce_required"`
 	Public                bool    `json:"public"`
 	DynamicallyRegistered bool    `json:"dynamically_registered"`
 	ConsentScreenEnabled  bool    `json:"consent_screen_enabled"`
