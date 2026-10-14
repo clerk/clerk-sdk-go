@@ -272,6 +272,34 @@ func TestSAMLConnectionClientUpdate_DisableJITProvisioning(t *testing.T) {
 	require.Equal(t, disableJITProvisioning, *samlConnection.DisableJITProvisioning)
 }
 
+func TestSAMLConnectionClientUpdate_ForceEnterpriseSSO(t *testing.T) {
+	t.Parallel()
+	id := "samlc__123"
+	name := "the-name"
+	domain := "example.com"
+	provider := "saml_custom"
+	forceEnterpriseSSO := true
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"name":"%s","force_enterprise_sso":%t}`, name, forceEnterpriseSSO)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","name":"%s","domain":"%s","provider":"%s","force_enterprise_sso":%t}`, id, name, domain, provider, forceEnterpriseSSO)),
+			Method: http.MethodPatch,
+			Path:   "/v1/saml_connections/" + id,
+		},
+	}
+	client := NewClient(config)
+	samlConnection, err := client.Update(context.Background(), id, &UpdateParams{
+		Name:               clerk.String(name),
+		ForceEnterpriseSSO: clerk.Bool(forceEnterpriseSSO),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, samlConnection.ID)
+	require.NotNil(t, samlConnection.ForceEnterpriseSSO)
+	require.Equal(t, forceEnterpriseSSO, *samlConnection.ForceEnterpriseSSO)
+}
+
 func TestSAMLConnectionClientUpdate_Error(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}

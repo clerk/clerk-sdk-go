@@ -127,6 +127,7 @@ type SAMLConnection struct {
 	ForceAuthn                       bool                           `json:"force_authn"`
 	DisableJITProvisioning           *bool                          `json:"disable_jit_provisioning,omitempty"`
 	AllowOrganizationAccountLinking  bool                           `json:"allow_organization_account_linking"`
+	ForceEnterpriseSSO               *bool                          `json:"force_enterprise_sso,omitempty"`
 	CustomAttributes                 *[]CustomAttribute             `json:"custom_attributes,omitempty"`
 	Authenticatable                  bool                           `json:"authenticatable"`
 	LoginHint                        *LoginHint                     `json:"login_hint,omitempty"`

@@ -141,6 +141,7 @@ type UpdateParams struct {
 	SyncUserAttributes               *bool             `json:"sync_user_attributes,omitempty"`
 	DisableAdditionalIdentifications *bool             `json:"disable_additional_identifications,omitempty"`
 	AllowOrganizationAccountLinking  *bool             `json:"allow_organization_account_linking,omitempty"`
+	ForceEnterpriseSSO               *bool             `json:"force_enterprise_sso,omitempty"`
 	Authenticatable                  *bool             `json:"authenticatable,omitempty"`
 	DisableJITProvisioning           *bool             `json:"disable_jit_provisioning,omitempty"`
 	Saml                             *UpdateParamsSaml `json:"saml,omitempty"`

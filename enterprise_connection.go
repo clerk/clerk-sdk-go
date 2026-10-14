@@ -19,6 +19,7 @@ type EnterpriseConnection struct {
 	AllowIdpInitiated                bool     `json:"allow_idp_initiated"`
 	ForceAuthn                       bool     `json:"force_authn"`
 	AllowOrganizationAccountLinking  bool     `json:"allow_organization_account_linking"`
+	ForceEnterpriseSSO               *bool    `json:"force_enterprise_sso,omitempty"`
 	Authenticatable                  bool     `json:"authenticatable"`
 	DisableJITProvisioning           *bool    `json:"disable_jit_provisioning,omitempty"`
 	CreatedAt                        int64    `json:"created_at"`
