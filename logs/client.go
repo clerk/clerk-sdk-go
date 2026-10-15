@@ -220,7 +220,7 @@ type ListGroupsParams struct {
 	// ListParams are the list's filters. Event filters keep the groups with
 	// at least one matching log, and time filters pick groups by when they
 	// started. Only Limit and StartingAfter paginate: EndingBefore is
-	// rejected, and StartingAfter takes a cursor from a ListGroups page.
+	// rejected, and StartingAfter takes a cursor from a ListGrouped page.
 	ListParams
 	// GroupTypes keeps only groups of these types, e.g. "sign_in".
 	GroupTypes []string `json:"-"`
@@ -231,9 +231,10 @@ type ListGroupsParams struct {
 	Statuses []string `json:"-"`
 }
 
-// ToQuery returns the params as url.Values.
+// ToQuery returns the params as url.Values, with view=grouped.
 func (params *ListGroupsParams) ToQuery() url.Values {
 	q := params.ListParams.ToQuery()
+	q.Set("view", "grouped")
 	if len(params.GroupTypes) > 0 {
 		q.Add("group_type", strings.Join(params.GroupTypes, ","))
 	}
@@ -243,18 +244,19 @@ func (params *ListGroupsParams) ToQuery() url.Values {
 	return q
 }
 
-// ListGroups returns a page of the grouped log list: each event group (a
-// flow such as a sign-in) as one item, next to the logs outside any group,
-// newest first.
-func (c *Client) ListGroups(ctx context.Context, params *ListGroupsParams) (*clerk.GroupedLogList, error) {
-	path, err := clerk.JoinPath(path, "groups")
-	if err != nil {
-		return nil, err
+// ListGrouped returns a page of the grouped log list (view=grouped): each
+// event group (a flow such as a sign-in) as one item, next to the logs
+// outside any group, newest first. Params that only work in the flat list
+// are rejected with a 422: EndingBefore, and a StartingAfter cursor from
+// List.
+func (c *Client) ListGrouped(ctx context.Context, params *ListGroupsParams) (*clerk.GroupedLogList, error) {
+	if params == nil {
+		params = &ListGroupsParams{}
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
 	req.SetParams(params)
 	list := &clerk.GroupedLogList{}
-	err = c.Backend.Call(ctx, req, list)
+	err := c.Backend.Call(ctx, req, list)
 	return list, err
 }
 

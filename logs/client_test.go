@@ -753,10 +753,10 @@ func TestList_SearchedWindowAbsent(t *testing.T) {
 	require.Zero(t, list.Cursor.RetentionDays)
 }
 
-// TestListGroups verifies that ListGroups calls /v1/logs/groups with the
+// TestListGrouped verifies that ListGrouped sends view=grouped with the
 // filters and group filters, and decodes groups and ungrouped logs by their
 // object field.
-func TestListGroups(t *testing.T) {
+func TestListGrouped(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]any{
@@ -814,8 +814,9 @@ func TestListGroups(t *testing.T) {
 			T:      t,
 			Out:    responseJSON,
 			Method: http.MethodGet,
-			Path:   "/v1/logs/groups",
+			Path:   "/v1/logs",
 			Query: &url.Values{
+				"view":       []string{"grouped"},
 				"limit":      []string{"10"},
 				"actor":      []string{"user_123"},
 				"group_type": []string{"sign_in"},
@@ -825,7 +826,7 @@ func TestListGroups(t *testing.T) {
 	}
 	client := NewClient(config)
 
-	list, err := client.ListGroups(context.Background(), &ListGroupsParams{
+	list, err := client.ListGrouped(context.Background(), &ListGroupsParams{
 		ListParams: ListParams{
 			Limit: clerk.Int64(10),
 			Actor: clerk.String("user_123"),
@@ -862,6 +863,27 @@ func TestListGroups(t *testing.T) {
 	require.Nil(t, log.GroupStartedAt)
 
 	require.Equal(t, clerk.NextPageTrue, list.Cursor.NextPageStatus)
+}
+
+// TestListGroupedWithoutParamsSendsTheView verifies that nil params still
+// request the grouped view.
+func TestListGroupedWithoutParamsSendsTheView(t *testing.T) {
+	t.Parallel()
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(`{"data":[],"cursor":{"next_page_status":"false"}}`),
+			Method: http.MethodGet,
+			Path:   "/v1/logs",
+			Query:  &url.Values{"view": []string{"grouped"}},
+		},
+	}
+
+	list, err := NewClient(config).ListGrouped(context.Background(), nil)
+	require.NoError(t, err)
+	require.Empty(t, list.Items)
 }
 
 // TestListGroupEvents verifies the group events path, and that the group's

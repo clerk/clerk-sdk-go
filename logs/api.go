@@ -19,11 +19,13 @@ func List(ctx context.Context, params *ListParams) (*clerk.LogList, error) {
 	return getClient().List(ctx, params)
 }
 
-// ListGroups returns a page of the grouped log list: each event group (a
-// flow such as a sign-in) as one item, next to the logs outside any group,
-// newest first.
-func ListGroups(ctx context.Context, params *ListGroupsParams) (*clerk.GroupedLogList, error) {
-	return getClient().ListGroups(ctx, params)
+// ListGrouped returns a page of the grouped log list (view=grouped): each
+// event group (a flow such as a sign-in) as one item, next to the logs
+// outside any group, newest first. Params that only work in the flat list
+// are rejected with a 422: EndingBefore, and a StartingAfter cursor from
+// List.
+func ListGrouped(ctx context.Context, params *ListGroupsParams) (*clerk.GroupedLogList, error) {
+	return getClient().ListGrouped(ctx, params)
 }
 
 // ListGroupEvents returns the logs of one event group past the ones a
