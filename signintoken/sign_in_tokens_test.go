@@ -20,7 +20,7 @@ func TestSignInTokenTokenCreate(t *testing.T) {
 		HTTPClient: &http.Client{
 			Transport: &clerktest.RoundTripper{
 				T:      t,
-				In:     json.RawMessage(fmt.Sprintf(`{"user_id":"%s","org_id":"%s"}`, userID, organizationID)),
+				In:     json.RawMessage(fmt.Sprintf(`{"user_id":"%s","org_id":"%s","second_factor_verification":"stale"}`, userID, organizationID)),
 				Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","user_id":"%s"}`, id, userID)),
 				Path:   "/v1/sign_in_tokens",
 				Method: http.MethodPost,
@@ -29,8 +29,9 @@ func TestSignInTokenTokenCreate(t *testing.T) {
 	}))
 
 	signInToken, err := Create(context.Background(), &CreateParams{
-		UserID:         clerk.String(userID),
-		OrganizationID: clerk.String(organizationID),
+		UserID:                   clerk.String(userID),
+		OrganizationID:           clerk.String(organizationID),
+		SecondFactorVerification: clerk.String("stale"),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, signInToken.ID)
