@@ -15,7 +15,9 @@ import (
 )
 
 // RequireHeaderAuthorization will respond with HTTP 403 Forbidden if
-// the Authorization header does not contain a valid session token.
+// there are no session claims in the request context after
+// WithHeaderAuthorization runs. Requests that WithHeaderAuthorization
+// rejects get its response instead, 401 Unauthorized by default.
 func RequireHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return WithHeaderAuthorization(opts...)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -35,6 +37,14 @@ func RequireHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) 
 // The middleware uses Bearer authentication, so the Authorization header
 // is expected to have the following format:
 // Authorization: Bearer <token>
+//
+// If there is no token, or the token cannot be decoded as a JWT, the
+// next handler is called without adding session claims to the request
+// context, and the AuthorizationFailureHandler is not called. A JWT
+// whose key cannot be found or that fails verification is handled by
+// the AuthorizationFailureHandler. Handlers that require
+// authentication must check clerk.SessionClaimsFromContext, or use
+// RequireHeaderAuthorization.
 func WithHeaderAuthorization(opts ...AuthorizationOption) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
