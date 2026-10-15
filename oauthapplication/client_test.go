@@ -234,3 +234,22 @@ func TestOAuthApplicationClientRotateClientSecret(t *testing.T) {
 	require.Equal(t, id, updatedApp.ID)
 	require.Equal(t, newSecret, *updatedApp.ClientSecret)
 }
+
+func TestOAuthApplicationClientRevokeToken(t *testing.T) {
+	t.Parallel()
+	id := "oauth_app_123"
+	token := "oat_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Status: http.StatusNoContent,
+			In:     json.RawMessage(fmt.Sprintf(`{"token":"%s"}`, token)),
+			Method: http.MethodPost,
+			Path:   "/v1/oauth_applications/" + id + "/revoke_token",
+		},
+	}
+	client := NewClient(config)
+	err := client.RevokeToken(context.Background(), id, &RevokeTokenParams{Token: token})
+	require.NoError(t, err)
+}
