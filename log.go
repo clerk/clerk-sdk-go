@@ -1,5 +1,7 @@
 package clerk
 
+import "encoding/json"
+
 type Log struct {
 	APIResource
 	Object       string                `json:"object"`
@@ -17,6 +19,12 @@ type Log struct {
 	ParentSpanID *string               `json:"parent_span_id"`
 	SessionID    *string               `json:"session_id"`
 	EventContext LogContext            `json:"event_context"`
+	// GroupID, GroupType and GroupStartedAt name the event group (a flow
+	// such as a sign-in) the log belongs to. All three are nil for a log
+	// outside any group. GroupStartedAt is a Unix timestamp in milliseconds.
+	GroupID        *string `json:"group_id"`
+	GroupType      *string `json:"group_type"`
+	GroupStartedAt *int64  `json:"group_started_at"`
 	// Payload is present only when the request selected payload fields via
 	// the payload_fields list parameter. It is partial by construction:
 	// just the requested fields, keyed by their dot-paths, with fields
@@ -35,6 +43,70 @@ type LogWithPayload struct {
 type LogList struct {
 	APIResource
 	Logs   []*Log                    `json:"data"`
+	Cursor *ExtendedPaginationCursor `json:"cursor"`
+}
+
+// LogGroup is an event group in a grouped log list: the logs of one flow,
+// such as a sign-in, as a single item.
+type LogGroup struct {
+	Object    string `json:"object"`
+	GroupID   string `json:"group_id"`
+	GroupType string `json:"group_type"`
+	// StartedAt is when the flow started, a Unix timestamp in milliseconds.
+	// The grouped list sorts groups by it.
+	StartedAt int64 `json:"started_at"`
+	// EventCount is the number of logs in the group. MatchedEventCount is
+	// how many of them matched the list's filters, set only when filters
+	// were applied.
+	EventCount        int64  `json:"event_count"`
+	MatchedEventCount *int64 `json:"matched_event_count"`
+	// Status is how the flow ended ("completed", "failed"), or
+	// "in_progress" or "abandoned" for a flow that has not ended.
+	// StatusLabel is a display label for it.
+	Status      string `json:"status"`
+	StatusLabel string `json:"status_label"`
+	// Events are the group's first logs, oldest first. HasMoreEvents
+	// reports more, which logs.ListGroupEvents loads.
+	Events        []*Log `json:"events"`
+	HasMoreEvents bool   `json:"has_more_events"`
+}
+
+// GroupedLogItem is one item of a grouped log list: exactly one of Group and
+// Log is set, Log for a log outside any group.
+type GroupedLogItem struct {
+	Group *LogGroup
+	Log   *Log
+}
+
+// UnmarshalJSON decodes an item into Group or Log according to its object
+// field ("group" or "log").
+func (i *GroupedLogItem) UnmarshalJSON(data []byte) error {
+	var probe struct {
+		Object string `json:"object"`
+	}
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return err
+	}
+	if probe.Object == "group" {
+		i.Group = &LogGroup{}
+		return json.Unmarshal(data, i.Group)
+	}
+	i.Log = &Log{}
+	return json.Unmarshal(data, i.Log)
+}
+
+// MarshalJSON encodes the item as whichever of Group and Log is set.
+func (i GroupedLogItem) MarshalJSON() ([]byte, error) {
+	if i.Group != nil {
+		return json.Marshal(i.Group)
+	}
+	return json.Marshal(i.Log)
+}
+
+// GroupedLogList is a page of the grouped log list.
+type GroupedLogList struct {
+	APIResource
+	Items  []*GroupedLogItem         `json:"data"`
 	Cursor *ExtendedPaginationCursor `json:"cursor"`
 }
 

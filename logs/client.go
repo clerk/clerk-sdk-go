@@ -216,6 +216,71 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.LogList, 
 	return list, err
 }
 
+// ListGrouped returns a page of the grouped log list: each event group (a
+// flow such as a sign-in) as one item, next to the logs outside any group,
+// newest first. It takes the same filters as List but only pages forward:
+// EndingBefore is rejected, and StartingAfter takes a cursor from a grouped
+// page.
+func (c *Client) ListGrouped(ctx context.Context, params *ListParams) (*clerk.GroupedLogList, error) {
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(groupedListParams{ListParams: params})
+	list := &clerk.GroupedLogList{}
+	err := c.Backend.Call(ctx, req, list)
+	return list, err
+}
+
+// groupedListParams adds view=grouped to a List request.
+type groupedListParams struct {
+	*ListParams
+}
+
+func (params groupedListParams) ToQuery() url.Values {
+	q := url.Values{}
+	if params.ListParams != nil {
+		q = params.ListParams.ToQuery()
+	}
+	q.Set("view", "grouped")
+	return q
+}
+
+func (params groupedListParams) ToMultipart() ([]byte, string, error) {
+	return nil, "", nil
+}
+
+type ListGroupEventsParams struct {
+	// ListParams are the list's filters, so a filtered grouped page keeps
+	// loading only matching logs. Only Limit and StartingAfter paginate:
+	// StartingAfter is the cursor of the last log already shown, and
+	// EndingBefore is rejected.
+	ListParams
+	// GroupID is the group to load logs for.
+	GroupID string `json:"-"`
+	// GroupStartedAt is the group's StartedAt, which bounds the time range
+	// searched.
+	GroupStartedAt int64 `json:"-"`
+}
+
+// ToQuery returns the params as url.Values.
+func (params *ListGroupEventsParams) ToQuery() url.Values {
+	q := params.ListParams.ToQuery()
+	q.Add("group_started_at", strconv.FormatInt(params.GroupStartedAt, 10))
+	return q
+}
+
+// ListGroupEvents returns the logs of one event group past the ones a
+// grouped page includes, oldest first.
+func (c *Client) ListGroupEvents(ctx context.Context, params *ListGroupEventsParams) (*clerk.LogList, error) {
+	path, err := clerk.JoinPath(path, "groups", params.GroupID, "events")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
+	list := &clerk.LogList{}
+	err = c.Backend.Call(ctx, req, list)
+	return list, err
+}
+
 type GetSchemaParams struct {
 	clerk.APIParams
 	// Type is the event type to describe: concrete ("sign_in.completed"),

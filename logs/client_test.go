@@ -752,3 +752,175 @@ func TestList_SearchedWindowAbsent(t *testing.T) {
 	require.Zero(t, list.Cursor.SearchedFrom)
 	require.Zero(t, list.Cursor.RetentionDays)
 }
+
+// TestListGrouped verifies that ListGrouped sends view=grouped next to the
+// filters, and decodes groups and ungrouped logs by their object field.
+func TestListGrouped(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]any{
+		"data": []map[string]any{
+			{
+				"object":              "group",
+				"group_id":            "sia_123",
+				"group_type":          "sign_in",
+				"started_at":          1705315800000,
+				"event_count":         3,
+				"matched_event_count": 1,
+				"status":              "failed",
+				"status_label":        "Failed",
+				"events": []map[string]any{
+					{
+						"object":           "log",
+						"id":               "019400f7-c6e4-7f00-8000-000000000001",
+						"type":             "sign_in.failed",
+						"event_time":       1705315801000,
+						"group_id":         "sia_123",
+						"group_type":       "sign_in",
+						"group_started_at": 1705315800000,
+					},
+				},
+				"has_more_events": false,
+			},
+			{
+				"object":           "log",
+				"id":               "019400f7-c6e4-7f00-8000-000000000002",
+				"type":             "user.updated",
+				"event_time":       1705315700000,
+				"group_id":         nil,
+				"group_type":       nil,
+				"group_started_at": nil,
+			},
+		},
+		"cursor": map[string]any{
+			"starting_after":   "next",
+			"next_page_status": "true",
+		},
+	}
+	responseJSON, err := json.Marshal(response)
+	require.NoError(t, err)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    responseJSON,
+			Method: http.MethodGet,
+			Path:   "/v1/logs",
+			Query: &url.Values{
+				"view":  []string{"grouped"},
+				"limit": []string{"10"},
+				"actor": []string{"user_123"},
+			},
+		},
+	}
+	client := NewClient(config)
+
+	list, err := client.ListGrouped(context.Background(), &ListParams{
+		Limit: clerk.Int64(10),
+		Actor: clerk.String("user_123"),
+	})
+	require.NoError(t, err)
+	require.Len(t, list.Items, 2)
+
+	group := list.Items[0].Group
+	require.NotNil(t, group)
+	require.Nil(t, list.Items[0].Log)
+	require.Equal(t, "sia_123", group.GroupID)
+	require.Equal(t, "sign_in", group.GroupType)
+	require.Equal(t, int64(1705315800000), group.StartedAt)
+	require.Equal(t, int64(3), group.EventCount)
+	require.NotNil(t, group.MatchedEventCount)
+	require.Equal(t, int64(1), *group.MatchedEventCount)
+	require.Equal(t, "failed", group.Status)
+	require.Equal(t, "Failed", group.StatusLabel)
+	require.Len(t, group.Events, 1)
+	require.Equal(t, "sia_123", *group.Events[0].GroupID)
+	require.Equal(t, int64(1705315800000), *group.Events[0].GroupStartedAt)
+
+	log := list.Items[1].Log
+	require.NotNil(t, log)
+	require.Nil(t, list.Items[1].Group)
+	require.Equal(t, "user.updated", log.Type)
+	require.Nil(t, log.GroupID)
+	require.Nil(t, log.GroupStartedAt)
+
+	require.Equal(t, clerk.NextPageTrue, list.Cursor.NextPageStatus)
+}
+
+// TestListGroupedWithoutParamsSendsTheView verifies that a nil params value
+// still requests the grouped view.
+func TestListGroupedWithoutParamsSendsTheView(t *testing.T) {
+	t.Parallel()
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(`{"data":[],"cursor":{"next_page_status":"false"}}`),
+			Method: http.MethodGet,
+			Path:   "/v1/logs",
+			Query:  &url.Values{"view": []string{"grouped"}},
+		},
+	}
+
+	list, err := NewClient(config).ListGrouped(context.Background(), nil)
+	require.NoError(t, err)
+	require.Empty(t, list.Items)
+}
+
+// TestListGroupEvents verifies the group events path and that the group's
+// start time and the filters are sent.
+func TestListGroupEvents(t *testing.T) {
+	t.Parallel()
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T: t,
+			Out: json.RawMessage(`{"data":[{"object":"log","id":"019400f7-c6e4-7f00-8000-000000000003",` +
+				`"type":"sign_in.attempted","event_time":1705315900000,"group_id":"sia_123"}],` +
+				`"cursor":{"next_page_status":"false"}}`),
+			Method: http.MethodGet,
+			Path:   "/v1/logs/groups/sia_123/events",
+			Query: &url.Values{
+				"group_started_at": []string{"1705315800000"},
+				"starting_after":   []string{"cursor_50"},
+				"actor":            []string{"user_123"},
+			},
+		},
+	}
+
+	list, err := NewClient(config).ListGroupEvents(context.Background(), &ListGroupEventsParams{
+		ListParams: ListParams{
+			StartingAfter: clerk.String("cursor_50"),
+			Actor:         clerk.String("user_123"),
+		},
+		GroupID:        "sia_123",
+		GroupStartedAt: 1705315800000,
+	})
+	require.NoError(t, err)
+	require.Len(t, list.Logs, 1)
+	require.Equal(t, "sia_123", *list.Logs[0].GroupID)
+}
+
+// TestGroupedLogItem_RoundTrip verifies that an item marshals back to the
+// object it was decoded from.
+func TestGroupedLogItem_RoundTrip(t *testing.T) {
+	t.Parallel()
+
+	for _, raw := range []string{
+		`{"object":"group","group_id":"sia_1","group_type":"sign_in","started_at":1,"event_count":1,"matched_event_count":null,"status":"in_progress","status_label":"In progress","events":[],"has_more_events":false}`,
+		`{"object":"log","id":"id_1","type":"user.updated","event_time":1}`,
+	} {
+		var item clerk.GroupedLogItem
+		require.NoError(t, json.Unmarshal([]byte(raw), &item))
+		out, err := json.Marshal(item)
+		require.NoError(t, err)
+
+		var again clerk.GroupedLogItem
+		require.NoError(t, json.Unmarshal(out, &again))
+		require.Equal(t, item.Group == nil, again.Group == nil)
+		require.Equal(t, item.Log == nil, again.Log == nil)
+	}
+}
