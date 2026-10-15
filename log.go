@@ -65,10 +65,15 @@ type LogGroup struct {
 	// StatusLabel is a display label for it.
 	Status      string `json:"status"`
 	StatusLabel string `json:"status_label"`
+	// FirstEvent is the group's first log, even when the list's filters
+	// left it out of Events, for showing how the flow started.
+	FirstEvent *Log `json:"first_event"`
 	// Events are the group's first logs, oldest first. HasMoreEvents
-	// reports more, which logs.ListGroupEvents loads.
-	Events        []*Log `json:"events"`
-	HasMoreEvents bool   `json:"has_more_events"`
+	// reports more, which logs.ListGroupEvents loads with EventsCursor as
+	// its StartingAfter.
+	Events        []*Log  `json:"events"`
+	HasMoreEvents bool    `json:"has_more_events"`
+	EventsCursor  *string `json:"events_cursor"`
 }
 
 // GroupedLogItem is one item of a grouped log list: exactly one of Group and
@@ -103,7 +108,7 @@ func (i GroupedLogItem) MarshalJSON() ([]byte, error) {
 	return json.Marshal(i.Log)
 }
 
-// GroupedLogList is a page of the grouped log list.
+// GroupedLogList is a page of the grouped log list (logs.ListGroups).
 type GroupedLogList struct {
 	APIResource
 	Items  []*GroupedLogItem         `json:"data"`

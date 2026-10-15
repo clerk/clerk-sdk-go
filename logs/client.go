@@ -216,54 +216,65 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.LogList, 
 	return list, err
 }
 
-// ListGrouped returns a page of the grouped log list: each event group (a
-// flow such as a sign-in) as one item, next to the logs outside any group,
-// newest first. It takes the same filters as List but only pages forward:
-// EndingBefore is rejected, and StartingAfter takes a cursor from a grouped
-// page.
-func (c *Client) ListGrouped(ctx context.Context, params *ListParams) (*clerk.GroupedLogList, error) {
-	req := clerk.NewAPIRequest(http.MethodGet, path)
-	req.SetParams(groupedListParams{ListParams: params})
-	list := &clerk.GroupedLogList{}
-	err := c.Backend.Call(ctx, req, list)
-	return list, err
+type ListGroupsParams struct {
+	// ListParams are the list's filters. Event filters keep the groups with
+	// at least one matching log, and time filters pick groups by when they
+	// started. Only Limit and StartingAfter paginate: EndingBefore is
+	// rejected, and StartingAfter takes a cursor from a ListGroups page.
+	ListParams
+	// GroupTypes keeps only groups of these types, e.g. "sign_in".
+	GroupTypes []string `json:"-"`
+	// Statuses keeps only groups that concluded this way, e.g. "failed".
+	// Only conclusions can be filtered on for now, not "in_progress" or
+	// "abandoned". Either GroupTypes or Statuses drops the logs outside any
+	// group.
+	Statuses []string `json:"-"`
 }
 
-// groupedListParams adds view=grouped to a List request.
-type groupedListParams struct {
-	*ListParams
-}
-
-func (params groupedListParams) ToQuery() url.Values {
-	q := url.Values{}
-	if params.ListParams != nil {
-		q = params.ListParams.ToQuery()
+// ToQuery returns the params as url.Values.
+func (params *ListGroupsParams) ToQuery() url.Values {
+	q := params.ListParams.ToQuery()
+	if len(params.GroupTypes) > 0 {
+		q.Add("group_type", strings.Join(params.GroupTypes, ","))
 	}
-	q.Set("view", "grouped")
+	if len(params.Statuses) > 0 {
+		q.Add("status", strings.Join(params.Statuses, ","))
+	}
 	return q
 }
 
-func (params groupedListParams) ToMultipart() ([]byte, string, error) {
-	return nil, "", nil
+// ListGroups returns a page of the grouped log list: each event group (a
+// flow such as a sign-in) as one item, next to the logs outside any group,
+// newest first.
+func (c *Client) ListGroups(ctx context.Context, params *ListGroupsParams) (*clerk.GroupedLogList, error) {
+	path, err := clerk.JoinPath(path, "groups")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
+	list := &clerk.GroupedLogList{}
+	err = c.Backend.Call(ctx, req, list)
+	return list, err
 }
 
 type ListGroupEventsParams struct {
 	// ListParams are the list's filters, so a filtered grouped page keeps
 	// loading only matching logs. Only Limit and StartingAfter paginate:
-	// StartingAfter is the cursor of the last log already shown, and
-	// EndingBefore is rejected.
+	// StartingAfter is the group's EventsCursor, or the cursor a previous
+	// call returned, and EndingBefore is rejected.
 	ListParams
 	// GroupID is the group to load logs for.
 	GroupID string `json:"-"`
-	// GroupStartedAt is the group's StartedAt, which bounds the time range
+	// StartedAt is the group's StartedAt, which bounds the time range
 	// searched.
-	GroupStartedAt int64 `json:"-"`
+	StartedAt int64 `json:"-"`
 }
 
 // ToQuery returns the params as url.Values.
 func (params *ListGroupEventsParams) ToQuery() url.Values {
 	q := params.ListParams.ToQuery()
-	q.Add("group_started_at", strconv.FormatInt(params.GroupStartedAt, 10))
+	q.Add("started_at", strconv.FormatInt(params.StartedAt, 10))
 	return q
 }
 

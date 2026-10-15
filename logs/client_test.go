@@ -753,9 +753,10 @@ func TestList_SearchedWindowAbsent(t *testing.T) {
 	require.Zero(t, list.Cursor.RetentionDays)
 }
 
-// TestListGrouped verifies that ListGrouped sends view=grouped next to the
-// filters, and decodes groups and ungrouped logs by their object field.
-func TestListGrouped(t *testing.T) {
+// TestListGroups verifies that ListGroups calls /v1/logs/groups with the
+// filters and group filters, and decodes groups and ungrouped logs by their
+// object field.
+func TestListGroups(t *testing.T) {
 	t.Parallel()
 
 	response := map[string]any{
@@ -769,6 +770,12 @@ func TestListGrouped(t *testing.T) {
 				"matched_event_count": 1,
 				"status":              "failed",
 				"status_label":        "Failed",
+				"first_event": map[string]any{
+					"object":     "log",
+					"id":         "019400f7-c6e4-7f00-8000-000000000000",
+					"type":       "sign_in.created",
+					"event_time": 1705315800000,
+				},
 				"events": []map[string]any{
 					{
 						"object":           "log",
@@ -780,7 +787,8 @@ func TestListGrouped(t *testing.T) {
 						"group_started_at": 1705315800000,
 					},
 				},
-				"has_more_events": false,
+				"has_more_events": true,
+				"events_cursor":   "events_next",
 			},
 			{
 				"object":           "log",
@@ -806,19 +814,24 @@ func TestListGrouped(t *testing.T) {
 			T:      t,
 			Out:    responseJSON,
 			Method: http.MethodGet,
-			Path:   "/v1/logs",
+			Path:   "/v1/logs/groups",
 			Query: &url.Values{
-				"view":  []string{"grouped"},
-				"limit": []string{"10"},
-				"actor": []string{"user_123"},
+				"limit":      []string{"10"},
+				"actor":      []string{"user_123"},
+				"group_type": []string{"sign_in"},
+				"status":     []string{"completed,failed"},
 			},
 		},
 	}
 	client := NewClient(config)
 
-	list, err := client.ListGrouped(context.Background(), &ListParams{
-		Limit: clerk.Int64(10),
-		Actor: clerk.String("user_123"),
+	list, err := client.ListGroups(context.Background(), &ListGroupsParams{
+		ListParams: ListParams{
+			Limit: clerk.Int64(10),
+			Actor: clerk.String("user_123"),
+		},
+		GroupTypes: []string{"sign_in"},
+		Statuses:   []string{"completed", "failed"},
 	})
 	require.NoError(t, err)
 	require.Len(t, list.Items, 2)
@@ -834,9 +847,12 @@ func TestListGrouped(t *testing.T) {
 	require.Equal(t, int64(1), *group.MatchedEventCount)
 	require.Equal(t, "failed", group.Status)
 	require.Equal(t, "Failed", group.StatusLabel)
+	require.NotNil(t, group.FirstEvent)
+	require.Equal(t, "sign_in.created", group.FirstEvent.Type)
 	require.Len(t, group.Events, 1)
 	require.Equal(t, "sia_123", *group.Events[0].GroupID)
-	require.Equal(t, int64(1705315800000), *group.Events[0].GroupStartedAt)
+	require.True(t, group.HasMoreEvents)
+	require.Equal(t, "events_next", *group.EventsCursor)
 
 	log := list.Items[1].Log
 	require.NotNil(t, log)
@@ -848,29 +864,8 @@ func TestListGrouped(t *testing.T) {
 	require.Equal(t, clerk.NextPageTrue, list.Cursor.NextPageStatus)
 }
 
-// TestListGroupedWithoutParamsSendsTheView verifies that a nil params value
-// still requests the grouped view.
-func TestListGroupedWithoutParamsSendsTheView(t *testing.T) {
-	t.Parallel()
-
-	config := &clerk.ClientConfig{}
-	config.HTTPClient = &http.Client{
-		Transport: &clerktest.RoundTripper{
-			T:      t,
-			Out:    json.RawMessage(`{"data":[],"cursor":{"next_page_status":"false"}}`),
-			Method: http.MethodGet,
-			Path:   "/v1/logs",
-			Query:  &url.Values{"view": []string{"grouped"}},
-		},
-	}
-
-	list, err := NewClient(config).ListGrouped(context.Background(), nil)
-	require.NoError(t, err)
-	require.Empty(t, list.Items)
-}
-
-// TestListGroupEvents verifies the group events path and that the group's
-// start time and the filters are sent.
+// TestListGroupEvents verifies the group events path, and that the group's
+// start time, its events cursor and the filters are sent.
 func TestListGroupEvents(t *testing.T) {
 	t.Parallel()
 
@@ -884,20 +879,20 @@ func TestListGroupEvents(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/logs/groups/sia_123/events",
 			Query: &url.Values{
-				"group_started_at": []string{"1705315800000"},
-				"starting_after":   []string{"cursor_50"},
-				"actor":            []string{"user_123"},
+				"started_at":     []string{"1705315800000"},
+				"starting_after": []string{"events_next"},
+				"actor":          []string{"user_123"},
 			},
 		},
 	}
 
 	list, err := NewClient(config).ListGroupEvents(context.Background(), &ListGroupEventsParams{
 		ListParams: ListParams{
-			StartingAfter: clerk.String("cursor_50"),
+			StartingAfter: clerk.String("events_next"),
 			Actor:         clerk.String("user_123"),
 		},
-		GroupID:        "sia_123",
-		GroupStartedAt: 1705315800000,
+		GroupID:   "sia_123",
+		StartedAt: 1705315800000,
 	})
 	require.NoError(t, err)
 	require.Len(t, list.Logs, 1)
