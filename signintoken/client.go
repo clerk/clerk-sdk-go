@@ -28,6 +28,12 @@ type CreateParams struct {
 	UserID           *string `json:"user_id,omitempty"`
 	OrganizationID   *string `json:"org_id,omitempty"`
 	ExpiresInSeconds *int64  `json:"expires_in_seconds,omitempty"`
+	// SecondFactorVerification lets a user with a second factor enabled
+	// complete the sign in without being prompted for it. Either "fresh"
+	// (second factor treated as verified at sign in) or "stale" (treated as
+	// unverified, so second-factor reverification prompts for it). When set,
+	// ExpiresInSeconds defaults to 10 minutes.
+	SecondFactorVerification *string `json:"second_factor_verification,omitempty"`
 }
 
 // Create creates a new sign-in token.
