@@ -2,6 +2,7 @@
 
 ## Next release
 
+- Add support for the grouped log list with `logs.ListGrouped`, which returns each event group (a flow such as a sign-in) as one item next to the logs outside any group, as `clerk.GroupedLogList` items that hold either a `clerk.LogGroup` or a `clerk.Log`, and filters by group type and status through `logs.ListGroupsParams`. Add `logs.ListGroupEvents` to load the rest of a group from its `EventsCursor`, and `GroupID`, `GroupType` and `GroupStartedAt` to `clerk.Log`. `logs.List` is unchanged.
 - Add support for permanently deleting an invitation with `invitation.Delete`. Unlike `invitation.Revoke`, this removes the invitation record and the stored copies of its invitation email, so it can be used to honor a data erasure request from someone who was invited but never signed up.
 - Add `IdpCertificates` to `clerk.SAMLConnection` and accept an `IdpCertificates` list in `samlconnection.CreateParams`, `samlconnection.UpdateParams`, `enterpriseconnection.CreateParamsSaml` and `enterpriseconnection.UpdateParamsSaml`. The single `IdpCertificate` param is deprecated in favor of the list.
 - Add `SkipRestrictionChecks` to `user.CreateParams`. Creating a user now runs the instance's allowlist, blocklist, blocked disposable email domains and blocked email subaddresses, the same as sign-up does; set this to exempt a single create, for a backend creating a user it already trusts.

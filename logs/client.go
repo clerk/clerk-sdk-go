@@ -216,6 +216,85 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.LogList, 
 	return list, err
 }
 
+type ListGroupsParams struct {
+	// ListParams are the list's filters. Event filters keep the groups with
+	// at least one matching log, and time filters pick groups by when they
+	// started. Only Limit and StartingAfter paginate: EndingBefore is
+	// rejected, StartingAfter takes a cursor from a ListGrouped page, and
+	// Limit is at most 100, since each group brings its first logs along.
+	ListParams
+	// GroupTypes keeps only groups of these types, e.g. "sign_in".
+	GroupTypes []string `json:"-"`
+	// Statuses keeps only groups that concluded this way, e.g. "failed".
+	// Only conclusions can be filtered on for now, not "in_progress" or
+	// "abandoned". Either GroupTypes or Statuses drops the logs outside any
+	// group.
+	Statuses []string `json:"-"`
+}
+
+// ToQuery returns the params as url.Values, with view=grouped.
+func (params *ListGroupsParams) ToQuery() url.Values {
+	q := params.ListParams.ToQuery()
+	q.Set("view", "grouped")
+	for _, groupType := range params.GroupTypes {
+		q.Add("group_type", groupType)
+	}
+	for _, status := range params.Statuses {
+		q.Add("status", status)
+	}
+	return q
+}
+
+// ListGrouped returns a page of the grouped log list (view=grouped): each
+// event group (a flow such as a sign-in) as one item, next to the logs
+// outside any group, newest first. Params that only work in the flat list
+// are rejected with a 422: EndingBefore, and a StartingAfter cursor from
+// List.
+func (c *Client) ListGrouped(ctx context.Context, params *ListGroupsParams) (*clerk.GroupedLogList, error) {
+	if params == nil {
+		params = &ListGroupsParams{}
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
+	list := &clerk.GroupedLogList{}
+	err := c.Backend.Call(ctx, req, list)
+	return list, err
+}
+
+type ListGroupEventsParams struct {
+	// ListParams are the list's filters, so a filtered grouped page keeps
+	// loading only matching logs. Only Limit and StartingAfter paginate:
+	// StartingAfter is the group's EventsCursor, or the cursor a previous
+	// call returned, and EndingBefore is rejected.
+	ListParams
+	// GroupID is the group to load logs for.
+	GroupID string `json:"-"`
+	// StartedAt is the group's StartedAt, which bounds the time range
+	// searched.
+	StartedAt int64 `json:"-"`
+}
+
+// ToQuery returns the params as url.Values.
+func (params *ListGroupEventsParams) ToQuery() url.Values {
+	q := params.ListParams.ToQuery()
+	q.Add("started_at", strconv.FormatInt(params.StartedAt, 10))
+	return q
+}
+
+// ListGroupEvents returns the logs of one event group past the ones a
+// grouped page includes, oldest first.
+func (c *Client) ListGroupEvents(ctx context.Context, params *ListGroupEventsParams) (*clerk.LogList, error) {
+	path, err := clerk.JoinPath(path, "groups", params.GroupID, "events")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
+	list := &clerk.LogList{}
+	err = c.Backend.Call(ctx, req, list)
+	return list, err
+}
+
 type GetSchemaParams struct {
 	clerk.APIParams
 	// Type is the event type to describe: concrete ("sign_in.completed"),
