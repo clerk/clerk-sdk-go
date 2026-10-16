@@ -220,7 +220,8 @@ type ListGroupsParams struct {
 	// ListParams are the list's filters. Event filters keep the groups with
 	// at least one matching log, and time filters pick groups by when they
 	// started. Only Limit and StartingAfter paginate: EndingBefore is
-	// rejected, and StartingAfter takes a cursor from a ListGrouped page.
+	// rejected, StartingAfter takes a cursor from a ListGrouped page, and
+	// Limit is at most 100, since each group brings its first logs along.
 	ListParams
 	// GroupTypes keeps only groups of these types, e.g. "sign_in".
 	GroupTypes []string `json:"-"`
@@ -235,11 +236,11 @@ type ListGroupsParams struct {
 func (params *ListGroupsParams) ToQuery() url.Values {
 	q := params.ListParams.ToQuery()
 	q.Set("view", "grouped")
-	if len(params.GroupTypes) > 0 {
-		q.Add("group_type", strings.Join(params.GroupTypes, ","))
+	for _, groupType := range params.GroupTypes {
+		q.Add("group_type", groupType)
 	}
-	if len(params.Statuses) > 0 {
-		q.Add("status", strings.Join(params.Statuses, ","))
+	for _, status := range params.Statuses {
+		q.Add("status", status)
 	}
 	return q
 }

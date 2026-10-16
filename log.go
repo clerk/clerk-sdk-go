@@ -84,7 +84,7 @@ type GroupedLogItem struct {
 }
 
 // UnmarshalJSON decodes an item into Group or Log according to its object
-// field ("group" or "log").
+// field ("log_group" or "log").
 func (i *GroupedLogItem) UnmarshalJSON(data []byte) error {
 	var probe struct {
 		Object string `json:"object"`
@@ -92,7 +92,7 @@ func (i *GroupedLogItem) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &probe); err != nil {
 		return err
 	}
-	if probe.Object == "group" {
+	if probe.Object == "log_group" {
 		i.Group = &LogGroup{}
 		return json.Unmarshal(data, i.Group)
 	}

@@ -762,7 +762,7 @@ func TestListGrouped(t *testing.T) {
 	response := map[string]any{
 		"data": []map[string]any{
 			{
-				"object":              "group",
+				"object":              "log_group",
 				"group_id":            "sia_123",
 				"group_type":          "sign_in",
 				"started_at":          1705315800000,
@@ -820,7 +820,7 @@ func TestListGrouped(t *testing.T) {
 				"limit":      []string{"10"},
 				"actor":      []string{"user_123"},
 				"group_type": []string{"sign_in"},
-				"status":     []string{"completed,failed"},
+				"status":     []string{"completed", "failed"},
 			},
 		},
 	}
@@ -927,7 +927,7 @@ func TestGroupedLogItem_RoundTrip(t *testing.T) {
 	t.Parallel()
 
 	for _, raw := range []string{
-		`{"object":"group","group_id":"sia_1","group_type":"sign_in","started_at":1,"event_count":1,"matched_event_count":null,"status":"in_progress","status_label":"In progress","events":[],"has_more_events":false}`,
+		`{"object":"log_group","group_id":"sia_1","group_type":"sign_in","started_at":1,"event_count":1,"matched_event_count":null,"status":"in_progress","status_label":"In progress","events":[],"has_more_events":false}`,
 		`{"object":"log","id":"id_1","type":"user.updated","event_time":1}`,
 	} {
 		var item clerk.GroupedLogItem
