@@ -115,6 +115,7 @@ func TestUpdate(t *testing.T) {
 		"endpoint_url":             "https://scim.example.com",
 		"provider":                 "okta",
 		"enabled":                  false,
+		"paused":                   false,
 		"created_at":               1640995200,
 		"updated_at":               1640995200,
 	}
@@ -142,6 +143,7 @@ func TestUpdate(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "Updated SCIM Directory", scimDirectory.Name)
 	assert.False(t, scimDirectory.Enabled)
+	assert.False(t, scimDirectory.Paused)
 }
 
 func TestUpdateAttributeMapping(t *testing.T) {
@@ -235,6 +237,47 @@ func TestUpdateGroupRoleMappingEnabled(t *testing.T) {
 	assert.Equal(t, "scim_test123", scimDirectory.ID)
 	assert.True(t, scimDirectory.Enabled)
 	assert.False(t, scimDirectory.GroupRoleMappingEnabled)
+}
+
+func TestUpdatePaused(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":                   "scim_directory",
+		"id":                       "scim_test123",
+		"name":                     "Test SCIM Directory",
+		"enterprise_connection_id": "entc_123",
+		"endpoint_url":             "https://scim.example.com",
+		"provider":                 "okta",
+		"enabled":                  true,
+		"paused":                   true,
+		"created_at":               1640995200,
+		"updated_at":               1640995200,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"paused":true}`),
+			Out:    json.RawMessage(responseJSON),
+			Method: http.MethodPatch,
+			Path:   "/v1/scim_directories/scim_test123",
+		},
+	}
+
+	client := NewClient(config)
+	params := &UpdateParams{
+		Paused: clerk.Bool(true),
+	}
+
+	scimDirectory, err := client.Update(context.Background(), "scim_test123", params)
+	require.NoError(t, err)
+	assert.Equal(t, "scim_test123", scimDirectory.ID)
+	assert.True(t, scimDirectory.Enabled)
+	assert.True(t, scimDirectory.Paused)
 }
 
 func TestList(t *testing.T) {

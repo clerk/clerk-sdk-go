@@ -60,6 +60,7 @@ type UpdateParams struct {
 	Name                     *string `json:"name,omitempty"`
 	Provider                 *string `json:"provider,omitempty"`
 	Enabled                  *bool   `json:"enabled,omitempty"`
+	Paused                   *bool   `json:"paused,omitempty"`
 	GroupRoleMappingEnabled  *bool   `json:"group_role_mapping_enabled,omitempty"`
 	DisableDomainEnforcement *bool   `json:"disable_domain_enforcement,omitempty"`
 	// AttributeMapping is a map of directory attributes to Clerk attributes.
