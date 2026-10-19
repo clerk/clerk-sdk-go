@@ -64,6 +64,7 @@ type UpdateParams struct {
 	Name                    *string `json:"name,omitempty"`
 	Provider                *string `json:"provider,omitempty"`
 	Enabled                 *bool   `json:"enabled,omitempty"`
+	Paused                  *bool   `json:"paused,omitempty"`
 	GroupRoleMappingEnabled *bool   `json:"group_role_mapping_enabled,omitempty"`
 	// AttributeMapping is a map of SCIM attributes to Clerk attributes.
 	// The semantics of the PATCH request are as follows:

@@ -3,15 +3,19 @@ package clerk
 // Directory represents a directory resource.
 type Directory struct {
 	APIResource
-	Object                   string  `json:"object"`
-	ID                       string  `json:"id"`
-	Name                     string  `json:"name"`
-	EnterpriseConnectionID   *string `json:"enterprise_connection_id"`
-	EndpointURL              string  `json:"endpoint_url"`
-	Provider                 string  `json:"provider"`
-	Enabled                  bool    `json:"enabled"`
-	GroupRoleMappingEnabled  bool    `json:"group_role_mapping_enabled"`
-	DisableDomainEnforcement bool    `json:"disable_domain_enforcement"`
+	Object                 string  `json:"object"`
+	ID                     string  `json:"id"`
+	Name                   string  `json:"name"`
+	EnterpriseConnectionID *string `json:"enterprise_connection_id"`
+	EndpointURL            string  `json:"endpoint_url"`
+	Provider               string  `json:"provider"`
+	Enabled                bool    `json:"enabled"`
+	// Paused is set by an admin to stop syncing from the directory
+	// without changing who has access: the SCIM gateway rejects pushes,
+	// pulls skip the directory, and existing memberships are left alone.
+	Paused                   bool `json:"paused"`
+	GroupRoleMappingEnabled  bool `json:"group_role_mapping_enabled"`
+	DisableDomainEnforcement bool `json:"disable_domain_enforcement"`
 	// CredentialsConfigured is only returned for pull-based directories
 	// (e.g. Google Workspace): whether validated provider credentials are
 	// stored for the directory.
