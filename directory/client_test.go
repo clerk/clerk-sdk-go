@@ -115,6 +115,7 @@ func TestUpdate(t *testing.T) {
 		"endpoint_url":             "https://scim.example.com",
 		"provider":                 "okta",
 		"enabled":                  false,
+		"paused":                   false,
 		"created_at":               1640995200,
 		"updated_at":               1640995200,
 	}
@@ -142,6 +143,7 @@ func TestUpdate(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "Updated Directory", directory.Name)
 	assert.False(t, directory.Enabled)
+	assert.False(t, directory.Paused)
 }
 
 func TestUpdateAttributeMapping(t *testing.T) {
@@ -235,6 +237,47 @@ func TestUpdateGroupRoleMappingEnabled(t *testing.T) {
 	assert.Equal(t, "scim_test123", directory.ID)
 	assert.True(t, directory.Enabled)
 	assert.False(t, directory.GroupRoleMappingEnabled)
+}
+
+func TestUpdatePaused(t *testing.T) {
+	t.Parallel()
+
+	response := map[string]interface{}{
+		"object":                   "directory",
+		"id":                       "scim_test123",
+		"name":                     "Test Directory",
+		"enterprise_connection_id": "entc_123",
+		"endpoint_url":             "https://scim.example.com",
+		"provider":                 "okta",
+		"enabled":                  true,
+		"paused":                   true,
+		"created_at":               1640995200,
+		"updated_at":               1640995200,
+	}
+
+	responseJSON, _ := json.Marshal(response)
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"paused":true}`),
+			Out:    json.RawMessage(responseJSON),
+			Method: http.MethodPatch,
+			Path:   "/v1/directories/scim_test123",
+		},
+	}
+
+	client := NewClient(config)
+	params := &UpdateParams{
+		Paused: clerk.Bool(true),
+	}
+
+	directory, err := client.Update(context.Background(), "scim_test123", params)
+	require.NoError(t, err)
+	assert.Equal(t, "scim_test123", directory.ID)
+	assert.True(t, directory.Enabled)
+	assert.True(t, directory.Paused)
 }
 
 func TestList(t *testing.T) {
