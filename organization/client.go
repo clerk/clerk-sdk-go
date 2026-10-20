@@ -80,19 +80,14 @@ func (c *Client) Get(ctx context.Context, idOrSlug string, params *GetParams) (*
 
 type UpdateParams struct {
 	clerk.APIParams
-	Name                  *string `json:"name,omitempty"`
-	Slug                  *string `json:"slug,omitempty"`
-	MaxAllowedMemberships *int64  `json:"max_allowed_memberships,omitempty"`
-	AdminDeleteEnabled    *bool   `json:"admin_delete_enabled,omitempty"`
-	// RoleSetKey and ReassignmentMappings are preview fields and are not available yet for all customers.
-	// The use of this field will cause an error to be returned.
-	RoleSetKey           *string                     `json:"role_set_key,omitempty"`
-	ReassignmentMappings *clerk.ReassignmentMappings `json:"reassignment_mappings,omitempty"`
-	// SelfServeSSOEnabled toggles per-organization self-serve SSO. This is a preview
-	// field and is not available yet for all customers. The instance must have
-	// self-serve SSO enabled for the value to be honored; otherwise the request
-	// will fail.
-	SelfServeSSOEnabled *bool `json:"self_serve_sso_enabled,omitempty"`
+	Name                          *string                     `json:"name,omitempty"`
+	Slug                          *string                     `json:"slug,omitempty"`
+	MaxAllowedMemberships         *int64                      `json:"max_allowed_memberships,omitempty"`
+	AdminDeleteEnabled            *bool                       `json:"admin_delete_enabled,omitempty"`
+	RoleSetKey                    *string                     `json:"role_set_key,omitempty"`
+	ReassignmentMappings          *clerk.ReassignmentMappings `json:"reassignment_mappings,omitempty"`
+	SelfServeSSOEnabled           *bool                       `json:"self_serve_sso_enabled,omitempty"`
+	SelfServeDirectorySyncEnabled *bool                       `json:"self_serve_directory_sync_enabled,omitempty"`
 	// ExclusiveMembership, when true, prevents members of this organization from
 	// belonging to any other organization in the instance. This is a preview field
 	// and is not available yet for all customers. The instance must have exclusive
