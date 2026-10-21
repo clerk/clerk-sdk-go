@@ -183,6 +183,31 @@ func TestOrganizationClientUpdateSelfServeSSO(t *testing.T) {
 	require.True(t, *organization.SelfServeSSOEnabled)
 }
 
+func TestOrganizationClientUpdateSelfServeDirectorySync(t *testing.T) {
+	t.Parallel()
+	id := "org_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"self_serve_directory_sync_enabled":true}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","self_serve_sso_enabled":false,"self_serve_directory_sync_enabled":true}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/organizations/" + id,
+		},
+	}
+	client := NewClient(config)
+	organization, err := client.Update(context.Background(), id, &UpdateParams{
+		SelfServeDirectorySyncEnabled: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, organization.ID)
+	require.NotNil(t, organization.SelfServeDirectorySyncEnabled)
+	require.True(t, *organization.SelfServeDirectorySyncEnabled)
+	require.NotNil(t, organization.SelfServeSSOEnabled)
+	require.False(t, *organization.SelfServeSSOEnabled)
+}
+
 func TestOrganizationClientUpdateExclusiveMembership(t *testing.T) {
 	t.Parallel()
 	id := "org_123"
