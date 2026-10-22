@@ -60,9 +60,9 @@ type LogGroup struct {
 	// were applied.
 	EventCount        int64  `json:"event_count"`
 	MatchedEventCount *int64 `json:"matched_event_count"`
-	// Status is how the flow ended ("completed", "failed"), or
-	// "in_progress" or "abandoned" for a flow that has not ended.
-	// StatusLabel is a display label for it.
+	// Status is how the flow ended ("completed", "failed"), and
+	// StatusLabel a display label for it. Both are empty while the flow
+	// has not concluded.
 	Status      string `json:"status"`
 	StatusLabel string `json:"status_label"`
 	// FirstEvent is the group's first log, even when the list's filters
