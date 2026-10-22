@@ -18,9 +18,8 @@ type Organization struct {
 	MembershipLimitSetBy                 *string  `json:"membership_limit_set_by,omitempty"`
 	AdminDeleteEnabled                   bool     `json:"admin_delete_enabled"`
 	RoleSetKey                           *string  `json:"role_set_key,omitempty"`
-	// SelfServeSSOEnabled is a preview field and is not available yet for all customers.
-	// It is only returned when the instance has self-serve SSO enabled.
-	SelfServeSSOEnabled *bool `json:"self_serve_sso_enabled,omitempty"`
+	SelfServeSSOEnabled                  *bool    `json:"self_serve_sso_enabled,omitempty"`
+	SelfServeDirectorySyncEnabled        *bool    `json:"self_serve_directory_sync_enabled,omitempty"`
 	// ExclusiveMembership, when true, prevents members of this organization from
 	// belonging to any other organization in the instance.
 	//
