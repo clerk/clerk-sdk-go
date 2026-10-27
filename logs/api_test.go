@@ -56,6 +56,7 @@ func TestPackageList(t *testing.T) {
 				Method: http.MethodGet,
 				Path:   "/v1/logs",
 				Query: &url.Values{
+					"view":    []string{"flat"},
 					"limit":   []string{"10"},
 					"subject": []string{"user_2xPNCmYKPnPKaF3h0Ll8qas0I0w"},
 					"type":    []string{"user.created"},

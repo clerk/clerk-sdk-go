@@ -92,6 +92,7 @@ func TestList(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/logs",
 			Query: &url.Values{
+				"view":                 []string{"flat"},
 				"limit":                []string{"10"},
 				"subject":              []string{"user_2xPNCmYKPnPKaF3h0Ll8qas0I0w"},
 				"client_id":            []string{"client_123"},
@@ -198,6 +199,7 @@ func TestList_FilterMatchAny(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/logs",
 			Query: &url.Values{
+				"view":         []string{"flat"},
 				"subject":      []string{"user_alpha"},
 				"actor":        []string{"actor_b"},
 				"trace_id":     []string{"00000000000000000000000000000001"},
@@ -242,6 +244,7 @@ func TestList_FilterMatchAll(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/logs",
 			Query: &url.Values{
+				"view":         []string{"flat"},
 				"subject":      []string{"user_alpha"},
 				"type":         []string{"user.created"},
 				"filter_match": []string{"all"},
@@ -285,6 +288,7 @@ func TestList_FilterMatchOmitted(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/logs",
 			Query: &url.Values{
+				"view":    []string{"flat"},
 				"subject": []string{"user_alpha"},
 			},
 		},
@@ -595,6 +599,7 @@ func TestList_PayloadParams(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/logs",
 			Query: &url.Values{
+				"view":                     []string{"flat"},
 				"type":                     []string{"sign_in.completed"},
 				"payload_filter[strategy]": []string{"password"},
 				"payload_filter[user_id]":  []string{"user_123"},
@@ -884,6 +889,27 @@ func TestListGroupedWithoutParamsSendsTheView(t *testing.T) {
 	list, err := NewClient(config).ListGrouped(context.Background(), nil)
 	require.NoError(t, err)
 	require.Empty(t, list.Items)
+}
+
+// TestListWithoutParamsSendsTheView verifies that nil params still request
+// the flat view.
+func TestListWithoutParamsSendsTheView(t *testing.T) {
+	t.Parallel()
+
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Out:    json.RawMessage(`{"data":[],"cursor":{"next_page_status":"false"}}`),
+			Method: http.MethodGet,
+			Path:   "/v1/logs",
+			Query:  &url.Values{"view": []string{"flat"}},
+		},
+	}
+
+	list, err := NewClient(config).List(context.Background(), nil)
+	require.NoError(t, err)
+	require.Empty(t, list.Logs)
 }
 
 // TestListGroupEvents verifies the group events path, and that the group's
