@@ -14,7 +14,8 @@ func Get(ctx context.Context, params *GetParams) (*clerk.LogWithPayload, error) 
 	return getClient().Get(ctx, params)
 }
 
-// List returns a list of logs.
+// List returns a page of the flat log list (view=flat): every log on its
+// own, newest first.
 func List(ctx context.Context, params *ListParams) (*clerk.LogList, error) {
 	return getClient().List(ctx, params)
 }

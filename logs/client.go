@@ -207,10 +207,28 @@ func (c *Client) Get(ctx context.Context, params *GetParams) (*clerk.LogWithPayl
 	return resource, err
 }
 
-// List returns a list of logs.
+// listFlatParams sends the List params with view=flat. It is not part of
+// ListParams.ToQuery because ListGroupEventsParams embeds ListParams, and the
+// group events endpoint rejects any view.
+type listFlatParams struct {
+	*ListParams
+}
+
+// ToQuery returns the params as url.Values, with view=flat.
+func (params *listFlatParams) ToQuery() url.Values {
+	q := params.ListParams.ToQuery()
+	q.Set("view", "flat")
+	return q
+}
+
+// List returns a page of the flat log list (view=flat): every log on its
+// own, newest first.
 func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.LogList, error) {
+	if params == nil {
+		params = &ListParams{}
+	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
-	req.SetParams(params)
+	req.SetParams(&listFlatParams{ListParams: params})
 	list := &clerk.LogList{}
 	err := c.Backend.Call(ctx, req, list)
 	return list, err
