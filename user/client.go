@@ -465,6 +465,96 @@ type SearchMetadataFilter struct {
 	Negate *bool  `json:"negate,omitempty"`
 }
 
+// ToQuery returns url.Values from the params. Each metadata filter is
+// sent as its own JSON-encoded metadata value.
+func (params *SearchParams) ToQuery() url.Values {
+	q := url.Values{}
+	for _, v := range params.UserIDs {
+		q.Add("user_id", v)
+	}
+	for _, v := range params.ExternalIDs {
+		q.Add("external_id", v)
+	}
+	for _, v := range params.OrganizationIDs {
+		q.Add("organization_id", v)
+	}
+	for _, v := range params.EmailAddresses {
+		q.Add("email_address", v)
+	}
+	for _, v := range params.PhoneNumbers {
+		q.Add("phone_number", v)
+	}
+	for _, v := range params.Usernames {
+		q.Add("username", v)
+	}
+	for _, v := range params.Web3Wallets {
+		q.Add("web3_wallet", v)
+	}
+	if params.Provider != nil {
+		q.Add("provider", *params.Provider)
+	}
+	for _, v := range params.ProviderUserIDs {
+		q.Add("provider_user_id", v)
+	}
+	if params.LastActiveAtBefore != nil {
+		q.Add("last_active_at_before", strconv.FormatInt(*params.LastActiveAtBefore, 10))
+	}
+	if params.LastActiveAtAfter != nil {
+		q.Add("last_active_at_after", strconv.FormatInt(*params.LastActiveAtAfter, 10))
+	}
+	if params.LastSignInAtBefore != nil {
+		q.Add("last_sign_in_at_before", strconv.FormatInt(*params.LastSignInAtBefore, 10))
+	}
+	if params.LastSignInAtAfter != nil {
+		q.Add("last_sign_in_at_after", strconv.FormatInt(*params.LastSignInAtAfter, 10))
+	}
+	if params.CreatedAtBefore != nil {
+		q.Add("created_at_before", strconv.FormatInt(*params.CreatedAtBefore, 10))
+	}
+	if params.CreatedAtAfter != nil {
+		q.Add("created_at_after", strconv.FormatInt(*params.CreatedAtAfter, 10))
+	}
+	if params.Query != nil {
+		q.Add("query", *params.Query)
+	}
+	if params.EmailAddressQuery != nil {
+		q.Add("email_address_query", *params.EmailAddressQuery)
+	}
+	if params.PhoneNumberQuery != nil {
+		q.Add("phone_number_query", *params.PhoneNumberQuery)
+	}
+	if params.UsernameQuery != nil {
+		q.Add("username_query", *params.UsernameQuery)
+	}
+	if params.NameQuery != nil {
+		q.Add("name_query", *params.NameQuery)
+	}
+	if params.OrderBy != nil {
+		q.Add("order_by", *params.OrderBy)
+	}
+	if params.Banned != nil {
+		q.Add("banned", strconv.FormatBool(*params.Banned))
+	}
+	if params.Deprovisioned != nil {
+		q.Add("deprovisioned", strconv.FormatBool(*params.Deprovisioned))
+	}
+	for _, v := range params.Metadata {
+		// A filter holds only strings and bools, so marshalling cannot fail.
+		filter, _ := json.Marshal(v)
+		q.Add("metadata", string(filter))
+	}
+	if params.Limit != nil {
+		q.Add("limit", strconv.FormatInt(*params.Limit, 10))
+	}
+	if params.StartingAfter != nil {
+		q.Add("starting_after", *params.StartingAfter)
+	}
+	if params.EndingBefore != nil {
+		q.Add("ending_before", *params.EndingBefore)
+	}
+	return q
+}
+
 // Search returns a page of users matching the parameters. Pages are
 // linked by the opaque cursors in the response.
 func (c *Client) Search(ctx context.Context, params *SearchParams) (*clerk.UserSearchList, error) {
@@ -472,7 +562,7 @@ func (c *Client) Search(ctx context.Context, params *SearchParams) (*clerk.UserS
 	if err != nil {
 		return nil, err
 	}
-	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req := clerk.NewAPIRequest(http.MethodGet, path)
 	req.SetParams(params)
 	list := &clerk.UserSearchList{}
 	err = c.Backend.Call(ctx, req, list)
