@@ -2,6 +2,13 @@ package jwt
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/ed25519"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/rsa"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"net/http"
@@ -13,7 +20,8 @@ import (
 	"github.com/clerk/clerk-sdk-go/v3"
 	"github.com/clerk/clerk-sdk-go/v3/clerktest"
 	"github.com/clerk/clerk-sdk-go/v3/jwks"
-	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v4"
+	josejwt "github.com/go-jose/go-jose/v4/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -901,4 +909,72 @@ func TestVerify_V2OrganizationPermissionsSharedActionKey(t *testing.T) {
 		"org:leads:view_history",
 		"org:whatsapp:chat_read",
 	}, verifiedClaims.ActiveOrganizationPermissions)
+}
+
+// GHSA-mgcc-cww5-fp2q: a private RSA jwk in the header must be rejected
+// before go-jose validates it, which takes cubic time in the key size.
+func TestDecodeAndVerify_RejectPrivateHeaderJWK(t *testing.T) {
+	t.Parallel()
+	b64 := base64.RawURLEncoding.EncodeToString
+	p := new(big.Int).Lsh(big.NewInt(1), 16383)
+	p.SetBit(p, 0, 1)
+	jwk := map[string]string{
+		"kty": "RSA",
+		"n":   b64(new(big.Int).Lsh(big.NewInt(1), 2048).Bytes()),
+		"e":   "AQAB",
+		"d":   "Aw",
+		"p":   b64(p.Bytes()),
+		"q":   "Aw",
+	}
+	header, err := json.Marshal(map[string]any{"alg": "RS256", "jwk": jwk})
+	require.NoError(t, err)
+	token := b64(header) + ".e30.eA"
+
+	ctx := context.Background()
+	_, err = Decode(ctx, &DecodeParams{Token: token})
+	require.ErrorContains(t, err, "JWK contains private parameters")
+
+	_, err = Verify(ctx, &VerifyParams{Token: token, JWK: &clerk.JSONWebKey{}})
+	require.ErrorContains(t, err, "JWK contains private parameters")
+}
+
+func TestVerify_SignatureAlgorithms(t *testing.T) {
+	t.Parallel()
+	rsaKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	ecKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	require.NoError(t, err)
+	edPub, edKey, err := ed25519.GenerateKey(rand.Reader)
+	require.NoError(t, err)
+	hmacKey := []byte("0123456789abcdef0123456789abcdef")
+
+	for _, tc := range []struct {
+		alg       jose.SignatureAlgorithm
+		priv, pub any
+	}{
+		{jose.RS256, rsaKey, rsaKey.Public()},
+		{jose.PS256, rsaKey, rsaKey.Public()},
+		{jose.ES256, ecKey, ecKey.Public()},
+		{jose.EdDSA, edKey, edPub},
+		{jose.HS256, hmacKey, hmacKey},
+	} {
+		t.Run(string(tc.alg), func(t *testing.T) {
+			t.Parallel()
+			signer, err := jose.NewSigner(jose.SigningKey{Algorithm: tc.alg, Key: tc.priv}, (&jose.SignerOptions{}).WithType("JWT"))
+			require.NoError(t, err)
+			token, err := josejwt.Signed(signer).Claims(map[string]any{
+				"iss": "https://clerk.example.com",
+				"sub": "user_123",
+				"exp": time.Now().Add(time.Hour).Unix(),
+			}).Serialize()
+			require.NoError(t, err)
+
+			claims, err := Verify(context.Background(), &VerifyParams{
+				Token: token,
+				JWK:   &clerk.JSONWebKey{Key: tc.pub, Algorithm: string(tc.alg)},
+			})
+			require.NoError(t, err)
+			require.Equal(t, "user_123", claims.Subject)
+		})
+	}
 }
