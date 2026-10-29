@@ -11,8 +11,19 @@ import (
 
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/clerk/clerk-sdk-go/v2/jwks"
-	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4/jwt"
 )
+
+// Every JWS algorithm go-jose supports, as JWT templates aren't limited to
+// RS256. Verify separately requires the token alg to match the JWK.
+var signatureAlgorithms = []jose.SignatureAlgorithm{
+	jose.EdDSA,
+	jose.HS256, jose.HS384, jose.HS512,
+	jose.RS256, jose.RS384, jose.RS512,
+	jose.ES256, jose.ES384, jose.ES512,
+	jose.PS256, jose.PS384, jose.PS512,
+}
 
 // AuthorizedPartyHandler is a type that can be used to perform checks
 // on the 'azp' claim.
@@ -81,7 +92,7 @@ type version2OrganizationClaims struct {
 // Verify verifies a Clerk session JWT and returns the parsed
 // clerk.SessionClaims.
 func Verify(ctx context.Context, params *VerifyParams) (*clerk.SessionClaims, error) {
-	parsedToken, err := jwt.ParseSigned(params.Token)
+	parsedToken, err := jwt.ParseSigned(params.Token, signatureAlgorithms)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +225,7 @@ type DecodeParams struct {
 // WARNING: The token is not validated, therefore the returned Claims
 // should NOT be trusted.
 func Decode(_ context.Context, params *DecodeParams) (*clerk.UnverifiedToken, error) {
-	parsedToken, err := jwt.ParseSigned(params.Token)
+	parsedToken, err := jwt.ParseSigned(params.Token, signatureAlgorithms)
 	if err != nil {
 		return nil, err
 	}
