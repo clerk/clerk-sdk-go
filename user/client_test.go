@@ -251,20 +251,22 @@ func TestUserClientSearch(t *testing.T) {
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Method: http.MethodPost,
+			Method: http.MethodGet,
 			Path:   "/v1/users/search",
-			In: json.RawMessage(`{
-				"email_address":["foo@bar.com"],
-				"query":"foo",
-				"banned":false,
-				"created_at_after":1730333164378,
-				"metadata":[
-					{"scope":"public","key":"plan","value":"pro","match":"equals"},
-					{"scope":"private","key":"legacy","match":"exists","negate":true}
-				],
-				"limit":2,
-				"starting_after":"cur_prev"
-			}`),
+			Query: &url.Values{
+				"email_address":    []string{"foo@bar.com", "baz@bar.com"},
+				"provider":         []string{"oauth_google"},
+				"provider_user_id": []string{"123"},
+				"query":            []string{"foo"},
+				"banned":           []string{"false"},
+				"created_at_after": []string{"1730333164378"},
+				"metadata": []string{
+					`{"scope":"public","key":"plan","value":"pro","match":"equals"}`,
+					`{"scope":"private","key":"legacy","match":"exists","negate":true}`,
+				},
+				"limit":          []string{"2"},
+				"starting_after": []string{"cur_prev"},
+			},
 			Out: json.RawMessage(`{
 				"data":[{"object":"user","id":"user_123"},{"object":"user","id":"user_456"}],
 				"cursor":{"starting_after":"cur_next","ending_before":"cur_back","has_next_page":true}
@@ -273,10 +275,12 @@ func TestUserClientSearch(t *testing.T) {
 	}
 	client := NewClient(config)
 	list, err := client.Search(context.Background(), &SearchParams{
-		EmailAddresses: []string{"foo@bar.com"},
-		Query:          clerk.String("foo"),
-		Banned:         clerk.Bool(false),
-		CreatedAtAfter: clerk.Int64(1730333164378),
+		EmailAddresses:  []string{"foo@bar.com", "baz@bar.com"},
+		Provider:        clerk.String("oauth_google"),
+		ProviderUserIDs: []string{"123"},
+		Query:           clerk.String("foo"),
+		Banned:          clerk.Bool(false),
+		CreatedAtAfter:  clerk.Int64(1730333164378),
 		Metadata: []SearchMetadataFilter{
 			{Scope: "public", Key: "plan", Value: clerk.String("pro"), Match: "equals"},
 			{Scope: "private", Key: "legacy", Match: "exists", Negate: clerk.Bool(true)},
