@@ -2,6 +2,7 @@
 
 ## Next release
 
+- Update go-jose dependency to v4.1.6 to fix [GHSA-mgcc-cww5-fp2q](https://github.com/advisories/GHSA-mgcc-cww5-fp2q), where a crafted token could tie up a CPU in `jwt.Decode` and the `http` middleware. Tokens signed with an algorithm go-jose doesn't support now fail in `jwt.Decode`, so the middleware treats them as missing instead of calling the authorization failure handler.
 - Add support for the grouped log list with `logs.ListGrouped`, which returns each event group (a flow such as a sign-in) as one item next to the logs outside any group, as `clerk.GroupedLogList` items that hold either a `clerk.LogGroup` or a `clerk.Log`, and filters by group type and status through `logs.ListGroupsParams`. Add `logs.ListGroupEvents` to load the rest of a group from its `EventsCursor`, and `GroupID`, `GroupType` and `GroupStartedAt` to `clerk.Log`.
 - `logs.List` now asks for `view=flat`, so it keeps returning the flat list when the API makes the grouped view its default.
 - Add support for permanently deleting an invitation with `invitation.Delete`. Unlike `invitation.Revoke`, this removes the invitation record and the stored copies of its invitation email, so it can be used to honor a data erasure request from someone who was invited but never signed up.
