@@ -65,6 +65,9 @@ type LogGroup struct {
 	// has not concluded.
 	Status      string `json:"status"`
 	StatusLabel string `json:"status_label"`
+	// Subject is who or what the flow is about: the user it identified,
+	// or the instance when it never identified one.
+	Subject string `json:"subject"`
 	// FirstEvent is the group's first log, even when the list's filters
 	// left it out of Events, for showing how the flow started.
 	FirstEvent *Log `json:"first_event"`
