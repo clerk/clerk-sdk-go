@@ -296,3 +296,79 @@ func TestNeedsReverification(t *testing.T) {
 		})
 	}
 }
+
+func TestSessionClaimsAgent(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name        string
+		payload     string
+		wantSession bool
+		wantClaim   *AgentClaim
+	}{
+		{
+			name:        "agent task session",
+			payload:     `{"sid":"sess_123","agt":{"id":"agt_123","tsk":"agttsk_123","reg":"clerk"}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{ID: "agt_123", TaskID: "agttsk_123", Registry: "clerk"},
+		},
+		{
+			name:    "claim absent",
+			payload: `{"sid":"sess_123"}`,
+		},
+		{
+			name:    "claim null",
+			payload: `{"sid":"sess_123","agt":null}`,
+		},
+		{
+			name:        "claim with unreadable fields",
+			payload:     `{"sid":"sess_123","agt":{"id":1,"tsk":["agttsk_123"]}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{},
+		},
+		{
+			name:        "claim with one unreadable field",
+			payload:     `{"sid":"sess_123","agt":{"id":"agt_123","tsk":1,"reg":"clerk"}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{ID: "agt_123", Registry: "clerk"},
+		},
+		{
+			name:        "claim is not an object",
+			payload:     `{"sid":"sess_123","agt":"agt_123"}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{},
+		},
+		{
+			name:        "claim is false",
+			payload:     `{"sid":"sess_123","agt":false}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{},
+		},
+		{
+			name:        "claim is empty object",
+			payload:     `{"sid":"sess_123","agt":{}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{},
+		},
+		{
+			name:    "impersonation session",
+			payload: `{"sid":"sess_123","act":{"sub":"user_456"}}`,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			var claims SessionClaims
+			require.NoError(t, json.Unmarshal([]byte(tc.payload), &claims))
+			require.Equal(t, tc.wantSession, claims.IsAgentSession())
+			require.Equal(t, tc.wantClaim, claims.AgentClaim())
+		})
+	}
+}
+
+func TestSessionClaimsAgentKeepsActor(t *testing.T) {
+	t.Parallel()
+	var claims SessionClaims
+	payload := `{"sid":"sess_123","act":{"sub":"user_456"},"agt":{"id":"agt_123","tsk":"agttsk_123","reg":"clerk"}}`
+	require.NoError(t, json.Unmarshal([]byte(payload), &claims))
+	require.JSONEq(t, `{"sub":"user_456"}`, string(claims.Actor))
+	require.True(t, claims.IsAgentSession())
+}

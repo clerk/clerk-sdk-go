@@ -2,6 +2,8 @@
 
 ## Next release
 
+- Add support for agent task sessions. `Claims.Agent` holds the raw `agt` claim, `SessionClaims.IsAgentSession()` reports whether the session was created from an agent task, and `SessionClaims.AgentClaim()` returns a `clerk.AgentClaim` with its agent ID, agent task ID and registry, or nil for other sessions. Any non-null `agt` claim counts as an agent session, even when it is malformed, so a check that refuses agent sessions fails closed. `Claims.Actor` is unchanged: agent task sessions do not carry an `act` claim.
+
 ## 2.8.0
 
 - Update go-jose dependency to v4.1.6 to fix [GHSA-mgcc-cww5-fp2q](https://github.com/advisories/GHSA-mgcc-cww5-fp2q), where a crafted token could tie up a CPU in `jwt.Decode` and the `http` middleware. Tokens signed with an algorithm go-jose doesn't support now fail in `jwt.Decode`, so the middleware treats them as missing instead of calling the authorization failure handler.
