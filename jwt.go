@@ -69,6 +69,25 @@ func (s *SessionClaims) HasRole(role string) bool {
 	return s.ActiveOrganizationRole == role
 }
 
+// IsAgentSession reports whether the session was created from an agent task,
+// that is, whether the token carries a non-null 'agt' claim. A malformed claim
+// still counts, so a check such as "refuse agent sessions" fails closed.
+func (s *SessionClaims) IsAgentSession() bool {
+	return len(s.Agent) > 0 && string(s.Agent) != "null"
+}
+
+// AgentClaim returns the agent and agent task of an agent task session, or nil
+// for any other session. It is non-nil whenever IsAgentSession is true; fields
+// that cannot be read from a malformed claim are left empty.
+func (s *SessionClaims) AgentClaim() *AgentClaim {
+	if !s.IsAgentSession() {
+		return nil
+	}
+	claim := &AgentClaim{}
+	_ = json.Unmarshal(s.Agent, claim)
+	return claim
+}
+
 // NeedsReverification checks if a session needs to be reverified based on the
 // provided policy.
 func (s *SessionClaims) NeedsReverification(policy SessionReverificationPolicy) bool {
@@ -153,7 +172,28 @@ type Claims struct {
 	ActiveOrganizationRole        string          `json:"org_role"`
 	ActiveOrganizationPermissions []string        `json:"org_permissions"`
 	Actor                         json.RawMessage `json:"act,omitempty"`
-	FactorVerificationAge         [2]int64        `json:"fva"`
+	// Agent is the raw 'agt' claim, which Clerk sets on sessions created from
+	// an agent task. It is kept as raw JSON so that a malformed value never
+	// fails token verification. Use IsAgentSession and AgentClaim to read it.
+	Agent                 json.RawMessage `json:"agt,omitempty"`
+	FactorVerificationAge [2]int64        `json:"fva"`
+}
+
+// AgentClaim describes the agent and the agent task behind an agent task
+// session.
+type AgentClaim struct {
+	// ID is the ID of the agent.
+	ID string `json:"id"`
+	// TaskID is the ID of the agent task that created the session.
+	TaskID string `json:"tsk"`
+	// Registry is the registry that issued the agent.
+	Registry string `json:"reg"`
+	// Restricted reports whether the agent task was created restricted, so that
+	// Clerk's Frontend API refuses the session's writes. It is false when the
+	// claim omits 'rst', including tokens from Clerk servers that do not send it
+	// yet. Clerk enforces the restriction on its side; use IsAgentSession, not
+	// this field, to refuse agent sessions.
+	Restricted bool `json:"rst,omitempty"`
 }
 
 // factorVerificationAgeNotEnabled is the value Clerk uses in either 'fva' slot
