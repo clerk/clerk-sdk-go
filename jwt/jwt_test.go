@@ -269,6 +269,58 @@ func TestVerify_NoFactorVerificationAge(t *testing.T) {
 	require.True(t, claims.NeedsReverification(clerk.SessionReverificationStrict))
 }
 
+// TestVerify_AgentClaim tests that a verified token keeps its 'agt' claim, so
+// agent task sessions are reported as such, and that a malformed 'agt' claim
+// does not fail verification.
+func TestVerify_AgentClaim(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	kid := "kid"
+
+	for _, tc := range []struct {
+		name      string
+		agt       any
+		wantClaim *clerk.AgentClaim
+	}{
+		{
+			name:      "well-formed claim",
+			agt:       map[string]any{"id": "agt_123", "tsk": "agttsk_123", "reg": "clerk"},
+			wantClaim: &clerk.AgentClaim{ID: "agt_123", TaskID: "agttsk_123", Registry: "clerk"},
+		},
+		{
+			name:      "malformed claim",
+			agt:       "agt_123",
+			wantClaim: &clerk.AgentClaim{},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			tokenClaims := map[string]any{
+				"sid": "sess_123",
+				"sub": "user_123",
+				"iss": "https://clerk.com",
+				"nbf": time.Now().Add(-10 * time.Hour).Unix(),
+				"exp": time.Now().Add(10 * time.Hour).Unix(),
+				"agt": tc.agt,
+			}
+			token, pubKey := clerktest.GenerateJWT(t, tokenClaims, kid)
+			claims, err := Verify(ctx, &VerifyParams{
+				Token: token,
+				JWK: &clerk.JSONWebKey{
+					Key:       pubKey,
+					KeyID:     kid,
+					Algorithm: string(jose.RS256),
+					Use:       "sig",
+				},
+			})
+			require.NoError(t, err)
+			require.True(t, claims.IsAgentSession())
+			require.Equal(t, tc.wantClaim, claims.AgentClaim())
+			require.Nil(t, claims.Actor)
+		})
+	}
+}
+
 // TestVerify_TimeValues tests that Verify validates that the token's
 // not before (nbf) and expiry (exp) claims are respected.
 func TestVerify_TimeValues(t *testing.T) {
