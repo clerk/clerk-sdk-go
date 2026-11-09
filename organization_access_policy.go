@@ -17,12 +17,10 @@ type OrganizationAccessPolicyDirectory struct {
 }
 
 // OrganizationAccessPolicyAuthentication is set on sso policies only.
-// Provisioning is nil until one of the policy's domains is covered by an
-// access policy.
 type OrganizationAccessPolicyAuthentication struct {
 	Connections        []*OrganizationAccessPolicyConnection `json:"connections"`
 	Directories        []*OrganizationAccessPolicyDirectory  `json:"directories"`
-	Provisioning       *string                               `json:"provisioning"`
+	Provisioning       string                                `json:"provisioning"`
 	ConnectionRequired bool                                  `json:"connection_required"`
 }
 

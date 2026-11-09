@@ -15,14 +15,14 @@ import (
 
 func TestOrganizationAccessPolicyClientCreate(t *testing.T) {
 	t.Parallel()
-	id := "orgap_123"
+	id := "oenp_123"
 	organizationID := "org_123"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:  t,
-			In: json.RawMessage(`{"domains":["example.com"],"enrollment_mode":"sso","authentication":{"connections":["entconn_123"],"directories":["dir_123"],"provisioning":"jit","connection_required":true},"status":"draft"}`),
-			Out: json.RawMessage(fmt.Sprintf(`{"object":"organization_access_policy","id":"%s","organization_id":"%s","default":false,"domains":[{"name":"example.com","affiliation_verified":false,"ownership_verified":true}],"enrollment_mode":"sso","status":"draft","authentication":{"connections":[{"id":"entconn_123","name":"Okta","active":true}],"directories":[{"id":"dir_123"}],"provisioning":null,"connection_required":false},"created_at":1700000000000,"updated_at":1700000000000}`,
+			In: json.RawMessage(`{"domains":["example.com"],"enrollment_mode":"sso","authentication":{"connections":["ent_123"],"directories":["dir_123"],"provisioning":"jit","connection_required":true},"status":"draft"}`),
+			Out: json.RawMessage(fmt.Sprintf(`{"object":"organization_access_policy","id":"%s","organization_id":"%s","default":false,"domains":[{"name":"example.com","affiliation_verified":false,"ownership_verified":true}],"enrollment_mode":"sso","status":"draft","authentication":{"connections":[{"id":"ent_123","name":"Okta","active":true}],"directories":[{"id":"dir_123"}],"provisioning":"jit","connection_required":true},"created_at":1700000000000,"updated_at":1700000000000}`,
 				id, organizationID)),
 			Method: http.MethodPost,
 			Path:   "/v1/organizations/" + organizationID + "/access_policies",
@@ -33,7 +33,7 @@ func TestOrganizationAccessPolicyClientCreate(t *testing.T) {
 		Domains:        &[]string{"example.com"},
 		EnrollmentMode: clerk.String("sso"),
 		Authentication: &AuthenticationParams{
-			Connections:        &[]string{"entconn_123"},
+			Connections:        &[]string{"ent_123"},
 			Directories:        &[]string{"dir_123"},
 			Provisioning:       clerk.String("jit"),
 			ConnectionRequired: clerk.Bool(true),
@@ -50,11 +50,12 @@ func TestOrganizationAccessPolicyClientCreate(t *testing.T) {
 	require.True(t, policy.Domains[0].OwnershipVerified)
 	require.Equal(t, "draft", *policy.Status)
 	require.NotNil(t, policy.Authentication)
-	require.Equal(t, "entconn_123", policy.Authentication.Connections[0].ID)
+	require.Equal(t, "ent_123", policy.Authentication.Connections[0].ID)
 	require.Equal(t, "Okta", policy.Authentication.Connections[0].Name)
 	require.True(t, policy.Authentication.Connections[0].Active)
 	require.Equal(t, "dir_123", policy.Authentication.Directories[0].ID)
-	require.Nil(t, policy.Authentication.Provisioning)
+	require.Equal(t, "jit", policy.Authentication.Provisioning)
+	require.True(t, policy.Authentication.ConnectionRequired)
 	require.Equal(t, int64(1700000000000), policy.CreatedAt)
 }
 
@@ -85,13 +86,13 @@ func TestOrganizationAccessPolicyClientCreate_Error(t *testing.T) {
 
 func TestOrganizationAccessPolicyClientGet(t *testing.T) {
 	t.Parallel()
-	id := "orgap_123"
+	id := "oenp_123"
 	organizationID := "org_123"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			Out:    json.RawMessage(fmt.Sprintf(`{"object":"organization_access_policy","id":"%s","organization_id":"%s","default":true,"domains":[],"enrollment_mode":"manual_invitation","status":null,"authentication":null}`, id, organizationID)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"object":"organization_access_policy","id":"%s","organization_id":"%s","default":true,"domains":[],"enrollment_mode":"invitation_only","status":null,"authentication":null}`, id, organizationID)),
 			Method: http.MethodGet,
 			Path:   "/v1/organizations/" + organizationID + "/access_policies/" + id,
 		},
@@ -111,7 +112,7 @@ func TestOrganizationAccessPolicyClientGet(t *testing.T) {
 
 func TestOrganizationAccessPolicyClientUpdate(t *testing.T) {
 	t.Parallel()
-	id := "orgap_123"
+	id := "oenp_123"
 	organizationID := "org_123"
 	for _, tc := range []struct {
 		name   string
@@ -120,8 +121,8 @@ func TestOrganizationAccessPolicyClientUpdate(t *testing.T) {
 	}{
 		{
 			name:   "sends only the set fields",
-			params: UpdateParams{EnrollmentMode: clerk.String("automatic_invitation")},
-			in:     `{"enrollment_mode":"automatic_invitation"}`,
+			params: UpdateParams{EnrollmentMode: clerk.String("invite_automatically")},
+			in:     `{"enrollment_mode":"invite_automatically"}`,
 		},
 		{
 			name:   "sends an empty domains list to clear them",
@@ -146,7 +147,7 @@ func TestOrganizationAccessPolicyClientUpdate(t *testing.T) {
 				Transport: &clerktest.RoundTripper{
 					T:      t,
 					In:     json.RawMessage(tc.in),
-					Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","enrollment_mode":"automatic_invitation"}`, id)),
+					Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","enrollment_mode":"invite_automatically"}`, id)),
 					Method: http.MethodPatch,
 					Path:   "/v1/organizations/" + organizationID + "/access_policies/" + id,
 				},
@@ -158,7 +159,7 @@ func TestOrganizationAccessPolicyClientUpdate(t *testing.T) {
 			policy, err := client.Update(context.Background(), &params)
 			require.NoError(t, err)
 			require.Equal(t, id, policy.ID)
-			require.Equal(t, "automatic_invitation", policy.EnrollmentMode)
+			require.Equal(t, "invite_automatically", policy.EnrollmentMode)
 		})
 	}
 }
@@ -190,7 +191,7 @@ func TestOrganizationAccessPolicyClientUpdate_Error(t *testing.T) {
 
 func TestOrganizationAccessPolicyClientDelete(t *testing.T) {
 	t.Parallel()
-	id := "orgap_123"
+	id := "oenp_123"
 	organizationID := "org_123"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
@@ -213,7 +214,7 @@ func TestOrganizationAccessPolicyClientDelete(t *testing.T) {
 
 func TestOrganizationAccessPolicyClientList(t *testing.T) {
 	t.Parallel()
-	id := "orgap_123"
+	id := "oenp_123"
 	organizationID := "org_123"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
@@ -221,7 +222,7 @@ func TestOrganizationAccessPolicyClientList(t *testing.T) {
 			T: t,
 			Out: json.RawMessage(fmt.Sprintf(`{
 "data": [
-  {"object":"organization_access_policy","id":"%s","organization_id":"%s","default":false,"domains":[{"name":"example.com","affiliation_verified":true,"ownership_verified":false}],"enrollment_mode":"automatic_suggestion","authentication":null}
+  {"object":"organization_access_policy","id":"%s","organization_id":"%s","default":false,"domains":[{"name":"example.com","affiliation_verified":true,"ownership_verified":false}],"enrollment_mode":"request_access","authentication":null}
 ],
 "total_count": 1
 }`,
@@ -248,7 +249,7 @@ func TestOrganizationAccessPolicyClientList(t *testing.T) {
 
 func TestOrganizationAccessPolicyClientVerify(t *testing.T) {
 	t.Parallel()
-	id := "orgap_123"
+	id := "oenp_123"
 	organizationID := "org_123"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
