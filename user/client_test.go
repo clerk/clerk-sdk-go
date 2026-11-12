@@ -708,6 +708,33 @@ func TestUserClientUnlock(t *testing.T) {
 	require.Equal(t, "user", user.Object)
 }
 
+func TestUserClientMerge(t *testing.T) {
+	t.Parallel()
+	userID := "user_123"
+	fromUserID := "user_456"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			Method: http.MethodPost,
+			In:     json.RawMessage(fmt.Sprintf(`{"from_user_id":"%s","dry_run":true}`, fromUserID)),
+			Out: json.RawMessage(fmt.Sprintf(
+				`{"user":{"object":"user","id":"%s"},"deleted_user":{"object":"user","id":"%s"}}`,
+				userID, fromUserID,
+			)),
+			Path: fmt.Sprintf("/v1/users/%s/merge", userID),
+		},
+	}
+	client := NewClient(config)
+	result, err := client.Merge(context.Background(), userID, &MergeParams{
+		FromUserID: clerk.String(fromUserID),
+		DryRun:     clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, userID, result.User.ID)
+	require.Equal(t, fromUserID, result.DeletedUser.ID)
+}
+
 func TestUserClientListOrganizationMemberships(t *testing.T) {
 	t.Parallel()
 	membershipID := "orgmem_123"

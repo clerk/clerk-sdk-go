@@ -67,6 +67,29 @@ func TestSessionClientList(t *testing.T) {
 	require.Equal(t, "active", list.Sessions[0].Status)
 }
 
+func TestSessionClientUpdate(t *testing.T) {
+	t.Parallel()
+	id := "sess_123"
+	expireAt := "2030-10-20T10:00:27Z"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(fmt.Sprintf(`{"expire_at":"%s"}`, expireAt)),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","status":"active","expire_at":1918720827000}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/sessions/" + id,
+		},
+	}
+	client := NewClient(config)
+	session, err := client.Update(context.Background(), id, &UpdateParams{
+		ExpireAt: clerk.String(expireAt),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, session.ID)
+	require.Equal(t, int64(1918720827000), session.ExpireAt)
+}
+
 func TestSessionClientRevoke(t *testing.T) {
 	t.Parallel()
 	id := "sess_123"

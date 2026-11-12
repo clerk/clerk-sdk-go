@@ -566,6 +566,33 @@ func (c *Client) Unlock(ctx context.Context, id string) (*clerk.User, error) {
 	return resource, err
 }
 
+type MergeParams struct {
+	clerk.APIParams
+	// FromUserID is the user to merge into the user the call is made for.
+	// This user is deleted.
+	FromUserID *string `json:"from_user_id,omitempty"`
+	// DryRun returns the result of the merge without changing anything.
+	DryRun *bool `json:"dry_run,omitempty"`
+}
+
+// Merge moves the identifications, connected accounts, second factors,
+// organization memberships and metadata of the FromUserID user onto the user
+// with the given id, then deletes the FromUserID user. Where both users have a
+// value, the user with the given id keeps its own.
+//
+// A merge cannot be undone. Set DryRun to preview one.
+func (c *Client) Merge(ctx context.Context, id string, params *MergeParams) (*clerk.UserMergeResult, error) {
+	path, err := clerk.JoinPath(path, id, "/merge")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPost, path)
+	req.SetParams(params)
+	resource := &clerk.UserMergeResult{}
+	err = c.Backend.Call(ctx, req, resource)
+	return resource, err
+}
+
 type ListOrganizationMembershipsParams struct {
 	clerk.APIParams
 	clerk.ListParams
