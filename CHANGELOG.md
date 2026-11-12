@@ -4,6 +4,8 @@
 
 - Fix the `http` middleware's JWK cache extending an entry's expiry on every cache hit. Entries now expire one hour after they're fetched.
 - Scope the `http` middleware's JWK cache to the Clerk instance a key was fetched for, so a process that serves several instances keeps their keys separate. A custom `Backend` that doesn't implement the new `clerk.CacheScoper` interface skips the cache. Add `clerktest.ConvertToJWKS`.
+- Add support for changing when a session expires with `session.Update`. The new `ExpireAt` applies to that session only and can exceed the instance's session lifetime.
+- Add support for merging two users with `user.Merge`, which moves the `FromUserID` user's identifications, second factors, organization memberships and metadata onto another user and deletes the `FromUserID` user. It returns a `clerk.UserMergeResult` holding the remaining user and the deleted one. Set `DryRun` to preview a merge.
 
 ## 2.8.0
 

@@ -18,6 +18,15 @@ func List(ctx context.Context, params *ListParams) (*clerk.SessionList, error) {
 	return getClient().List(ctx, params)
 }
 
+// Update changes when an active or pending session expires. The new expiry
+// applies to this session only and can exceed the instance's session lifetime.
+//
+// Take the session ID from the sid claim of a verified session token, never
+// from an unverified client request.
+func Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Session, error) {
+	return getClient().Update(ctx, id, params)
+}
+
 // Revoke marks the session as revoked.
 func Revoke(ctx context.Context, params *RevokeParams) (*clerk.Session, error) {
 	return getClient().Revoke(ctx, params)
