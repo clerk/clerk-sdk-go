@@ -296,3 +296,140 @@ func TestNeedsReverification(t *testing.T) {
 		})
 	}
 }
+
+func TestSessionClaimsAgent(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name        string
+		payload     string
+		wantSession bool
+		wantClaim   *AgentClaim
+	}{
+		{
+			name:        "agent task session",
+			payload:     `{"sid":"sess_123","agt":{"id":"agt_123","tsk":"agttsk_123","reg":"clerk"}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{ID: "agt_123", TaskID: "agttsk_123", Registry: "clerk"},
+		},
+		{
+			name:    "claim absent",
+			payload: `{"sid":"sess_123"}`,
+		},
+		{
+			name:    "claim null",
+			payload: `{"sid":"sess_123","agt":null}`,
+		},
+		{
+			name:        "restricted agent task session",
+			payload:     `{"sid":"sess_123","agt":{"id":"agt_123","tsk":"agttsk_123","reg":"clerk","rst":true}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{ID: "agt_123", TaskID: "agttsk_123", Registry: "clerk", Restricted: true},
+		},
+		{
+			name:        "restricted flag set to false",
+			payload:     `{"sid":"sess_123","agt":{"id":"agt_123","tsk":"agttsk_123","reg":"clerk","rst":false}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{ID: "agt_123", TaskID: "agttsk_123", Registry: "clerk"},
+		},
+		{
+			name:        "restricted flag that is not a boolean",
+			payload:     `{"sid":"sess_123","agt":{"id":"agt_123","tsk":"agttsk_123","reg":"clerk","rst":"true"}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{ID: "agt_123", TaskID: "agttsk_123", Registry: "clerk"},
+		},
+		{
+			name:        "claim with unreadable fields",
+			payload:     `{"sid":"sess_123","agt":{"id":1,"tsk":["agttsk_123"]}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{},
+		},
+		{
+			name:        "claim with one unreadable field",
+			payload:     `{"sid":"sess_123","agt":{"id":"agt_123","tsk":1,"reg":"clerk"}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{ID: "agt_123", Registry: "clerk"},
+		},
+		{
+			name:        "claim is not an object",
+			payload:     `{"sid":"sess_123","agt":"agt_123"}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{},
+		},
+		{
+			name:        "claim is false",
+			payload:     `{"sid":"sess_123","agt":false}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{},
+		},
+		{
+			name:        "claim is empty object",
+			payload:     `{"sid":"sess_123","agt":{}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{},
+		},
+		{
+			name:        "poppy session",
+			payload:     `{"sid":"sess_123","agt":{"id":"https://agent.example.com/client.json","reg":"https://agent.example.com/client.json","poppy":{"session_id":"ps_123","client_id":"https://agent.example.com/client.json","user_id":"pu_123","agent_id":"agent-7"},"rst":true}}`,
+			wantSession: true,
+			wantClaim: &AgentClaim{
+				ID:       "https://agent.example.com/client.json",
+				Registry: "https://agent.example.com/client.json",
+				Poppy: &PoppyClaim{
+					SessionID: "ps_123",
+					ClientID:  "https://agent.example.com/client.json",
+					UserID:    "pu_123",
+					AgentID:   "agent-7",
+				},
+				Restricted: true,
+			},
+		},
+		{
+			name:        "poppy session without an agent ID",
+			payload:     `{"sid":"sess_123","agt":{"id":"https://agent.example.com/client.json","reg":"https://agent.example.com/client.json","poppy":{"session_id":"ps_123","client_id":"https://agent.example.com/client.json","user_id":"pu_123"},"rst":true}}`,
+			wantSession: true,
+			wantClaim: &AgentClaim{
+				ID:       "https://agent.example.com/client.json",
+				Registry: "https://agent.example.com/client.json",
+				Poppy: &PoppyClaim{
+					SessionID: "ps_123",
+					ClientID:  "https://agent.example.com/client.json",
+					UserID:    "pu_123",
+				},
+				Restricted: true,
+			},
+		},
+		{
+			name:        "poppy null",
+			payload:     `{"sid":"sess_123","agt":{"id":"agt_123","tsk":"agttsk_123","reg":"clerk","poppy":null}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{ID: "agt_123", TaskID: "agttsk_123", Registry: "clerk"},
+		},
+		{
+			name:        "poppy that is not an object still marks a poppy session",
+			payload:     `{"sid":"sess_123","agt":{"id":"agt_123","reg":"clerk","poppy":"ps_123","rst":true}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{ID: "agt_123", Registry: "clerk", Poppy: &PoppyClaim{}, Restricted: true},
+		},
+		{
+			name:    "impersonation session",
+			payload: `{"sid":"sess_123","act":{"sub":"user_456"}}`,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			var claims SessionClaims
+			require.NoError(t, json.Unmarshal([]byte(tc.payload), &claims))
+			require.Equal(t, tc.wantSession, claims.IsAgentSession())
+			require.Equal(t, tc.wantClaim, claims.AgentClaim())
+		})
+	}
+}
+
+func TestSessionClaimsAgentKeepsActor(t *testing.T) {
+	t.Parallel()
+	var claims SessionClaims
+	payload := `{"sid":"sess_123","act":{"sub":"user_456"},"agt":{"id":"agt_123","tsk":"agttsk_123","reg":"clerk"}}`
+	require.NoError(t, json.Unmarshal([]byte(payload), &claims))
+	require.JSONEq(t, `{"sub":"user_456"}`, string(claims.Actor))
+	require.True(t, claims.IsAgentSession())
+}
