@@ -106,6 +106,16 @@ func Unlock(ctx context.Context, id string) (*clerk.User, error) {
 	return getClient().Unlock(ctx, id)
 }
 
+// Merge moves the identifications, connected accounts, second factors,
+// organization memberships and metadata of the FromUserID user onto the user
+// with the given id, then deletes the FromUserID user. Where both users have a
+// value, the user with the given id keeps its own.
+//
+// A merge cannot be undone. Set DryRun to preview one.
+func Merge(ctx context.Context, id string, params *MergeParams) (*clerk.UserMergeResult, error) {
+	return getClient().Merge(ctx, id, params)
+}
+
 // ListOrganizationMemberships lists all the user's organization memberships.
 func ListOrganizationMemberships(ctx context.Context, id string, params *ListOrganizationMembershipsParams) (*clerk.OrganizationMembershipList, error) {
 	return getClient().ListOrganizationMemberships(ctx, id, params)

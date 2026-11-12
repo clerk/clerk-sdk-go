@@ -69,6 +69,30 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.SessionLi
 	return list, err
 }
 
+type UpdateParams struct {
+	clerk.APIParams
+	// ExpireAt is when the session should expire, in RFC3339 format. It must
+	// be at least 5 minutes and at most 10 years from now.
+	ExpireAt *string `json:"expire_at,omitempty"`
+}
+
+// Update changes when an active or pending session expires. The new expiry
+// applies to this session only and can exceed the instance's session lifetime.
+//
+// Take the session ID from the sid claim of a verified session token, never
+// from an unverified client request.
+func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*clerk.Session, error) {
+	path, err := clerk.JoinPath(path, id)
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPatch, path)
+	req.SetParams(params)
+	session := &clerk.Session{}
+	err = c.Backend.Call(ctx, req, session)
+	return session, err
+}
+
 type RevokeParams struct {
 	ID string `json:"id"`
 }

@@ -108,6 +108,15 @@ type UserSearchList struct {
 	Cursor *PaginationCursor `json:"cursor"`
 }
 
+// UserMergeResult is the result of merging one user into another.
+type UserMergeResult struct {
+	APIResource
+	// User is the user that remains, as it is after the merge.
+	User *User `json:"user"`
+	// DeletedUser is the merged user as it was before it was deleted.
+	DeletedUser *User `json:"deleted_user"`
+}
+
 type SAMLAccountConnection struct {
 	ID                               string   `json:"id"`
 	Name                             string   `json:"name"`
