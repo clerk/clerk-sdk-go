@@ -374,6 +374,21 @@ func TestVerify_AgentClaim(t *testing.T) {
 			wantClaim: &clerk.AgentClaim{ID: "agt_123", TaskID: "agttsk_123", Registry: "clerk", Restricted: true},
 		},
 		{
+			name: "poppy claim",
+			agt: map[string]any{
+				"id":    "https://agent.example.com/client.json",
+				"reg":   "https://agent.example.com/client.json",
+				"poppy": map[string]any{"session_id": "ps_123", "client_id": "https://agent.example.com/client.json", "user_id": "pu_123"},
+				"rst":   true,
+			},
+			wantClaim: &clerk.AgentClaim{
+				ID:         "https://agent.example.com/client.json",
+				Registry:   "https://agent.example.com/client.json",
+				Poppy:      &clerk.PoppyClaim{SessionID: "ps_123", ClientID: "https://agent.example.com/client.json", UserID: "pu_123"},
+				Restricted: true,
+			},
+		},
+		{
 			name:      "malformed claim",
 			agt:       "agt_123",
 			wantClaim: &clerk.AgentClaim{},

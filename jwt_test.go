@@ -368,6 +368,49 @@ func TestSessionClaimsAgent(t *testing.T) {
 			wantClaim:   &AgentClaim{},
 		},
 		{
+			name:        "poppy session",
+			payload:     `{"sid":"sess_123","agt":{"id":"https://agent.example.com/client.json","reg":"https://agent.example.com/client.json","poppy":{"session_id":"ps_123","client_id":"https://agent.example.com/client.json","user_id":"pu_123","agent_id":"agent-7"},"rst":true}}`,
+			wantSession: true,
+			wantClaim: &AgentClaim{
+				ID:       "https://agent.example.com/client.json",
+				Registry: "https://agent.example.com/client.json",
+				Poppy: &PoppyClaim{
+					SessionID: "ps_123",
+					ClientID:  "https://agent.example.com/client.json",
+					UserID:    "pu_123",
+					AgentID:   "agent-7",
+				},
+				Restricted: true,
+			},
+		},
+		{
+			name:        "poppy session without an agent ID",
+			payload:     `{"sid":"sess_123","agt":{"id":"https://agent.example.com/client.json","reg":"https://agent.example.com/client.json","poppy":{"session_id":"ps_123","client_id":"https://agent.example.com/client.json","user_id":"pu_123"},"rst":true}}`,
+			wantSession: true,
+			wantClaim: &AgentClaim{
+				ID:       "https://agent.example.com/client.json",
+				Registry: "https://agent.example.com/client.json",
+				Poppy: &PoppyClaim{
+					SessionID: "ps_123",
+					ClientID:  "https://agent.example.com/client.json",
+					UserID:    "pu_123",
+				},
+				Restricted: true,
+			},
+		},
+		{
+			name:        "poppy null",
+			payload:     `{"sid":"sess_123","agt":{"id":"agt_123","tsk":"agttsk_123","reg":"clerk","poppy":null}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{ID: "agt_123", TaskID: "agttsk_123", Registry: "clerk"},
+		},
+		{
+			name:        "poppy that is not an object still marks a poppy session",
+			payload:     `{"sid":"sess_123","agt":{"id":"agt_123","reg":"clerk","poppy":"ps_123","rst":true}}`,
+			wantSession: true,
+			wantClaim:   &AgentClaim{ID: "agt_123", Registry: "clerk", Poppy: &PoppyClaim{}, Restricted: true},
+		},
+		{
 			name:    "impersonation session",
 			payload: `{"sid":"sess_123","act":{"sub":"user_456"}}`,
 		},
