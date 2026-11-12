@@ -2,6 +2,8 @@
 
 ## Next release
 
+- Fix the `http` middleware's JWK cache extending an entry's expiry on every cache hit. Entries now expire one hour after they're fetched.
+
 ## 2.8.0
 
 - Update go-jose dependency to v4.1.6 to fix [GHSA-mgcc-cww5-fp2q](https://github.com/advisories/GHSA-mgcc-cww5-fp2q), where a crafted token could tie up a CPU in `jwt.Decode` and the `http` middleware. Tokens signed with an algorithm go-jose doesn't support now fail in `jwt.Decode`, so the middleware treats them as missing instead of calling the authorization failure handler.
