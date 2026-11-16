@@ -10,6 +10,7 @@
 - Add support for changing when a session expires with `session.Update`. The new `ExpireAt` applies to that session only and can exceed the instance's session lifetime.
 - Add support for merging two users with `user.Merge`, which moves the `FromUserID` user's identifications, second factors, organization memberships and metadata onto another user and deletes the `FromUserID` user. It returns a `clerk.UserMergeResult` holding the remaining user and the deleted one. Set `DryRun` to preview a merge.
 - Add `SkipRestrictionChecks` to `user.CreateParams`. Creating a user now runs the instance's allowlist, blocklist, blocked disposable email domains and blocked email subaddresses, the same as sign-up does; set this to exempt a single create, for a backend creating a user it already trusts.
+- Add `AppReviewAccount` to `clerk.User`, `user.CreateParams` and `user.UpdateParams`. An app review account can sign in with a password on a passwordless instance that has the Native API enabled, and skips Client Trust.
 
 - Add support for the OAuth Applications API. Added the oauthapplication package for API operations and a clerk.OAuthApplication type.
 - Add support for multiple invitation templates with the `TemplateSlug` field in `invitation.Create`.

@@ -64,6 +64,7 @@ type CreateParams struct {
 	Locked                    *bool `json:"locked,omitempty"`
 	DeleteSelfEnabled         *bool `json:"delete_self_enabled,omitempty"`
 	BypassClientTrust         *bool `json:"bypass_client_trust,omitempty"`
+	AppReviewAccount          *bool `json:"app_review_account,omitempty"`
 	CreateOrganizationEnabled *bool `json:"create_organization_enabled,omitempty"`
 	CreateOrganizationsLimit  *int  `json:"create_organizations_limit,omitempty"`
 	// Specified in RFC3339 format
@@ -117,6 +118,7 @@ type UpdateParams struct {
 	BackupCodes                      *[]string `json:"backup_codes,omitempty"`
 	DeleteSelfEnabled                *bool     `json:"delete_self_enabled,omitempty"`
 	BypassClientTrust                *bool     `json:"bypass_client_trust,omitempty"`
+	AppReviewAccount                 *bool     `json:"app_review_account,omitempty"`
 	CreateOrganizationEnabled        *bool     `json:"create_organization_enabled,omitempty"`
 	CreateOrganizationsLimit         *int      `json:"create_organizations_limit,omitempty"`
 	// Specified in RFC3339 format

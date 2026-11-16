@@ -112,6 +112,27 @@ func TestUserClientCreate_WithoutSkipRestrictionChecks(t *testing.T) {
 	require.Equal(t, id, user.ID)
 }
 
+func TestUserClientCreate_WithAppReviewAccount(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"app_review_account":true}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","app_review_account":true}`, id)),
+			Method: http.MethodPost,
+			Path:   "/v1/users",
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Create(context.Background(), &CreateParams{
+		AppReviewAccount: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.True(t, user.AppReviewAccount)
+}
+
 func TestUserClientList_Request(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
@@ -381,6 +402,27 @@ func TestUserClientUpdate_WithLocale(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, user.ID)
 	require.Equal(t, locale, *user.Locale)
+}
+
+func TestUserClientUpdate_WithAppReviewAccount(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"app_review_account":false}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","app_review_account":false}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/users/" + id,
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Update(context.Background(), id, &UpdateParams{
+		AppReviewAccount: clerk.Bool(false),
+	})
+	require.NoError(t, err)
+	require.False(t, user.AppReviewAccount)
 }
 
 type testFile struct {
