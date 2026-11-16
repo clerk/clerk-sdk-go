@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/clerk/clerk-sdk-go/v3"
 )
@@ -96,12 +97,21 @@ func (c *Client) Delete(ctx context.Context, id string) (*clerk.DeletedResource,
 type ListParams struct {
 	clerk.APIParams
 	clerk.ListParams
+	// OrganizationScoped filters by whether an organization's SSO access policy
+	// signs in through the policy. If true, only those policies are returned.
+	// If false, only the instance's own policies are returned, its default
+	// included. If omitted, all policies are returned.
+	OrganizationScoped *bool `json:"organization_scoped,omitempty"`
 }
 
 // ToQuery returns the parameters as url.Values so they can be used
 // in a URL query string.
 func (params *ListParams) ToQuery() url.Values {
-	return params.ListParams.ToQuery()
+	q := params.ListParams.ToQuery()
+	if params.OrganizationScoped != nil {
+		q.Set("organization_scoped", strconv.FormatBool(*params.OrganizationScoped))
+	}
+	return q
 }
 
 // List returns a list of the instance's access policies.
