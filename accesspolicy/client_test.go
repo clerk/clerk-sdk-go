@@ -209,13 +209,14 @@ func TestAccessPolicyClientList(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/v1/access_policies",
 			Query: &url.Values{
-				"limit":  []string{"1"},
-				"offset": []string{"2"},
+				"limit":               []string{"1"},
+				"offset":              []string{"2"},
+				"organization_scoped": []string{"false"},
 			},
 		},
 	}
 	client := NewClient(config)
-	params := &ListParams{}
+	params := &ListParams{OrganizationScoped: clerk.Bool(false)}
 	params.Limit = clerk.Int64(1)
 	params.Offset = clerk.Int64(2)
 	list, err := client.List(context.Background(), params)
