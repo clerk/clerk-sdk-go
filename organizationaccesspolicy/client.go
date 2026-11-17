@@ -38,6 +38,9 @@ type CreateParams struct {
 	Authentication *AuthenticationParams `json:"authentication,omitempty"`
 	// Status is taken by sso policies only, and defaults to draft.
 	Status *string `json:"status,omitempty"`
+	// OwnershipWaived waives the ownership proof over the domains, so the
+	// organization's admins can set up SSO on them without verifying them.
+	OwnershipWaived *bool `json:"ownership_waived,omitempty"`
 }
 
 // Create adds a new access policy to the organization.
@@ -80,6 +83,9 @@ type UpdateParams struct {
 	EnrollmentMode *string               `json:"enrollment_mode,omitempty"`
 	Authentication *AuthenticationParams `json:"authentication,omitempty"`
 	Status         *string               `json:"status,omitempty"`
+	// OwnershipWaived waives the ownership proof over every domain the policy
+	// lists once the update applies. False removes their waivers.
+	OwnershipWaived *bool `json:"ownership_waived,omitempty"`
 }
 
 // Update updates an organization access policy.

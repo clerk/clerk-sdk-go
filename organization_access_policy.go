@@ -4,6 +4,9 @@ type OrganizationAccessPolicyDomain struct {
 	Name                string `json:"name"`
 	AffiliationVerified bool   `json:"affiliation_verified"`
 	OwnershipVerified   bool   `json:"ownership_verified"`
+	// OwnershipWaived is whether the application waived the ownership proof
+	// over a domain the organization has not verified it owns.
+	OwnershipWaived bool `json:"ownership_waived"`
 }
 
 type OrganizationAccessPolicyConnection struct {
