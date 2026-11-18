@@ -69,8 +69,12 @@ func Count(ctx context.Context, params *ListParams) (*TotalCount, error) {
 	return getClient().Count(ctx, params)
 }
 
-// Search returns a page of users matching the parameters. Pages are
-// linked by the opaque cursors in the response.
+// Search returns one page of users matching the parameters, or of all users
+// when none are set. Pages are linked by the cursors in the response. Pass a
+// cursor's StartingAfter to read the next page or its EndingBefore to read the
+// previous one. A page read backward can hold fewer users than
+// [SearchParams.Limit]. Cursors belong to the [SearchParams.OrderBy] and
+// filters they were issued for.
 func Search(ctx context.Context, params *SearchParams) (*clerk.UserSearchList, error) {
 	return getClient().Search(ctx, params)
 }

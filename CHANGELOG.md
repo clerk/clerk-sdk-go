@@ -9,6 +9,7 @@
 - Add `IdpCertificates` to `clerk.SAMLConnection` and accept an `IdpCertificates` list in `samlconnection.CreateParams`, `samlconnection.UpdateParams`, `enterpriseconnection.CreateParamsSaml` and `enterpriseconnection.UpdateParamsSaml`. The single `IdpCertificate` param is deprecated in favor of the list.
 - Add support for changing when a session expires with `session.Update`. The new `ExpireAt` applies to that session only and can exceed the instance's session lifetime.
 - Add support for merging two users with `user.Merge`, which moves the `FromUserID` user's identifications, second factors, organization memberships and metadata onto another user and deletes the `FromUserID` user. It returns a `clerk.UserMergeResult` holding the remaining user and the deleted one. Set `DryRun` to preview a merge.
+- `user.Search` now reads `GET /v1/users` in cursor mode, and reports a remaining count through the new `SearchParams.RemainingCount`. The `Cursor` of `clerk.UserSearchList` is now a `clerk.UserSearchCursor`, which holds `RemainingCountExact` or `RemainingCountAtLeast` next to the existing cursor fields.
 - Add `SkipRestrictionChecks` to `user.CreateParams`. Creating a user now runs the instance's allowlist, blocklist, blocked disposable email domains and blocked email subaddresses, the same as sign-up does; set this to exempt a single create, for a backend creating a user it already trusts.
 
 - Add support for the OAuth Applications API. Added the oauthapplication package for API operations and a clerk.OAuthApplication type.

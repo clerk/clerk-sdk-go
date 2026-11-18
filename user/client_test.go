@@ -245,15 +245,16 @@ func TestUserClientCount(t *testing.T) {
 	require.Equal(t, int64(10), totalCount.TotalCount)
 }
 
-func TestUserClientSearch(t *testing.T) {
+func TestUserClientSearch_FullParams_SendsCursorModeQuery(t *testing.T) {
 	t.Parallel()
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
 			Method: http.MethodGet,
-			Path:   "/v1/users/search",
+			Path:   "/v1/users",
 			Query: &url.Values{
+				"pagination":       []string{"cursor"},
 				"email_address":    []string{"foo@bar.com", "baz@bar.com"},
 				"provider":         []string{"oauth_google"},
 				"provider_user_id": []string{"123"},
@@ -264,12 +265,13 @@ func TestUserClientSearch(t *testing.T) {
 					`{"scope":"public","key":"plan","value":"pro","match":"equals"}`,
 					`{"scope":"private","key":"legacy","match":"exists","negate":true}`,
 				},
-				"limit":          []string{"2"},
-				"starting_after": []string{"cur_prev"},
+				"limit":           []string{"2"},
+				"starting_after":  []string{"cur_prev"},
+				"remaining_count": []string{"1000"},
 			},
 			Out: json.RawMessage(`{
 				"data":[{"object":"user","id":"user_123"},{"object":"user","id":"user_456"}],
-				"cursor":{"starting_after":"cur_next","ending_before":"cur_back","has_next_page":true}
+				"cursor":{"starting_after":"cur_next","ending_before":"cur_back","has_next_page":true,"remaining_count_exact":42}
 			}`),
 		},
 	}
@@ -285,8 +287,9 @@ func TestUserClientSearch(t *testing.T) {
 			{Scope: "public", Key: "plan", Value: clerk.String("pro"), Match: "equals"},
 			{Scope: "private", Key: "legacy", Match: "exists", Negate: clerk.Bool(true)},
 		},
-		Limit:         clerk.Int64(2),
-		StartingAfter: clerk.String("cur_prev"),
+		Limit:          clerk.Int64(2),
+		StartingAfter:  clerk.String("cur_prev"),
+		RemainingCount: clerk.String(RemainingCount1000),
 	})
 	require.NoError(t, err)
 	require.Len(t, list.Users, 2)
@@ -296,6 +299,102 @@ func TestUserClientSearch(t *testing.T) {
 	require.Equal(t, "cur_next", *list.Cursor.StartingAfter)
 	require.Equal(t, "cur_back", *list.Cursor.EndingBefore)
 	require.True(t, list.Cursor.HasNextPage)
+	require.Equal(t, int64(42), *list.Cursor.RemainingCountExact)
+	require.Nil(t, list.Cursor.RemainingCountAtLeast)
+}
+
+func TestUserClientSearch_CursorParams_SendsPaginationCursor(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name   string
+		params *SearchParams
+		query  url.Values
+	}{
+		{
+			name:   "nil params still sends pagination=cursor",
+			params: nil,
+			query:  url.Values{"pagination": []string{"cursor"}},
+		},
+		{
+			name:   "empty params still sends pagination=cursor",
+			params: &SearchParams{},
+			query:  url.Values{"pagination": []string{"cursor"}},
+		},
+		{
+			name:   "starting_after is sent",
+			params: &SearchParams{StartingAfter: clerk.String("cur_next")},
+			query:  url.Values{"pagination": []string{"cursor"}, "starting_after": []string{"cur_next"}},
+		},
+		{
+			name:   "ending_before is sent",
+			params: &SearchParams{EndingBefore: clerk.String("cur_back")},
+			query:  url.Values{"pagination": []string{"cursor"}, "ending_before": []string{"cur_back"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			config := &clerk.ClientConfig{}
+			config.HTTPClient = &http.Client{
+				Transport: &clerktest.RoundTripper{
+					T:      t,
+					Method: http.MethodGet,
+					Path:   "/v1/users",
+					Query:  &tt.query,
+					Out:    json.RawMessage(`{"data":[],"cursor":null}`),
+				},
+			}
+			_, err := NewClient(config).Search(context.Background(), tt.params)
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestUserClientSearch_Response_DecodesCursor(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name  string
+		out   string
+		check func(t *testing.T, cursor *clerk.UserSearchCursor)
+	}{
+		{
+			name: "at-least remaining count",
+			out:  `{"data":[],"cursor":{"starting_after":"cur_next","ending_before":"cur_back","has_next_page":true,"remaining_count_at_least":1000}}`,
+			check: func(t *testing.T, cursor *clerk.UserSearchCursor) {
+				require.Nil(t, cursor.RemainingCountExact)
+				require.Equal(t, int64(1000), *cursor.RemainingCountAtLeast)
+			},
+		},
+		{
+			name: "null cursor strings decode to nil and no remaining count",
+			out:  `{"data":[],"cursor":{"starting_after":null,"ending_before":null,"has_next_page":false}}`,
+			check: func(t *testing.T, cursor *clerk.UserSearchCursor) {
+				require.Nil(t, cursor.StartingAfter)
+				require.Nil(t, cursor.EndingBefore)
+				require.False(t, cursor.HasNextPage)
+				require.Nil(t, cursor.RemainingCountExact)
+				require.Nil(t, cursor.RemainingCountAtLeast)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			config := &clerk.ClientConfig{}
+			config.HTTPClient = &http.Client{
+				Transport: &clerktest.RoundTripper{
+					T:      t,
+					Method: http.MethodGet,
+					Path:   "/v1/users",
+					Out:    json.RawMessage(tt.out),
+				},
+			}
+			list, err := NewClient(config).Search(context.Background(), &SearchParams{})
+			require.NoError(t, err)
+			require.NotNil(t, list.Cursor)
+			tt.check(t, list.Cursor)
+		})
+	}
 }
 
 func TestUserClientGet(t *testing.T) {
