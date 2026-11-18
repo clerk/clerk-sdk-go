@@ -2,6 +2,8 @@
 
 ## Next release
 
+- Add support for reading `GET /v1/users` page by page with cursors using `user.Search`. It supports metadata filters and can report how many users remain through `SearchParams.RemainingCount`.
+
 ## 2.9.0
 
 - Fix the `http` middleware's JWK cache extending an entry's expiry on every cache hit. Entries now expire one hour after they're fetched.

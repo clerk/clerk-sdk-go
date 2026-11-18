@@ -476,6 +476,176 @@ type TotalCount struct {
 	TotalCount int64  `json:"total_count"`
 }
 
+// Values for [SearchParams.RemainingCount].
+const (
+	RemainingCount100   = "100"
+	RemainingCount1000  = "1000"
+	RemainingCount10000 = "10000"
+	RemainingCountExact = "exact"
+)
+
+type SearchParams struct {
+	clerk.APIParams
+	UserIDs            []string `json:"user_id,omitempty"`
+	ExternalIDs        []string `json:"external_id,omitempty"`
+	OrganizationIDs    []string `json:"organization_id,omitempty"`
+	EmailAddresses     []string `json:"email_address,omitempty"`
+	PhoneNumbers       []string `json:"phone_number,omitempty"`
+	Usernames          []string `json:"username,omitempty"`
+	Web3Wallets        []string `json:"web3_wallet,omitempty"`
+	Provider           *string  `json:"provider,omitempty"`
+	ProviderUserIDs    []string `json:"provider_user_id,omitempty"`
+	LastActiveAtBefore *int64   `json:"last_active_at_before,omitempty"`
+	LastActiveAtAfter  *int64   `json:"last_active_at_after,omitempty"`
+	LastSignInAtBefore *int64   `json:"last_sign_in_at_before,omitempty"`
+	LastSignInAtAfter  *int64   `json:"last_sign_in_at_after,omitempty"`
+	CreatedAtBefore    *int64   `json:"created_at_before,omitempty"`
+	CreatedAtAfter     *int64   `json:"created_at_after,omitempty"`
+	Query              *string  `json:"query,omitempty"`
+	EmailAddressQuery  *string  `json:"email_address_query,omitempty"`
+	PhoneNumberQuery   *string  `json:"phone_number_query,omitempty"`
+	UsernameQuery      *string  `json:"username_query,omitempty"`
+	NameQuery          *string  `json:"name_query,omitempty"`
+	OrderBy            *string  `json:"order_by,omitempty"`
+	Banned             *bool    `json:"banned,omitempty"`
+	Deprovisioned      *bool    `json:"deprovisioned,omitempty"`
+	// Metadata filters are ANDed together. Accepts up to 10 filters.
+	Metadata      []SearchMetadataFilter `json:"metadata,omitempty"`
+	Limit         *int64                 `json:"limit,omitempty"`
+	StartingAfter *string                `json:"starting_after,omitempty"`
+	EndingBefore  *string                `json:"ending_before,omitempty"`
+	// RemainingCount asks the cursor to report how many users remain from the
+	// start of this page, up to a ceiling or exactly. It is one of the
+	// RemainingCount* constants. An exact count can fail with a 422 if it does
+	// not finish in time.
+	RemainingCount *string `json:"remaining_count,omitempty"`
+}
+
+// SearchMetadataFilter matches users on a single metadata key.
+type SearchMetadataFilter struct {
+	// One of "public", "private" or "unsafe".
+	Scope string `json:"scope"`
+	Key   string `json:"key"`
+	// Required when Match is "equals", not allowed when it is "exists".
+	Value *string `json:"value,omitempty"`
+	// One of "equals" or "exists".
+	Match  string `json:"match"`
+	Negate *bool  `json:"negate,omitempty"`
+}
+
+// ToQuery returns url.Values from the params. It always sets
+// pagination=cursor. Each metadata filter is sent as its own
+// JSON-encoded metadata value.
+func (params *SearchParams) ToQuery() url.Values {
+	q := url.Values{}
+	q.Set("pagination", "cursor")
+	for _, v := range params.UserIDs {
+		q.Add("user_id", v)
+	}
+	for _, v := range params.ExternalIDs {
+		q.Add("external_id", v)
+	}
+	for _, v := range params.OrganizationIDs {
+		q.Add("organization_id", v)
+	}
+	for _, v := range params.EmailAddresses {
+		q.Add("email_address", v)
+	}
+	for _, v := range params.PhoneNumbers {
+		q.Add("phone_number", v)
+	}
+	for _, v := range params.Usernames {
+		q.Add("username", v)
+	}
+	for _, v := range params.Web3Wallets {
+		q.Add("web3_wallet", v)
+	}
+	if params.Provider != nil {
+		q.Add("provider", *params.Provider)
+	}
+	for _, v := range params.ProviderUserIDs {
+		q.Add("provider_user_id", v)
+	}
+	if params.LastActiveAtBefore != nil {
+		q.Add("last_active_at_before", strconv.FormatInt(*params.LastActiveAtBefore, 10))
+	}
+	if params.LastActiveAtAfter != nil {
+		q.Add("last_active_at_after", strconv.FormatInt(*params.LastActiveAtAfter, 10))
+	}
+	if params.LastSignInAtBefore != nil {
+		q.Add("last_sign_in_at_before", strconv.FormatInt(*params.LastSignInAtBefore, 10))
+	}
+	if params.LastSignInAtAfter != nil {
+		q.Add("last_sign_in_at_after", strconv.FormatInt(*params.LastSignInAtAfter, 10))
+	}
+	if params.CreatedAtBefore != nil {
+		q.Add("created_at_before", strconv.FormatInt(*params.CreatedAtBefore, 10))
+	}
+	if params.CreatedAtAfter != nil {
+		q.Add("created_at_after", strconv.FormatInt(*params.CreatedAtAfter, 10))
+	}
+	if params.Query != nil {
+		q.Add("query", *params.Query)
+	}
+	if params.EmailAddressQuery != nil {
+		q.Add("email_address_query", *params.EmailAddressQuery)
+	}
+	if params.PhoneNumberQuery != nil {
+		q.Add("phone_number_query", *params.PhoneNumberQuery)
+	}
+	if params.UsernameQuery != nil {
+		q.Add("username_query", *params.UsernameQuery)
+	}
+	if params.NameQuery != nil {
+		q.Add("name_query", *params.NameQuery)
+	}
+	if params.OrderBy != nil {
+		q.Add("order_by", *params.OrderBy)
+	}
+	if params.Banned != nil {
+		q.Add("banned", strconv.FormatBool(*params.Banned))
+	}
+	if params.Deprovisioned != nil {
+		q.Add("deprovisioned", strconv.FormatBool(*params.Deprovisioned))
+	}
+	for _, v := range params.Metadata {
+		// A filter holds only strings and bools, so marshalling cannot fail.
+		filter, _ := json.Marshal(v)
+		q.Add("metadata", string(filter))
+	}
+	if params.Limit != nil {
+		q.Add("limit", strconv.FormatInt(*params.Limit, 10))
+	}
+	if params.StartingAfter != nil {
+		q.Add("starting_after", *params.StartingAfter)
+	}
+	if params.EndingBefore != nil {
+		q.Add("ending_before", *params.EndingBefore)
+	}
+	if params.RemainingCount != nil {
+		q.Add("remaining_count", *params.RemainingCount)
+	}
+	return q
+}
+
+// Search returns one page of users matching the parameters, or of all users
+// when none are set. Pages are linked by the cursors in the response. Pass a
+// cursor's StartingAfter to read the next page or its EndingBefore to read the
+// previous one. A page read backward can hold fewer users than
+// [SearchParams.Limit]. Cursors belong to the [SearchParams.OrderBy] and
+// filters they were issued for.
+func (c *Client) Search(ctx context.Context, params *SearchParams) (*clerk.UserSearchList, error) {
+	if params == nil {
+		// A nil params skips the query, and pagination=cursor must still be sent.
+		params = &SearchParams{}
+	}
+	req := clerk.NewAPIRequest(http.MethodGet, path)
+	req.SetParams(params)
+	list := &clerk.UserSearchList{}
+	err := c.Backend.Call(ctx, req, list)
+	return list, err
+}
+
 type ListOAuthAccessTokensParams struct {
 	clerk.APIParams
 	ID       string `json:"-"`
