@@ -297,3 +297,26 @@ func TestOrganizationAccessPolicyClientVerify_Error(t *testing.T) {
 	require.Equal(t, 1, len(apiErr.Errors))
 	require.Equal(t, "verify-error-code", apiErr.Errors[0].Code)
 }
+
+func TestOrganizationAccessPolicyClientCreate_OwnershipVerified(t *testing.T) {
+	t.Parallel()
+	organizationID := "org_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"domains":["example.com"],"enrollment_mode":"invitation_only","ownership_verified":true}`),
+			Out:    json.RawMessage(`{"object":"organization_access_policy","id":"oenp_123","domains":[{"name":"example.com","affiliation_verified":false,"ownership_verified":true}],"enrollment_mode":"invitation_only"}`),
+			Method: http.MethodPost,
+			Path:   "/v1/organizations/" + organizationID + "/access_policies",
+		},
+	}
+	client := NewClient(config)
+	policy, err := client.Create(context.Background(), organizationID, &CreateParams{
+		Domains:           &[]string{"example.com"},
+		EnrollmentMode:    clerk.String("invitation_only"),
+		OwnershipVerified: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.True(t, policy.Domains[0].OwnershipVerified)
+}

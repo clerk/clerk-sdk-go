@@ -38,6 +38,9 @@ type CreateParams struct {
 	Authentication *AuthenticationParams `json:"authentication,omitempty"`
 	// Status is taken by sso policies only, and defaults to draft.
 	Status *string `json:"status,omitempty"`
+	// OwnershipVerified marks the organization's ownership of the domains as
+	// verified, so its admins can set up SSO on them without a DNS record.
+	OwnershipVerified *bool `json:"ownership_verified,omitempty"`
 }
 
 // Create adds a new access policy to the organization.
