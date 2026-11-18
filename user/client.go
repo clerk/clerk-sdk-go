@@ -421,6 +421,14 @@ type TotalCount struct {
 	TotalCount int64  `json:"total_count"`
 }
 
+// Values for [SearchParams.RemainingCount].
+const (
+	RemainingCount100   = "100"
+	RemainingCount1000  = "1000"
+	RemainingCount10000 = "10000"
+	RemainingCountExact = "exact"
+)
+
 type SearchParams struct {
 	clerk.APIParams
 	UserIDs            []string `json:"user_id,omitempty"`
@@ -451,6 +459,11 @@ type SearchParams struct {
 	Limit         *int64                 `json:"limit,omitempty"`
 	StartingAfter *string                `json:"starting_after,omitempty"`
 	EndingBefore  *string                `json:"ending_before,omitempty"`
+	// RemainingCount asks the cursor to report how many users remain from the
+	// start of this page, up to a ceiling or exactly. It is one of the
+	// RemainingCount* constants. An exact count can fail with a 422 if it does
+	// not finish in time.
+	RemainingCount *string `json:"remaining_count,omitempty"`
 }
 
 // SearchMetadataFilter matches users on a single metadata key.
@@ -465,10 +478,12 @@ type SearchMetadataFilter struct {
 	Negate *bool  `json:"negate,omitempty"`
 }
 
-// ToQuery returns url.Values from the params. Each metadata filter is
-// sent as its own JSON-encoded metadata value.
+// ToQuery returns url.Values from the params. It always sets
+// pagination=cursor. Each metadata filter is sent as its own
+// JSON-encoded metadata value.
 func (params *SearchParams) ToQuery() url.Values {
 	q := url.Values{}
+	q.Set("pagination", "cursor")
 	for _, v := range params.UserIDs {
 		q.Add("user_id", v)
 	}
@@ -552,20 +567,27 @@ func (params *SearchParams) ToQuery() url.Values {
 	if params.EndingBefore != nil {
 		q.Add("ending_before", *params.EndingBefore)
 	}
+	if params.RemainingCount != nil {
+		q.Add("remaining_count", *params.RemainingCount)
+	}
 	return q
 }
 
-// Search returns a page of users matching the parameters. Pages are
-// linked by the opaque cursors in the response.
+// Search returns one page of users matching the parameters, or of all users
+// when none are set. Pages are linked by the cursors in the response. Pass a
+// cursor's StartingAfter to read the next page or its EndingBefore to read the
+// previous one. A page read backward can hold fewer users than
+// [SearchParams.Limit]. Cursors belong to the [SearchParams.OrderBy] and
+// filters they were issued for.
 func (c *Client) Search(ctx context.Context, params *SearchParams) (*clerk.UserSearchList, error) {
-	path, err := clerk.JoinPath(path, "/search")
-	if err != nil {
-		return nil, err
+	if params == nil {
+		// A nil params skips the query, and pagination=cursor must still be sent.
+		params = &SearchParams{}
 	}
 	req := clerk.NewAPIRequest(http.MethodGet, path)
 	req.SetParams(params)
 	list := &clerk.UserSearchList{}
-	err = c.Backend.Call(ctx, req, list)
+	err := c.Backend.Call(ctx, req, list)
 	return list, err
 }
 
