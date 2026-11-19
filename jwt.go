@@ -69,6 +69,26 @@ func (s *SessionClaims) HasRole(role string) bool {
 	return s.ActiveOrganizationRole == role
 }
 
+// IsAgentSession reports whether the session is an agent session, that is,
+// whether the token carries a non-null 'agt' claim. Agent task sessions and
+// Poppy sessions both count. A malformed claim still counts, so a check such as
+// "refuse agent sessions" fails closed.
+func (s *SessionClaims) IsAgentSession() bool {
+	return len(s.Agent) > 0 && string(s.Agent) != "null"
+}
+
+// AgentClaim returns the agent behind an agent session, or nil for any other
+// session. It is non-nil whenever IsAgentSession is true; fields that cannot be
+// read from a malformed claim are left empty.
+func (s *SessionClaims) AgentClaim() *AgentClaim {
+	if !s.IsAgentSession() {
+		return nil
+	}
+	claim := &AgentClaim{}
+	_ = json.Unmarshal(s.Agent, claim)
+	return claim
+}
+
 // NeedsReverification checks if a session needs to be reverified based on the
 // provided policy.
 func (s *SessionClaims) NeedsReverification(policy SessionReverificationPolicy) bool {
@@ -153,7 +173,57 @@ type Claims struct {
 	ActiveOrganizationRole        string          `json:"org_role"`
 	ActiveOrganizationPermissions []string        `json:"org_permissions"`
 	Actor                         json.RawMessage `json:"act,omitempty"`
-	FactorVerificationAge         [2]int64        `json:"fva"`
+	// Agent is the raw 'agt' claim, which Clerk sets on agent sessions. It is
+	// kept as raw JSON so that a malformed value never fails token
+	// verification. Use IsAgentSession and AgentClaim to read it.
+	Agent                 json.RawMessage `json:"agt,omitempty"`
+	FactorVerificationAge [2]int64        `json:"fva"`
+}
+
+// AgentClaim describes the agent behind an agent session. An agent session is
+// either an agent task session, which has a TaskID, or a Poppy session, which
+// has Poppy set and no TaskID.
+type AgentClaim struct {
+	// ID identifies the agent. For an agent task session it is the agent's ID.
+	// For a Poppy session it is the agent's client ID URL.
+	ID string `json:"id"`
+	// TaskID is the ID of the agent task that created the session. It is empty
+	// for a Poppy session.
+	TaskID string `json:"tsk"`
+	// Registry is the registry that issued the agent. For a Poppy session it is
+	// the same client ID URL as ID.
+	Registry string `json:"reg"`
+	// Poppy holds the Poppy identity of a Poppy session, and is nil for an
+	// agent task session. Use Poppy != nil to tell the two kinds apart. Any
+	// non-null 'poppy' value sets it, even a malformed one; its fields are then
+	// left empty.
+	//
+	// Experimental: the Poppy fields can change without a major version.
+	Poppy *PoppyClaim `json:"poppy,omitempty"`
+	// Restricted reports whether the session is restricted, so that Clerk's
+	// Frontend API refuses the session's writes. Poppy sessions are always
+	// restricted. It is false when the claim omits 'rst', including tokens
+	// from Clerk servers that do not send it yet. Clerk enforces the
+	// restriction on its side; use IsAgentSession, not this field, to refuse
+	// agent sessions.
+	Restricted bool `json:"rst,omitempty"`
+}
+
+// PoppyClaim is the Poppy identity of a Poppy session, from the 'poppy' field
+// of the 'agt' claim.
+//
+// Experimental: the Poppy fields can change without a major version.
+type PoppyClaim struct {
+	// SessionID is the Poppy session ID.
+	SessionID string `json:"session_id"`
+	// ClientID is the agent's client ID URL.
+	ClientID string `json:"client_id"`
+	// UserID is the user ID that the agent uses for the user. It is not a
+	// Clerk user ID; use the token's subject for that.
+	UserID string `json:"user_id"`
+	// AgentID is an optional ID that the agent sets for itself. It is not a
+	// Clerk ID.
+	AgentID string `json:"agent_id,omitempty"`
 }
 
 // factorVerificationAgeNotEnabled is the value Clerk uses in either 'fva' slot
