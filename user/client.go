@@ -106,6 +106,10 @@ type UpdateParams struct {
 	SkipPasswordChecks               *bool   `json:"skip_password_checks,omitempty"`
 	SignOutOfOtherSessions           *bool   `json:"sign_out_of_other_sessions,omitempty"`
 	ExternalID                       *string `json:"external_id,omitempty"`
+	// ResetClientTrust, when true, also forgets all of the user's devices. The
+	// user's next sign-in on any device counts as a new device. It requires a
+	// new Password or PasswordDigest, and SignOutOfOtherSessions set to true.
+	ResetClientTrust *bool `json:"reset_client_trust,omitempty"`
 	// Deprecated: Use ReplaceMetadata (replace) or UpdateMetadata (merge) instead.
 	// When set on UpdateParams, the SDK routes this field through PUT /users/{id}/metadata.
 	PublicMetadata *json.RawMessage `json:"public_metadata,omitempty"`
@@ -192,6 +196,7 @@ func hasNonMetadataUpdateFields(p *UpdateParams) bool {
 		p.PasswordHasher != nil ||
 		p.SkipPasswordChecks != nil ||
 		p.SignOutOfOtherSessions != nil ||
+		p.ResetClientTrust != nil ||
 		p.ExternalID != nil ||
 		p.TOTPSecret != nil ||
 		p.BackupCodes != nil ||
