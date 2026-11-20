@@ -99,6 +99,7 @@ func TestSessionClientRevoke(t *testing.T) {
 		Transport: &clerktest.RoundTripper{
 			T:      t,
 			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","status":"%s"}`, id, status)),
+			In:     json.RawMessage(`{}`),
 			Method: http.MethodPost,
 			Path:   "/v1/sessions/" + id + "/revoke",
 		},
@@ -110,6 +111,28 @@ func TestSessionClientRevoke(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, session.ID)
 	require.Equal(t, status, session.Status)
+}
+
+func TestSessionClientRevoke_ResetClientTrust(t *testing.T) {
+	t.Parallel()
+	id := "sess_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"reset_client_trust":true}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","status":"revoked"}`, id)),
+			Method: http.MethodPost,
+			Path:   "/v1/sessions/" + id + "/revoke",
+		},
+	}
+	client := NewClient(config)
+	session, err := client.Revoke(context.Background(), &RevokeParams{
+		ID:               id,
+		ResetClientTrust: clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, session.ID)
 }
 
 func TestSessionClientVerify(t *testing.T) {
