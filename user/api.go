@@ -64,6 +64,14 @@ func List(ctx context.Context, params *ListParams) (*clerk.UserList, error) {
 	return getClient().List(ctx, params)
 }
 
+// ListWithoutCount returns a list of users without fetching the total count.
+// Unlike [List], it makes no request to GET /v1/users/count, which can be
+// slow for a search over many users. There is no total, so page until a page
+// holds fewer users than the limit.
+func ListWithoutCount(ctx context.Context, params *ListParams) ([]*clerk.User, error) {
+	return getClient().ListWithoutCount(ctx, params)
+}
+
 // Count returns the total count of users satisfying the parameters.
 func Count(ctx context.Context, params *ListParams) (*TotalCount, error) {
 	return getClient().Count(ctx, params)
