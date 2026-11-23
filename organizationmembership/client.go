@@ -3,6 +3,7 @@ package organizationmembership
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -27,9 +28,11 @@ func NewClient(config *clerk.ClientConfig) *Client {
 
 type CreateParams struct {
 	clerk.APIParams
-	UserID         *string `json:"user_id,omitempty"`
-	Role           *string `json:"role,omitempty"`
-	OrganizationID string  `json:"-"`
+	UserID          *string          `json:"user_id,omitempty"`
+	Role            *string          `json:"role,omitempty"`
+	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
+	OrganizationID  string           `json:"-"`
 }
 
 // Create adds a new member to the organization.
@@ -171,4 +174,26 @@ func (c *Client) List(ctx context.Context, params *ListParams) (*clerk.Organizat
 	list := &clerk.OrganizationMembershipList{}
 	err = c.Backend.Call(ctx, req, list)
 	return list, err
+}
+
+type UpdateMetadataParams struct {
+	clerk.APIParams
+	PublicMetadata  *json.RawMessage `json:"public_metadata,omitempty"`
+	PrivateMetadata *json.RawMessage `json:"private_metadata,omitempty"`
+	UserID          string           `json:"-"`
+	OrganizationID  string           `json:"-"`
+}
+
+// UpdateMetadata updates the organization membership's metadata by merging the
+// provided values with the existing ones.
+func (c *Client) UpdateMetadata(ctx context.Context, params *UpdateMetadataParams) (*clerk.OrganizationMembership, error) {
+	path, err := clerk.JoinPath(path, params.OrganizationID, "/memberships", params.UserID, "/metadata")
+	if err != nil {
+		return nil, err
+	}
+	req := clerk.NewAPIRequest(http.MethodPatch, path)
+	req.SetParams(params)
+	membership := &clerk.OrganizationMembership{}
+	err = c.Backend.Call(ctx, req, membership)
+	return membership, err
 }
