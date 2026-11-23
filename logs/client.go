@@ -101,12 +101,6 @@ type ListParams struct {
 	EventTimeAfter *int64 `json:"event_time_after,omitempty"`
 	// Filter logs to events on or before this date (Unix timestamp in milliseconds).
 	EventTimeBefore *int64 `json:"event_time_before,omitempty"`
-	// EndUserFacingOnly has no effect. The API still accepts
-	// end_user_facing_only but ignores its value and returns all events.
-	//
-	// Deprecated: The API ignores this value. It will be removed in the next
-	// major version.
-	EndUserFacingOnly *bool `json:"end_user_facing_only,omitempty"`
 	// PayloadFilters are exact-match filters on event payload fields,
 	// keyed by the field's dot-path (nested fields use dots, e.g.
 	// "captcha_attempt_payload.provider"). Serialized as
@@ -176,9 +170,6 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.EventTimeBefore != nil {
 		q.Add("event_time_before", strconv.FormatInt(*params.EventTimeBefore, 10))
-	}
-	if params.EndUserFacingOnly != nil {
-		q.Add("end_user_facing_only", strconv.FormatBool(*params.EndUserFacingOnly))
 	}
 	// Sorted so the query string is deterministic regardless of map order.
 	for _, path := range slices.Sorted(maps.Keys(params.PayloadFilters)) {
