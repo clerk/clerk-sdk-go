@@ -2,8 +2,6 @@
 
 ## Next release
 
-## 2.10.0
-
 - Add support for reading `GET /v1/users` page by page with cursors using `user.Search`. It supports metadata filters and can report how many users remain through `SearchParams.RemainingCount`.
 - Add `user.ListWithoutCount`, which returns a page of users without the extra request to count them that `user.List` makes. Use it when you don't need `TotalCount`: counting can be slow for a search over many users, and `user.List` fails when the count does.
 
