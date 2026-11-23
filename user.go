@@ -101,6 +101,31 @@ type UserList struct {
 	TotalCount int64   `json:"total_count"`
 }
 
+type UserSearchList struct {
+	APIResource
+	Users  []*User           `json:"data"`
+	Cursor *UserSearchCursor `json:"cursor"`
+}
+
+// PaginationCursor contains the cursors for pagination.
+type PaginationCursor struct {
+	StartingAfter *string `json:"starting_after"`
+	EndingBefore  *string `json:"ending_before"`
+	HasNextPage   bool    `json:"has_next_page"`
+}
+
+// UserSearchCursor links a page of users to the pages around it.
+type UserSearchCursor struct {
+	PaginationCursor
+	// RemainingCountExact is the number of users from the start of this
+	// page onward. It is set when the request asked for a remaining count
+	// and the count is exact.
+	RemainingCountExact *int64 `json:"remaining_count_exact,omitempty"`
+	// RemainingCountAtLeast is set instead when more users remain than the
+	// ceiling the request asked for, and equals that ceiling.
+	RemainingCountAtLeast *int64 `json:"remaining_count_at_least,omitempty"`
+}
+
 // UserMergeResult is the result of merging one user into another.
 type UserMergeResult struct {
 	APIResource
