@@ -104,8 +104,8 @@ type ListParams struct {
 	// EndUserFacingOnly has no effect. The API still accepts
 	// end_user_facing_only but ignores its value and returns all events.
 	//
-	// Deprecated: EndUserFacingOnly has no effect and will be removed in
-	// the next major version.
+	// Deprecated: The API ignores this value. It will be removed in the next
+	// major version.
 	EndUserFacingOnly *bool `json:"end_user_facing_only,omitempty"`
 	// PayloadFilters are exact-match filters on event payload fields,
 	// keyed by the field's dot-path (nested fields use dots, e.g.
