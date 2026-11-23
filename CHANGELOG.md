@@ -11,6 +11,7 @@
 - Add support for merging two users with `user.Merge`, which moves the `FromUserID` user's identifications, second factors, organization memberships and metadata onto another user and deletes the `FromUserID` user. It returns a `clerk.UserMergeResult` holding the remaining user and the deleted one. Set `DryRun` to preview a merge.
 - `user.Search` now reads `GET /v1/users` in cursor mode, and reports a remaining count through the new `SearchParams.RemainingCount`. The `Cursor` of `clerk.UserSearchList` is now a `clerk.UserSearchCursor`, which holds `RemainingCountExact` or `RemainingCountAtLeast` next to the existing cursor fields.
 - Add `SkipRestrictionChecks` to `user.CreateParams`. Creating a user now runs the instance's allowlist, blocklist, blocked disposable email domains and blocked email subaddresses, the same as sign-up does; set this to exempt a single create, for a backend creating a user it already trusts.
+- Deprecate `logs.ListParams.EndUserFacingOnly`. The API ignores `end_user_facing_only` now, so the field has no effect. It stays for compatibility until the next major version.
 
 - Add support for the OAuth Applications API. Added the oauthapplication package for API operations and a clerk.OAuthApplication type.
 - Add support for multiple invitation templates with the `TemplateSlug` field in `invitation.Create`.

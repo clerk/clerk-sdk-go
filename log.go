@@ -139,9 +139,8 @@ const (
 //   - LogFilterMatchAny: an event matches if at least one of the
 //     supplied filters matches. Filters are joined with OR.
 //
-// Time bounds (event_time_after, event_time_before) and end_user_facing_only
-// are always ANDed with the (possibly OR-ed) string filter group regardless
-// of the value.
+// Time bounds (event_time_after, event_time_before) are always ANDed with
+// the (possibly OR-ed) string filter group regardless of the value.
 type LogFilterMatch string
 
 const (

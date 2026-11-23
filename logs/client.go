@@ -94,16 +94,18 @@ type ListParams struct {
 	//   - LogFilterMatchAny: an event matches if at least one of the
 	//     supplied filters matches (OR).
 	//
-	// EventTimeAfter, EventTimeBefore, and EndUserFacingOnly are always
-	// ANDed with the (possibly OR-ed) string filter group regardless of
-	// FilterMatch.
+	// EventTimeAfter and EventTimeBefore are always ANDed with the
+	// (possibly OR-ed) string filter group regardless of FilterMatch.
 	FilterMatch *clerk.LogFilterMatch `json:"filter_match,omitempty"`
 	// Filter logs to events on or after this date (Unix timestamp in milliseconds).
 	EventTimeAfter *int64 `json:"event_time_after,omitempty"`
 	// Filter logs to events on or before this date (Unix timestamp in milliseconds).
 	EventTimeBefore *int64 `json:"event_time_before,omitempty"`
-	// When true, only returns events marked as end-user facing.
-	// When false or omitted, returns all events.
+	// EndUserFacingOnly has no effect. The API still accepts
+	// end_user_facing_only but ignores its value and returns all events.
+	//
+	// Deprecated: EndUserFacingOnly has no effect and will be removed in
+	// the next major version.
 	EndUserFacingOnly *bool `json:"end_user_facing_only,omitempty"`
 	// PayloadFilters are exact-match filters on event payload fields,
 	// keyed by the field's dot-path (nested fields use dots, e.g.
