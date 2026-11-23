@@ -576,13 +576,13 @@ func TestUserClientUpdate_TimezoneOnlyNonMetadataIssuesBothCalls(t *testing.T) {
 	require.JSONEq(t, fmt.Sprintf(`{"public_metadata":%s}`, string(metadata)), recorded[1].body)
 }
 
-func TestUserClientUpdate_ResetDeviceTrustWithMetadataIssuesBothCalls(t *testing.T) {
+func TestUserClientUpdate_ResetDeviceTrustWithMetadataSendsPatch(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
 	metadata := json.RawMessage(`{"foo":"bar"}`)
 	var recorded []recordedRequest
-	ts := newUpdateRoutingServer(t, &recorded, http.StatusOK, http.StatusOK,
-		fmt.Sprintf(`{"id":"%s","public_metadata":%s}`, id, string(metadata)))
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusUnprocessableEntity, http.StatusOK,
+		`{"errors":[{"code":"form_conditional_param_missing"}]}`)
 	defer ts.Close()
 
 	config := &clerk.ClientConfig{}
@@ -593,15 +593,12 @@ func TestUserClientUpdate_ResetDeviceTrustWithMetadataIssuesBothCalls(t *testing
 		ResetDeviceTrust: clerk.Bool(true),
 		PublicMetadata:   &metadata,
 	})
-	require.NoError(t, err)
-	require.Len(t, recorded, 2)
+	require.Error(t, err)
+	require.Len(t, recorded, 1)
 
 	require.Equal(t, http.MethodPatch, recorded[0].method)
 	require.Equal(t, "/users/"+id, recorded[0].path)
 	require.JSONEq(t, `{"reset_device_trust":true}`, recorded[0].body)
-
-	require.Equal(t, http.MethodPut, recorded[1].method)
-	require.Equal(t, "/users/"+id+"/metadata", recorded[1].path)
 }
 
 func TestUserClientUpdate_MetadataPatchErrorAbortsPut(t *testing.T) {
