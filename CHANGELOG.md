@@ -2,7 +2,7 @@
 
 ## Next release
 
-- Add `ResetClientTrust` to `session.RevokeParams` and `user.UpdateParams`. Set it to `true` to make Clerk forget the affected devices, so the user's next sign-in on them counts as a new device. `user.Update` accepts it only with a new `Password` or `PasswordDigest` and `SignOutOfOtherSessions` set to `true`.
+- Add `ResetDeviceTrust` to `session.RevokeParams` and `user.UpdateParams`. Set it to `true` to make Clerk forget the affected devices, so the user's next sign-in on them counts as a new device. `user.Update` accepts it only with a new `Password` or `PasswordDigest` and `SignOutOfOtherSessions` set to `true`.
 
 ## 2.9.0
 

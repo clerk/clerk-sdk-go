@@ -96,13 +96,13 @@ func (c *Client) Update(ctx context.Context, id string, params *UpdateParams) (*
 type RevokeParams struct {
 	clerk.APIParams
 	ID string `json:"-"`
-	// ResetClientTrust, when true, also forgets the device the session was
+	// ResetDeviceTrust, when true, also forgets the device the session was
 	// signed in on, even if the session is already revoked. For a session that
 	// a native application received through hosted auth, it also forgets the
 	// browser the user signed in on. The user's next sign-in on a forgotten
 	// device counts as a new device. That sign-in can require a Device Trust
 	// challenge, and Clerk can email the user about the new device.
-	ResetClientTrust *bool `json:"reset_client_trust,omitempty"`
+	ResetDeviceTrust *bool `json:"reset_device_trust,omitempty"`
 }
 
 // Revoke marks the session as revoked.

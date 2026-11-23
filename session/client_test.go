@@ -113,14 +113,14 @@ func TestSessionClientRevoke(t *testing.T) {
 	require.Equal(t, status, session.Status)
 }
 
-func TestSessionClientRevoke_ResetClientTrust(t *testing.T) {
+func TestSessionClientRevoke_ResetDeviceTrust(t *testing.T) {
 	t.Parallel()
 	id := "sess_123"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"reset_client_trust":true}`),
+			In:     json.RawMessage(`{"reset_device_trust":true}`),
 			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s","status":"revoked"}`, id)),
 			Method: http.MethodPost,
 			Path:   "/v1/sessions/" + id + "/revoke",
@@ -129,7 +129,7 @@ func TestSessionClientRevoke_ResetClientTrust(t *testing.T) {
 	client := NewClient(config)
 	session, err := client.Revoke(context.Background(), &RevokeParams{
 		ID:               id,
-		ResetClientTrust: clerk.Bool(true),
+		ResetDeviceTrust: clerk.Bool(true),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, session.ID)

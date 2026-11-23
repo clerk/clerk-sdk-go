@@ -300,14 +300,14 @@ func TestUserClientUpdate(t *testing.T) {
 	require.Equal(t, username, *user.Username)
 }
 
-func TestUserClientUpdate_ResetClientTrust(t *testing.T) {
+func TestUserClientUpdate_ResetDeviceTrust(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
 	config := &clerk.ClientConfig{}
 	config.HTTPClient = &http.Client{
 		Transport: &clerktest.RoundTripper{
 			T:      t,
-			In:     json.RawMessage(`{"password":"new-password","sign_out_of_other_sessions":true,"reset_client_trust":true}`),
+			In:     json.RawMessage(`{"password":"new-password","sign_out_of_other_sessions":true,"reset_device_trust":true}`),
 			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, id)),
 			Method: http.MethodPatch,
 			Path:   "/v1/users/" + id,
@@ -317,7 +317,7 @@ func TestUserClientUpdate_ResetClientTrust(t *testing.T) {
 	user, err := client.Update(context.Background(), id, &UpdateParams{
 		Password:               clerk.String("new-password"),
 		SignOutOfOtherSessions: clerk.Bool(true),
-		ResetClientTrust:       clerk.Bool(true),
+		ResetDeviceTrust:       clerk.Bool(true),
 	})
 	require.NoError(t, err)
 	require.Equal(t, id, user.ID)
@@ -576,7 +576,7 @@ func TestUserClientUpdate_TimezoneOnlyNonMetadataIssuesBothCalls(t *testing.T) {
 	require.JSONEq(t, fmt.Sprintf(`{"public_metadata":%s}`, string(metadata)), recorded[1].body)
 }
 
-func TestUserClientUpdate_ResetClientTrustWithMetadataIssuesBothCalls(t *testing.T) {
+func TestUserClientUpdate_ResetDeviceTrustWithMetadataIssuesBothCalls(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
 	metadata := json.RawMessage(`{"foo":"bar"}`)
@@ -590,7 +590,7 @@ func TestUserClientUpdate_ResetClientTrustWithMetadataIssuesBothCalls(t *testing
 	config.HTTPClient = ts.Client()
 	client := NewClient(config)
 	_, err := client.Update(context.Background(), id, &UpdateParams{
-		ResetClientTrust: clerk.Bool(true),
+		ResetDeviceTrust: clerk.Bool(true),
 		PublicMetadata:   &metadata,
 	})
 	require.NoError(t, err)
@@ -598,7 +598,7 @@ func TestUserClientUpdate_ResetClientTrustWithMetadataIssuesBothCalls(t *testing
 
 	require.Equal(t, http.MethodPatch, recorded[0].method)
 	require.Equal(t, "/users/"+id, recorded[0].path)
-	require.JSONEq(t, `{"reset_client_trust":true}`, recorded[0].body)
+	require.JSONEq(t, `{"reset_device_trust":true}`, recorded[0].body)
 
 	require.Equal(t, http.MethodPut, recorded[1].method)
 	require.Equal(t, "/users/"+id+"/metadata", recorded[1].path)
