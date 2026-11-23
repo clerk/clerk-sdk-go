@@ -94,17 +94,13 @@ type ListParams struct {
 	//   - LogFilterMatchAny: an event matches if at least one of the
 	//     supplied filters matches (OR).
 	//
-	// EventTimeAfter, EventTimeBefore, and EndUserFacingOnly are always
-	// ANDed with the (possibly OR-ed) string filter group regardless of
-	// FilterMatch.
+	// EventTimeAfter and EventTimeBefore are always ANDed with the
+	// (possibly OR-ed) string filter group regardless of FilterMatch.
 	FilterMatch *clerk.LogFilterMatch `json:"filter_match,omitempty"`
 	// Filter logs to events on or after this date (Unix timestamp in milliseconds).
 	EventTimeAfter *int64 `json:"event_time_after,omitempty"`
 	// Filter logs to events on or before this date (Unix timestamp in milliseconds).
 	EventTimeBefore *int64 `json:"event_time_before,omitempty"`
-	// When true, only returns events marked as end-user facing.
-	// When false or omitted, returns all events.
-	EndUserFacingOnly *bool `json:"end_user_facing_only,omitempty"`
 	// PayloadFilters are exact-match filters on event payload fields,
 	// keyed by the field's dot-path (nested fields use dots, e.g.
 	// "captcha_attempt_payload.provider"). Serialized as
@@ -174,9 +170,6 @@ func (params *ListParams) ToQuery() url.Values {
 	}
 	if params.EventTimeBefore != nil {
 		q.Add("event_time_before", strconv.FormatInt(*params.EventTimeBefore, 10))
-	}
-	if params.EndUserFacingOnly != nil {
-		q.Add("end_user_facing_only", strconv.FormatBool(*params.EndUserFacingOnly))
 	}
 	// Sorted so the query string is deterministic regardless of map order.
 	for _, path := range slices.Sorted(maps.Keys(params.PayloadFilters)) {
