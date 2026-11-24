@@ -485,6 +485,29 @@ func TestUserClientUpdate(t *testing.T) {
 	require.Equal(t, username, *user.Username)
 }
 
+func TestUserClientUpdate_ResetDeviceTrust(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	config := &clerk.ClientConfig{}
+	config.HTTPClient = &http.Client{
+		Transport: &clerktest.RoundTripper{
+			T:      t,
+			In:     json.RawMessage(`{"password":"new-password","sign_out_of_other_sessions":true,"reset_device_trust":true}`),
+			Out:    json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, id)),
+			Method: http.MethodPatch,
+			Path:   "/v1/users/" + id,
+		},
+	}
+	client := NewClient(config)
+	user, err := client.Update(context.Background(), id, &UpdateParams{
+		Password:               clerk.String("new-password"),
+		SignOutOfOtherSessions: clerk.Bool(true),
+		ResetDeviceTrust:       clerk.Bool(true),
+	})
+	require.NoError(t, err)
+	require.Equal(t, id, user.ID)
+}
+
 func TestUserClientUpdate_WithLocale(t *testing.T) {
 	t.Parallel()
 	id := "user_123"
@@ -736,6 +759,31 @@ func TestUserClientUpdate_TimezoneOnlyNonMetadataIssuesBothCalls(t *testing.T) {
 	require.Equal(t, http.MethodPut, recorded[1].method)
 	require.Equal(t, "/users/"+id+"/metadata", recorded[1].path)
 	require.JSONEq(t, fmt.Sprintf(`{"public_metadata":%s}`, string(metadata)), recorded[1].body)
+}
+
+func TestUserClientUpdate_ResetDeviceTrustWithMetadataSendsPatch(t *testing.T) {
+	t.Parallel()
+	id := "user_123"
+	metadata := json.RawMessage(`{"foo":"bar"}`)
+	var recorded []recordedRequest
+	ts := newUpdateRoutingServer(t, &recorded, http.StatusUnprocessableEntity, http.StatusOK,
+		`{"errors":[{"code":"form_conditional_param_missing"}]}`)
+	defer ts.Close()
+
+	config := &clerk.ClientConfig{}
+	config.URL = clerk.String(ts.URL)
+	config.HTTPClient = ts.Client()
+	client := NewClient(config)
+	_, err := client.Update(context.Background(), id, &UpdateParams{
+		ResetDeviceTrust: clerk.Bool(true),
+		PublicMetadata:   &metadata,
+	})
+	require.Error(t, err)
+	require.Len(t, recorded, 1)
+
+	require.Equal(t, http.MethodPatch, recorded[0].method)
+	require.Equal(t, "/users/"+id, recorded[0].path)
+	require.JSONEq(t, `{"reset_device_trust":true}`, recorded[0].body)
 }
 
 func TestUserClientUpdate_MetadataPatchErrorAbortsPut(t *testing.T) {

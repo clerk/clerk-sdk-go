@@ -2,6 +2,8 @@
 
 ## Next release
 
+- Add `ResetDeviceTrust` to `session.RevokeParams` and `user.UpdateParams`. Set it to `true` to make Clerk forget the affected devices, so the user's next sign-in on them counts as a new device. `user.Update` accepts it only with a new `Password` or `PasswordDigest` and `SignOutOfOtherSessions` set to `true`.
+
 ## 2.10.0
 
 - Add support for reading `GET /v1/users` page by page with cursors using `user.Search`. It supports metadata filters and can report how many users remain through `SearchParams.RemainingCount`.
